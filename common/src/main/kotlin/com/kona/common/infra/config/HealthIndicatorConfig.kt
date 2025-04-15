@@ -1,4 +1,4 @@
-package com.kona.common.util
+package com.kona.common.infra.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
@@ -25,4 +25,5 @@ class HealthIndicatorConfig : HealthIndicator {
             .Builder(Status.UP, mapOf("version" to this.version, "hash" to this.hash, "build-date" to this.buildDate))
             .build()
     }
+
 }
