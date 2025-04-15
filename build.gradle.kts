@@ -14,6 +14,7 @@ plugins {
 	id("org.springframework.boot") version "3.4.4" apply false
 	id("io.spring.dependency-management") version "1.1.7" apply false
 	id("com.gorylenko.gradle-git-properties") version "2.4.1" apply false
+	`java-test-fixtures`
 }
 
 allprojects {
@@ -31,6 +32,7 @@ subprojects {
 	apply(plugin = "io.spring.dependency-management")
 	apply(plugin = "com.gorylenko.gradle-git-properties")
 	apply(plugin = "java")
+	apply(plugin = "java-test-fixtures")
 
 	configure<JavaPluginExtension> {
 		sourceCompatibility = JavaVersion.VERSION_21

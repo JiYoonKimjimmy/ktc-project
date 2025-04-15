@@ -9,30 +9,6 @@ server:
       max: 200
     connection-timeout: 20s
 
-# actuator
-management:
-  server:
-    port: 21001
-  endpoints:
-    web:
-      base-path: /ktc/actuator
-      exposure:
-        include: health, shutdown, metrics, prometheus
-  endpoint:
-    health:
-      show-details: always
-    shutdown:
-      access: unrestricted
-  health:
-    redis:
-      enabled: false
-    rabbit:
-      enabled: false
-
-# encrypt CubeOne
-database:
-  encrypt-provider: NONE
-
 # spring
 spring:
   threads:
@@ -61,6 +37,30 @@ spring:
         max-attempts: 3
         initial-interval: 1s
         max-interval: 10s
+
+# actuator
+management:
+  server:
+    port: 21001
+  endpoints:
+    web:
+      base-path: /ktc/actuator
+      exposure:
+        include: health, shutdown, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      access: unrestricted
+  health:
+    redis:
+      enabled: false
+    rabbit:
+      enabled: false
+
+# encrypt CubeOne
+database:
+  encrypt-provider: NONE
 
 ---
 

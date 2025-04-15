@@ -1,0 +1,113 @@
+# KTC (Kona Traffic Controller) 😏
+
+## Requirement
+
+- `1분` 단위 최대 허용치`(Threshold)`만큼 트래픽 제한하여 대용량 트래픽 제어
+    - Threshold 예상 범위 : `70K` ~ `100K`
+- 실시간 or 실시간에 준하는 트래픽 진입 현황 정보 제공
+
+---
+
+## Architecture
+
+### 트래픽 대기/진입 프로세스
+
+- 임계치 설정 기반 트래픽 대기 처리
+- 트래픽 대기 요청 시, 대기 순번 부여
+- 현재 임계치 설정 값 기준, 해당 순번 대기 예상 시간 계산
+- 트래픽 진입 요청 시, 진입 가능 여부 판단
+
+> #### 예상 시나리오
+> 
+> 1. 초기 임계치 설정 : 2000
+>     - 1 ~ 2000번: 즉시 입장 가능 (0분 대기)
+>     - 2001 ~ 4000번: 1분 대기 후 입장
+>     - 4001 ~ 6000번: 2분 대기 후 입장
+> 2. 임계치 변경 : 2000 > 1000 감소
+>     - 6001 ~ 7000번: 3분 대기 후 입장
+>     - 7001 ~ 8000번: 4분 대기 후 입장
+>     - 8001 ~ 9000번: 5분 대기 후 입장
+>     - 9001 ~ 10000번: 6분 대기 후 입장
+> 3. 임계치 변경 : 1000 > 500 감소
+>     - 10001 ~ 10500번: 7분 대기 후 입장
+>     - 10501 ~ 11000번: 8분 대기 후 입장
+> 4. 임계치 변경 : 500 > 1000 증가
+>     - 11001 ~ 12000번: 9분 대기 후 입장
+
+---
+
+## Implementation
+
+### 네트워크 처리 방식
+
+- **HTTP Long-Term Pooling (선정)** : 일정 주기 `Client > Server` HTTP 요청하여 반복 메시지 전송 방식
+- HTTP SSEs : `Client < Server` 단방향 메시지 전송 가능한 HTTP Streaming 방식 
+- WebSocket : `Client <> Server` 양방향 메시지 전송 가능한 TCP Socket 방식
+
+> **HTTP Long-Term Pooling 선정 이유** : 요구 사항을 충족하며, 긴 주기 Pooling 방식은 서버 부하를 방지할 수 있는 방법 중 하나로 판단하여 선정
+
+### 트래픽 제어 처리 방식
+
+- Redis 활용한 `Token-Bucket` 알고리즘
+    - `Lua Script` 기반 **Caching Atomic** 원자성 보장하는 로직 구현
+
+#### 트래픽 제어 Script
+
+```redis
+-- ARGV[1] = userToken
+-- ARGV[2] = score (timestamp or incremental ID)
+-- ARGV[3] = now (current timestamp in seconds)
+ 
+local zqueueKey = "ktc:zqueue"
+local tokenKey = "ktc:tokens"
+local lastRefillKey = "ktc:last_refill_ts"
+local thresholdKey = "ktc:threshold"
+local defaultRate = 1000
+ 
+local userToken = ARGV[1]
+local score = tonumber(ARGV[2])
+local now = tonumber(ARGV[3])
+ 
+-- 1. 사용자 대기열 등록 (중복 방지)
+redis.call("ZADD", zqueueKey, "NX", score, userToken)
+ 
+-- 2. 사용자 순번 조회
+local index = redis.call("ZRANK", zqueueKey, userToken)
+if not index then
+  return {err = "User not found in zqueue after insert"}
+end
+ 
+-- 3. 현재 토큰 수, 마지막 리필 시각 조회
+local tokens = tonumber(redis.call("GET", tokenKey)) or 0
+local lastRefill = tonumber(redis.call("GET", lastRefillKey)) or 0
+ 
+-- 4. 처리 속도 설정 조회
+local rate = tonumber(redis.call("HGET", thresholdKey, "ratePerMinute"))
+if not rate or rate <= 0 then
+  rate = defaultRate
+  redis.call("HSET", thresholdKey, "ratePerMinute", tostring(rate))
+end
+ 
+-- 5. 리필 필요 여부 판단 (1분 단위)
+if now - lastRefill >= 60 then
+  tokens = rate
+  redis.call("SET", tokenKey, tostring(tokens))
+  redis.call("SET", lastRefillKey, tostring(now))
+end
+ 
+-- 6. 진입 가능 여부 판단
+if index < tokens then
+  redis.call("ZREM", zqueueKey, userToken)
+  redis.call("DECRBY", tokenKey, 1)
+  return {1}  -- 진입 허용
+end
+ 
+-- 7. ETA 및 대기 정보 계산
+local eta = math.floor((index - tokens) * 60 / rate)
+local queueNumber = index + 1
+local total = redis.call("ZCARD", zqueueKey)
+ 
+return {0, queueNumber, eta, total}
+```
+
+---
