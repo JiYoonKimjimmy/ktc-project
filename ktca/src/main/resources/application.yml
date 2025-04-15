@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: ktca
+  threads:
+    virtual:
+      enabled: true
+# temporary
+  data:
+    redis:
+      host: 10.30.210.153
+      port: 6379
+      password: 123456
+
+server:
+  port: 21002
+  servlet:
+    context-path: /ktca
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, shutdown, prometheus
+      base-path: /ktca/actuator
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      access: unrestricted
+  server:
+    port: 21003
