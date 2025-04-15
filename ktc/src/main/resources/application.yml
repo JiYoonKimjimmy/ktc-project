@@ -1,32 +1,6 @@
 spring:
   application:
     name: ktc
-  threads:
-    virtual:
-      enabled: true
-# temporary
-  data:
-    redis:
-      host: 10.30.210.153
-      port: 6379
-      password: 123456
-
-server:
-  port: 21000
-  servlet:
-    context-path: /ktc
-  shutdown: graceful
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, shutdown, prometheus
-      base-path: /ktc/actuator
-  endpoint:
-    health:
-      show-details: always
-    shutdown:
-      access: unrestricted
-  server:
-    port: 21001
+  profiles:
+    active: test
+    include: base

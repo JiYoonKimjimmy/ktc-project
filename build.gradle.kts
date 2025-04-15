@@ -44,18 +44,23 @@ subprojects {
 	val testRuntimeOnly by configurations
 
 	dependencies {
-		implementation("org.springframework.boot:spring-boot-starter-web")
-		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 		implementation("org.jetbrains.kotlin:kotlin-reflect")
-		developmentOnly("org.springframework.boot:spring-boot-devtools")
-		annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-		testImplementation("org.springframework.boot:spring-boot-starter-test")
-		testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-		testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+		implementation("org.springframework.boot:spring-boot-starter-web")
 		implementation("org.springframework.boot:spring-boot-starter-actuator")
 		implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
 		implementation("org.jacoco:org.jacoco.core:0.8.11")
 		implementation("org.jacoco:org.jacoco.ant:0.8.11")
+
+		developmentOnly("org.springframework.boot:spring-boot-devtools")
+		annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+		testImplementation("org.springframework.boot:spring-boot-starter-test")
+		testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+		testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	}
 
 	tasks.withType<KotlinCompile> {
