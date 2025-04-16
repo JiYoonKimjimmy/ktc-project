@@ -11,6 +11,7 @@ dependencies {
     // Module-specific dependencies
     implementation(project(":common"))
 
-    // Redis dependency (specific to ktc module)
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
