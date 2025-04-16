@@ -1,4 +1,3 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
