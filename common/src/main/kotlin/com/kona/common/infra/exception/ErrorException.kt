@@ -1,4 +1,4 @@
-package com.kona.common.exception
+package com.kona.common.infra.exception
 
 class ErrorException : RuntimeException {
     val sampleErrorCode: SampleErrorCode

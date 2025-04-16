@@ -1,7 +1,7 @@
 package com.kona.ktca.controller
 
-import com.kona.common.exception.ErrorException
-import com.kona.common.exception.SampleErrorCode
+import com.kona.common.infra.exception.ErrorException
+import com.kona.common.infra.exception.SampleErrorCode
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

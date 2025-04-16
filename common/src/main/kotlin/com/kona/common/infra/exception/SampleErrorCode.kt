@@ -1,4 +1,4 @@
-package com.kona.common.exception
+package com.kona.common.infra.exception
 
 enum class SampleErrorCode(
     val statusCode: Int,

@@ -1,10 +1,11 @@
-package com.kona.ktc.infra.config
+package com.kona.common.infra.redis
 
 import io.lettuce.core.resource.DefaultClientResources
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisSentinelConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
@@ -13,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
+@Profile("!test")
 @Configuration
 class RedisConfig(
     private val redisProperties: RedisProperties
