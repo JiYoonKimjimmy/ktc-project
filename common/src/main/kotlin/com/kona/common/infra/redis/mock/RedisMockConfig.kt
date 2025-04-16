@@ -4,12 +4,8 @@ import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.data.redis.connection.RedisConnectionFactory
-import org.springframework.data.redis.connection.RedisSentinelConfiguration
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import redis.embedded.RedisSentinel
 import redis.embedded.RedisServer
 
@@ -54,15 +50,6 @@ class RedisMockConfig(
         redisSentinel.stop()
         redisServer.stop()
         logger.info("Embedded Redis Server Stopped!!")
-    }
-
-    @Bean
-    fun redisConnectionFactory(): RedisConnectionFactory {
-        val redisSentinelConfiguration = RedisSentinelConfiguration(
-            redisProperties.sentinel.master,
-            redisProperties.sentinel.nodes.toSet()
-        )
-        return LettuceConnectionFactory(redisSentinelConfiguration).also { it.afterPropertiesSet() }
     }
 
 }
