@@ -111,3 +111,65 @@ return {0, queueNumber, eta, total}
 ```
 
 ---
+
+### API Spec
+
+#### 트래픽 대기 요청 API
+
+- URL : `POST /api/traffic/wait`
+
+##### Request
+
+|    Field    |   Type    |  Length  |     MUC     | Description    |
+|:-----------:|:---------:|:--------:|:-----------:|----------------|
+|   zoneId    | `String`  |    50    | `MANDATORY` | 트래픽 대기 Zone ID |
+|    token    | `String`  |   255    | `OPTIONAL`  | 트래픽 대기 식별 토큰   |
+|  clientIp   | `String`  |    50    | `MANDATORY` | 클라이언트 IP 정보    |
+| clientAgent | `String`  |    50    | `MANDATORY` | 클라이언트 호출 단말 정보 |
+
+##### Response
+
+|         Field         |   Type    | Length |     MUC     | Description      |
+|:---------------------:|:---------:|:------:|:-----------:|------------------|
+|       canEnter        | `Boolean` |   -    | `MANDATORY` | 진입 가능 여부         |
+|        zoneId         | `String`  |   50   | `MANDATORY` | 트래픽 대기 Zone ID   |
+|         token         | `String`  |   50   | `MANDATORY` | 트래픽 대기 식별 토큰     |
+|        waiting        | `Object`  |   -    | `OPTIONAL`  | 대기 정보            |
+|    waiting.number     | `Number`  |   19   | `MANDATORY` | 현재 대기 순번         |
+| waiting.estimatedTime | `Number`  |   19   | `MANDATORY` | 대기 예상 시간         |
+|  waiting.totalCount   | `Number`  |   19   | `MANDATORY` | 전체 대기자 수         |
+| waiting.poolingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Pooling 요청 주기 |
+|        result         | `Object`  |   -    | `MANDATORY` | 응답 결과            |
+|     result.status     | `String`  |   10   | `MANDATORY` | 응답 결과 상태         |
+|      result.code      | `String`  |   11   | `OPTIONAL`  | 에러 코드            |
+|    result.message     | `String`  |  255   | `OPTIONAL`  | 에러 메시지           |
+
+#### 트래픽 진입 요청 API
+
+- URL : `POST /api/traffic/entry`
+
+##### Request
+
+| Field  |   Type   | Length |     MUC     | Description    |
+|:------:|:--------:|:------:|:-----------:|----------------|
+| zoneId | `String` |   50   | `MANDATORY` | 트래픽 대기 Zone ID |
+| token  | `String` |  255   | `MANDATORY` | 트래픽 대기 식별 토큰   |
+
+##### Response
+
+|         Field         |   Type    | Length |     MUC     | Description      |
+|:---------------------:|:---------:|:------:|:-----------:|------------------|
+|       canEnter        | `Boolean` |   -    | `MANDATORY` | 진입 가능 여부         |
+|        zoneId         | `String`  |   50   | `MANDATORY` | 트래픽 대기 Zone ID   |
+|         token         | `String`  |   50   | `MANDATORY` | 트래픽 대기 식별 토큰     |
+|        waiting        | `Object`  |   -    | `OPTIONAL`  | 대기 정보            |
+|    waiting.number     | `Number`  |   19   | `MANDATORY` | 현재 대기 순번         |
+| waiting.estimatedTime | `Number`  |   19   | `MANDATORY` | 대기 예상 시간         |
+|  waiting.totalCount   | `Number`  |   19   | `MANDATORY` | 전체 대기자 수         |
+| waiting.poolingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Pooling 요청 주기 |
+|        result         | `Object`  |   -    | `MANDATORY` | 응답 결과            |
+|     result.status     | `String`  |   10   | `MANDATORY` | 응답 결과 상태         |
+|      result.code      | `String`  |   11   | `OPTIONAL`  | 에러 코드            |
+|    result.message     | `String`  |  255   | `OPTIONAL`  | 에러 메시지           |
+
+---
