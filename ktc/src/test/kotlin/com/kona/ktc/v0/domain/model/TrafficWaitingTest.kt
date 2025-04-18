@@ -1,6 +1,5 @@
 package com.kona.ktc.v0.domain.model
 
-import com.kona.ktc.v0.domain.model.TrafficWaiting
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 

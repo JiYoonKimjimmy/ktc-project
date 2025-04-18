@@ -24,7 +24,7 @@ class TrafficRedisScriptRepository(
             token.token,
             score.toString(),
             now.toString()
-        ) as List<*>
+        )
 
         return TrafficWaiting(
             number = result[0] as Long,
