@@ -1,4 +1,4 @@
-package com.kona.ktc.infra.config
+package com.kona.ktc.v0.application.config
 
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration

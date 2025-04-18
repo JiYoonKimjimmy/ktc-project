@@ -48,10 +48,12 @@
 
 ### 트래픽 제어 처리 방식
 
-- Redis 활용한 `Token-Bucket` 알고리즘
-    - `Lua Script` 기반 **Caching Atomic** 원자성 보장하는 로직 구현
+- `Token-Bucket` 알고리즘 적용한 트래픽 제어 처리
 
-#### 트래픽 제어 Script
+#### `Token-Bucket` 알고리즘 적용한 트래픽 제어 처리
+
+- `Redis + Lua Script` 활용하여 **Caching Atomic** 원자성 보장하는 `Token-Bucket` 알고리즘 구현
+- 트래픽 진입 허용 임계치만큼 보유한 `Token` 모두 소진하는 경우 트래픽 대기 처리
 
 ```redis
 -- ARGV[1] = userToken
@@ -72,42 +74,51 @@ local now = tonumber(ARGV[3])
 redis.call("ZADD", zqueueKey, "NX", score, userToken)
  
 -- 2. 사용자 순번 조회
-local index = redis.call("ZRANK", zqueueKey, userToken)
-if not index then
+local waitingNumber = redis.call("ZRANK", zqueueKey, userToken)
+if not waitingNumber then
   return {err = "User not found in zqueue after insert"}
 end
  
 -- 3. 현재 토큰 수, 마지막 리필 시각 조회
-local tokens = tonumber(redis.call("GET", tokenKey)) or 0
+local availableTokens = tonumber(redis.call("GET", tokenKey)) or 0
 local lastRefill = tonumber(redis.call("GET", lastRefillKey)) or 0
  
 -- 4. 처리 속도 설정 조회
-local rate = tonumber(redis.call("HGET", thresholdKey, "ratePerMinute"))
-if not rate or rate <= 0 then
-  rate = defaultRate
-  redis.call("HSET", thresholdKey, "ratePerMinute", tostring(rate))
+local threshold = tonumber(redis.call("GET", thresholdKey))
+if not threshold or threshold <= 0 then
+  threshold = defaultRate
+  redis.call("SET", thresholdKey, tostring(threshold))
 end
  
 -- 5. 리필 필요 여부 판단 (1분 단위)
 if now - lastRefill >= 60 then
-  tokens = rate
-  redis.call("SET", tokenKey, tostring(tokens))
+  availableTokens = threshold
+  redis.call("SET", tokenKey, tostring(availableTokens))
   redis.call("SET", lastRefillKey, tostring(now))
 end
  
 -- 6. 진입 가능 여부 판단
-if index < tokens then
+if waitingNumber < availableTokens then
   redis.call("ZREM", zqueueKey, userToken)
   redis.call("DECRBY", tokenKey, 1)
-  return {1}  -- 진입 허용
+  return {
+    1,  -- canEnter
+    waitingNumber + 1,  -- waiting.number
+    0,  -- waiting.estimatedTime
+    0   -- waiting.totalCount
+  }
 end
  
--- 7. ETA 및 대기 정보 계산
-local eta = math.floor((index - tokens) * 60 / rate)
-local queueNumber = index + 1
-local total = redis.call("ZCARD", zqueueKey)
+-- 7. 대기 정보 계산
+local estimatedTime = math.floor((waitingNumber - availableTokens) * 60 / threshold)
+local totalCount = redis.call("ZCARD", zqueueKey)
  
-return {0, queueNumber, eta, total}
+return {
+  0,  -- canEnter
+  waitingNumber + 1,  -- waiting.number
+  estimatedTime,  -- waiting.estimatedTime
+  totalCount  -- waiting.totalCount
+}
 ```
 
 ---
@@ -171,5 +182,25 @@ return {0, queueNumber, eta, total}
 |     result.status     | `String`  |   10   | `MANDATORY` | 응답 결과 상태         |
 |      result.code      | `String`  |   11   | `OPTIONAL`  | 에러 코드            |
 |    result.message     | `String`  |  255   | `OPTIONAL`  | 에러 메시지           |
+
+---
+
+### Project Structure
+
+```
+src/main/kotlin/com/kona/ktc/
+├── application/           # Use Cases
+│   ├── traffic/
+│   │   └── dto/
+│   └── config/
+├── domain/               # Business Logic
+│   ├── model/
+│   └── repository/
+├── infrastructure/       # External Interfaces
+│   ├── redis/
+│   └── web/
+└── presentation/         # API Layer
+    └── dto/
+```
 
 ---

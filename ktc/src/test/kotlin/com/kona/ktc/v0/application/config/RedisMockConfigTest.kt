@@ -1,4 +1,4 @@
-package com.kona.ktc.infra.mock
+package com.kona.ktc.v0.application.config
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
