@@ -1,5 +1,7 @@
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+plugins {
+    val kotlinVersion = "1.9.25"
+    kotlin("kapt") version kotlinVersion
+}
 
 dependencies {
     implementation(project(":common"))
@@ -15,7 +17,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-amqp")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
 
     implementation("org.apache.commons:commons-pool2:2.12.0")
 
@@ -36,6 +39,11 @@ dependencies {
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
 
+    // embedded-redis
+    testImplementation("com.github.codemonstur:embedded-redis:1.4.3")
+    // rabbitmq-mock
+    testImplementation("com.github.fridujo:rabbitmq-mock:1.2.0")
+
     // fixture-monkey
 //    val fixtureMonkeyVersion = "1.1.2"
 //    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-starter-kotlin:$fixtureMonkeyVersion")
@@ -44,19 +52,4 @@ dependencies {
 //    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-jakarta-validation:$fixtureMonkeyVersion")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-gitProperties {
-    val primary = "${project.property("version.primary")}"
-    val major = "${project.property("version.major")}"
-    val minor = "${project.property("version.minor")}"
-
-    val buildVersion = listOf(primary, major, minor).joinToString(".")
-    val buildTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-
-    println("buildVersion = $buildVersion")
-    println("buildDateTime = $buildTime")
-
-    customProperty("git.build.version", buildVersion)
-    customProperty("git.build.time", buildTime)
 }

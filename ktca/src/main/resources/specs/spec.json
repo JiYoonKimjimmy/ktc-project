@@ -1,0 +1,9 @@
+{
+  "library": "spring-boot",
+  "modelPackage": "com.kona.ktca.dto",
+  "invokerPackage": "com.kona.ktca",
+  "apiPackage": "com.kona.ktca.api",
+  "hideGenerationTimestamp" : true,
+  "delegatePattern" : true,
+  "enumPropertyNaming": "original"
+}

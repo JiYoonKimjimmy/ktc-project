@@ -4,10 +4,9 @@ spring:
   threads:
     virtual:
       enabled: true
-# temporary
   data:
     redis:
-      host: 10.30.210.153
+      host: dev3.konadc.com
       port: 6379
       password: 123456
 
