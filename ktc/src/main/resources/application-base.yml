@@ -54,7 +54,7 @@ management:
       access: unrestricted
   health:
     redis:
-      enabled: false
+      enabled: true
     rabbit:
       enabled: false
 
@@ -92,9 +92,14 @@ spring:
       host: dev3.konadc.com
       port: 6379
       password: 123456
-      sentinel:
-        master: mymaster
-        nodes: dev3.konadc.com:26379
+      cluster:
+        nodes:
+          - dev3.konadc.com:7000
+          - dev3.konadc.com:7001
+          - dev3.konadc.com:7010
+          - dev3.konadc.com:7011
+          - dev3.konadc.com:7020
+          - dev3.konadc.com:7021
   rabbitmq:
     addresses: dev3.konadc.com:5672
     username: rabbitadmin
@@ -131,8 +136,13 @@ spring:
       host: localhost
       port: 6379
       password:
-      sentinel:
-        master: mymaster
-        nodes: localhost:26379
+      cluster:
+        nodes:
+          - localhost:7000
+          - localhost:7001
+          - localhost:7010
+          - localhost:7011
+          - localhost:7020
+          - localhost:7021
   rabbitmq:
     addresses: localhost:5672

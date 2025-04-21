@@ -94,8 +94,6 @@ tasks.register<GenerateTask>("generateFromYaml") {
             "dateLibrary" to "java8",
             "useSpringBoot3" to "true",
             "springBootVersion" to "3.4.4"
-//            "mainClass" to "com.kona.ktca.KtcaApplication",
-//            "baseClass" to "com.kona.ktca.KtcaApplication"
         )
     )
     group = "1.action"
@@ -114,6 +112,20 @@ tasks.register("patchGeneratedGradle") {
                     .replace("id(\"org.springframework.boot\") version \"3.0.2\"", "id(\"org.springframework.boot\") version \"3.4.4\"")
                     .replace("kotlinOptions.jvmTarget = \"17\"", "kotlinOptions.jvmTarget = \"21\"")
             )
+        }
+
+        val filaPath = "$projectDir/generated/src/main/kotlin/com/kona/ktca"
+        val sourceFileName = "Application"
+        val targetFileName = "KtcaApplication"
+        val sourceFile = file("$filaPath/$sourceFileName.kt")
+        val targetFile = file("$filaPath/$targetFileName.kt")
+
+        if (sourceFile.exists()) {
+            val content = sourceFile.readText()
+                .replace("class $sourceFileName", "class $targetFileName")
+                .replace("<$sourceFileName>", "<$targetFileName>")
+            targetFile.writeText(content)
+            sourceFile.delete()
         }
     }
 }
@@ -143,8 +155,4 @@ tasks.named("generateFromYaml").configure {
 
 tasks.named("clean").configure {
     dependsOn("removeGenerateFromYaml")
-}
-
-tasks.named("generateFromYaml") {
-    finalizedBy("renameApplicationClass")
 }

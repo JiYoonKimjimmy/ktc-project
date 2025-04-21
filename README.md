@@ -78,13 +78,11 @@ $ git flow feature finish <브랜치명>
 
 ##### Change Project Version
 
-```kotlin
-// ktc/ktca > build.gradle.kts > phaseVersion
-val phaseVersion = "4.81.0.00"
-gitProperties {
-    customProperty("git.build.time", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
-    version = phaseVersion
-}
+```properties
+# `ktc` or `ktca` module > gradle.properties
+version.primary=4
+version.major=81
+version.minor=0.00
 ```
 
 ##### Deploy to `DEV1`

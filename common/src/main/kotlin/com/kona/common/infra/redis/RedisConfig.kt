@@ -5,8 +5,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.connection.RedisClusterConfiguration
 import org.springframework.data.redis.connection.RedisPassword
-import org.springframework.data.redis.connection.RedisSentinelConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration
 import org.springframework.data.redis.core.RedisTemplate
@@ -30,22 +30,20 @@ class RedisConfig(
     @Bean
     fun redisConnectionFactory(): LettuceConnectionFactory {
         val poolConfig = GenericObjectPoolConfig<Any>().apply {
-            maxTotal = 10 // 최대 커넥션 개수 설정
-            maxIdle = 5   // 최대 유휴 커넥션 개수 설정
-            minIdle = 1   // 최소 유휴 커넥션 개수 설정
+            maxTotal = 10
+            maxIdle = 5
+            minIdle = 1
         }
         val clientResources = DefaultClientResources.create()
         val clientConfig = LettucePoolingClientConfiguration.builder()
             .poolConfig(poolConfig)
             .clientResources(clientResources)
             .build()
-        val redisSentinelConfiguration = RedisSentinelConfiguration(
-            redisProperties.sentinel.master,
-            redisProperties.sentinel.nodes.toSet()
-        )
-        redisSentinelConfiguration.password = RedisPassword.of(redisProperties.password)
 
-        return LettuceConnectionFactory(redisSentinelConfiguration, clientConfig)
+        val redisClusterConfiguration = RedisClusterConfiguration(redisProperties.cluster.nodes)
+        redisClusterConfiguration.password = RedisPassword.of(redisProperties.password)
+
+        return LettuceConnectionFactory(redisClusterConfiguration, clientConfig)
     }
 
 }
