@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/v1/traffic")
+@RequestMapping("/api/v0/traffic")
 class TrafficController(
     private val trafficWaitUseCase: TrafficWaitUseCase,
     private val trafficEntryUseCase: TrafficEntryUseCase
