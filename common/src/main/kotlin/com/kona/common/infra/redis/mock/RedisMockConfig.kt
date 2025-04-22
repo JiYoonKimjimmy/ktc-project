@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import redis.embedded.RedisCluster
+import redis.embedded.RedisSentinel
 import redis.embedded.RedisServer
 
 @Profile("test")
@@ -17,25 +17,39 @@ class RedisMockConfig(
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    private val redisCluster: RedisCluster by lazy {
-        val nodes = redisProperties.cluster.nodes.map { it.split(":")[1].toInt() }.partition { it % 2 == 0 }
-        val masters = nodes.first.map { RedisServer.newRedisServer().port(it).build() }
-        val sentinels = nodes.second.map { RedisServer.newRedisServer().port(it).build() }
-        RedisCluster(sentinels, masters)
+    private val redisServer: RedisServer by lazy {
+        RedisServer
+            .newRedisServer()
+            .port(redisProperties.port)
+            .build()
+    }
+
+    private val redisSentinel: RedisSentinel by lazy {
+        RedisSentinel
+            .newRedisSentinel()
+            .bind(redisProperties.host)
+            .masterName(redisProperties.sentinel.master)
+            .build()
     }
 
     @PostConstruct
     fun startRedis() {
-        if (!redisCluster.isActive) {
-            redisCluster.start()
-            logger.info("Embedded Redis Cluster Started!!")
+        if (!redisServer.isActive) {
+            redisServer.start()
+            logger.info("Embedded Redis Server Started!!")
+        }
+
+        if (!redisSentinel.isActive) {
+            redisSentinel.start()
+            logger.info("Embedded Redis Sentinel Started!!")
         }
     }
 
     @PreDestroy
     fun stopRedis() {
-        redisCluster.stop()
-        logger.info("Embedded Redis Cluster Stopped!!")
+        redisSentinel.stop()
+        redisServer.stop()
+        logger.info("Embedded Redis Server Stopped!!")
     }
 
 }

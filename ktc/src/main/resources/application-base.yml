@@ -136,13 +136,8 @@ spring:
       host: localhost
       port: 6379
       password:
-      cluster:
-        nodes:
-          - localhost:7000
-          - localhost:7001
-          - localhost:7010
-          - localhost:7011
-          - localhost:7020
-          - localhost:7021
+      sentinel:
+        master: mymaster
+        nodes: localhost:26379
   rabbitmq:
     addresses: localhost:5672

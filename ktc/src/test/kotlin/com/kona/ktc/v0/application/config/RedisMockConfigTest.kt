@@ -1,5 +1,6 @@
 package com.kona.ktc.v0.application.config
 
+import com.kona.ktc.testsupport.RedisTestListener
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,15 +12,7 @@ class RedisMockConfigTest @Autowired constructor(
     private val stringRedisTemplate: StringRedisTemplate,
 ) : DescribeSpec({
 
-    beforeEach {
-        // 각 테스트 전에 Redis 데이터 초기화
-        stringRedisTemplate.execute { connection -> connection.serverCommands().flushAll() }
-    }
-
-    afterSpec {
-        // 리소스 정리
-        stringRedisTemplate.execute { connection -> connection.close() }
-    }
+    listeners(RedisTestListener(stringRedisTemplate))
 
     describe("Redis 서비스 테스트") {
         it("RedisTemplate 사용한 기본 작업 테스트") {
