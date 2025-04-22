@@ -1,13 +1,17 @@
 spring:
   data:
     redis:
+      # Sentinel 설정 삭제 예정
+      sentinel:
+        master: mymaster
+        nodes: dev3.konadc.com:26379
       cluster:
         nodes:
-          - 10.30.210.153:7000
-          - 10.30.210.153:7001
-          - 10.30.210.153:7010
-          - 10.30.210.153:7011
-          - 10.30.210.153:7020
-          - 10.30.210.153:7021
+          - dev3.konadc.com:7000
+          - dev3.konadc.com:7001
+          - dev3.konadc.com:7010
+          - dev3.konadc.com:7011
+          - dev3.konadc.com:7020
+          - dev3.konadc.com:7021
       password: 123456
       timeout: 2000
