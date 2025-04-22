@@ -2,27 +2,17 @@ spring:
   application:
     name: ktca
   profiles:
-    include: redis
-  threads:
-    virtual:
-      enabled: true
+    active: qa
+    include: base
 
 server:
   port: 21002
   servlet:
     context-path: /ktca
-  shutdown: graceful
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, shutdown, prometheus
-      base-path: /ktca/actuator
-  endpoint:
-    health:
-      show-details: always
-    shutdown:
-      access: unrestricted
   server:
     port: 21003
+  endpoints:
+    web:
+      base-path: /ktca/actuator

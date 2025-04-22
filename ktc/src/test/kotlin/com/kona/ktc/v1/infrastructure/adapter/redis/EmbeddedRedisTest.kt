@@ -1,18 +1,15 @@
-package com.kona.ktc.v0.application.config
+package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.ktc.testsupport.RedisTestListener
+import com.kona.ktc.testsupport.redis.EmbeddedRedis
+import com.kona.ktc.testsupport.redis.EmbeddedRedisTestListener
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.redis.core.StringRedisTemplate
 
-@SpringBootTest
-class RedisMockConfigTest @Autowired constructor(
-    private val stringRedisTemplate: StringRedisTemplate,
-) : DescribeSpec({
+class EmbeddedRedisTest : DescribeSpec({
 
-    listeners(RedisTestListener(stringRedisTemplate))
+    listeners(EmbeddedRedisTestListener())
+
+    val stringRedisTemplate = EmbeddedRedis.stringRedisTemplate
 
     describe("Redis 서비스 테스트") {
         it("RedisTemplate 사용한 기본 작업 테스트") {

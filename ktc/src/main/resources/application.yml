@@ -4,3 +4,15 @@ spring:
   profiles:
     active: test
     include: base
+
+server:
+  port: 21000
+  servlet:
+    context-path: /ktc
+
+management:
+  server:
+    port: 21001
+  endpoints:
+    web:
+      base-path: /ktc/actuator

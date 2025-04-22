@@ -3,6 +3,7 @@ package com.kona.ktc.testsupport
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.kona.ktc.testsupport.redis.EmbeddedRedis
 import io.kotest.core.config.AbstractProjectConfig
 import io.kotest.core.extensions.Extension
 import io.kotest.extensions.spring.SpringTestExtension
@@ -13,10 +14,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class KtcProjectConfig : AbstractProjectConfig() {
 
-    override fun extensions(): List<Extension> = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
-
     companion object {
-
         val objectMapper: ObjectMapper by lazy {
             jacksonObjectMapper().registerModule(kotlinModule())
         }
@@ -26,7 +24,15 @@ class KtcProjectConfig : AbstractProjectConfig() {
                 .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
                 .build()
         }
-
     }
 
+    override fun extensions(): List<Extension> = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
+
+    override suspend fun beforeProject() {
+        EmbeddedRedis.embeddedRedisStart()
+    }
+
+    override suspend fun afterProject() {
+        EmbeddedRedis.embeddedRedisStop()
+    }
 }

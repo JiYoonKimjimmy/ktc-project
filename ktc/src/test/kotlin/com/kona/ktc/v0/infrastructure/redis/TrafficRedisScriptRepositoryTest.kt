@@ -1,20 +1,17 @@
 package com.kona.ktc.v0.infrastructure.redis
 
-import com.kona.ktc.testsupport.RedisTestListener
+import com.kona.ktc.testsupport.redis.EmbeddedRedis
+import com.kona.ktc.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v0.domain.model.TrafficToken
-import com.kona.ktc.v0.domain.repository.TrafficRepository
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.redis.core.StringRedisTemplate
 
-@SpringBootTest
-class TrafficRedisScriptRepositoryTest(
-    private val trafficRedisTemplateRepository: TrafficRepository,
-    private val stringRedisTemplate: StringRedisTemplate
-) : BehaviorSpec({
+class TrafficRedisScriptRepositoryTest : BehaviorSpec({
 
-    listeners(RedisTestListener(stringRedisTemplate))
+    listeners(EmbeddedRedisTestListener())
+
+    val stringRedisTemplate = EmbeddedRedis.stringRedisTemplate
+    val trafficRedisTemplateRepository = TrafficRedisTemplateRepository(stringRedisTemplate)
 
     given("트래픽 대기/진입 확인 요청 되어") {
         val zoneId = "test-zone"

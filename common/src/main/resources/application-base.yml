@@ -1,8 +1,6 @@
+# server
 server:
-  port: 21000
   shutdown: graceful
-  servlet:
-    context-path: /ktc
   tomcat:
     threads:
       min-spare: 10
@@ -40,11 +38,8 @@ spring:
 
 # actuator
 management:
-  server:
-    port: 21001
   endpoints:
     web:
-      base-path: /ktc/actuator
       exposure:
         include: health, shutdown, metrics, prometheus
   endpoint:
@@ -58,10 +53,6 @@ management:
     rabbit:
       enabled: false
 
-# encrypt CubeOne
-database:
-  encrypt-provider: NONE
-
 ---
 
 spring:
@@ -73,9 +64,6 @@ spring:
       host: dev1.konadc.com
       port: 6379
       password: 123456
-      sentinel:
-        master: mymaster
-        nodes: dev1.konadc.com:26379
   rabbitmq:
     addresses: dev1.konadc.com:5672
     username: rabbitadmin
@@ -136,8 +124,5 @@ spring:
       host: localhost
       port: 6379
       password:
-      sentinel:
-        master: mymaster
-        nodes: localhost:26379
   rabbitmq:
     addresses: localhost:5672
