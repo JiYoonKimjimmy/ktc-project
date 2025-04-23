@@ -22,6 +22,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("com.gorylenko.gradle-git-properties") version "2.4.2"
 
+	`java-test-fixtures`
 	jacoco
 }
 
@@ -32,6 +33,7 @@ subprojects {
 	apply(plugin = "org.springframework.boot")
 	apply(plugin = "io.spring.dependency-management")
 	apply(plugin = "com.gorylenko.gradle-git-properties")
+	apply(plugin = "java-test-fixtures")
 	apply(plugin = "jacoco")
 
 	group = "com.kona"

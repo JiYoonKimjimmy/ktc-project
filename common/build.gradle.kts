@@ -18,5 +18,10 @@ dependencies {
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
 
+    testFixturesImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testFixturesImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testFixturesImplementation("io.kotest:kotest-property:$kotestVersion")
+    testFixturesImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

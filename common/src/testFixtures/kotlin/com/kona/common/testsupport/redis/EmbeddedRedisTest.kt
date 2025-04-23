@@ -1,7 +1,5 @@
-package com.kona.ktc.v1.infrastructure.adapter.redis
+package com.kona.common.testsupport.redis
 
-import com.kona.ktc.testsupport.redis.EmbeddedRedis
-import com.kona.ktc.testsupport.redis.EmbeddedRedisTestListener
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 

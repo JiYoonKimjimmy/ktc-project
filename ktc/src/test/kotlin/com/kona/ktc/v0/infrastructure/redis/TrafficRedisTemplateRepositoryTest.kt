@@ -1,7 +1,7 @@
 package com.kona.ktc.v0.infrastructure.redis
 
-import com.kona.ktc.testsupport.redis.EmbeddedRedis
-import com.kona.ktc.testsupport.redis.EmbeddedRedisTestListener
+import com.kona.common.testsupport.redis.EmbeddedRedis
+import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v0.domain.model.TrafficToken
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe

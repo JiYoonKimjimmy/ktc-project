@@ -1,4 +1,4 @@
-package com.kona.ktc.testsupport.redis
+package com.kona.common.testsupport.redis
 
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
@@ -23,16 +23,21 @@ object EmbeddedRedis {
     private val lettuceConnectionFactory: LettuceConnectionFactory by lazy { redisConnectionFactory() }
     val stringRedisTemplate: StringRedisTemplate by lazy { stringRedisTemplate() }
 
-    fun embeddedRedisStart() {
+    fun start() {
         if (!redisServer.isActive) {
+            logger.info("Embedded Redis Server Starting..")
             redisServer.start()
             logger.info("Embedded Redis Server Started!!")
         }
     }
 
-    fun embeddedRedisStop() {
-        redisServer.stop()
-        logger.info("Embedded Redis Server Stopped!!")
+    fun stop() {
+        if (redisServer.isActive) {
+            logger.info("Embedded Redis Server Stopping..")
+            lettuceConnectionFactory.stop()
+            redisServer.stop()
+            logger.info("Embedded Redis Server Stopped!!")
+        }
     }
 
     private fun redisConnectionFactory(): LettuceConnectionFactory {
@@ -43,15 +48,5 @@ object EmbeddedRedis {
     private fun stringRedisTemplate(): StringRedisTemplate {
         return StringRedisTemplate(lettuceConnectionFactory).also { it.afterPropertiesSet() }
     }
-
-//    val redissonClient: RedissonClient by lazy { redissonClient() }
-//    private fun redissonClient(): RedissonClient {
-//        return Redisson.create(Config().apply(this::useSingleServerTestConfig))
-//    }
-//    private fun useSingleServerTestConfig(config: Config) {
-//        config
-//            .useSingleServer()
-//            .setAddress("redis://${REDIS_HOST}:${REDIS_PORT}")
-//    }
 
 }

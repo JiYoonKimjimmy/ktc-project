@@ -1,4 +1,4 @@
-package com.kona.common.infra.redis
+package com.kona.common.infra.config
 
 import jakarta.annotation.PostConstruct
 import org.redisson.Redisson

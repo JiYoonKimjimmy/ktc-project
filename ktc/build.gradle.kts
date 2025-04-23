@@ -44,12 +44,14 @@ dependencies {
     // rabbitmq-mock
     testImplementation("com.github.fridujo:rabbitmq-mock:1.2.0")
 
+    testImplementation(testFixtures(project(":common")))
+
     // fixture-monkey
-//    val fixtureMonkeyVersion = "1.1.2"
-//    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-starter-kotlin:$fixtureMonkeyVersion")
-//    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-kotest:$fixtureMonkeyVersion")
-//    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-jackson:$fixtureMonkeyVersion")
-//    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-jakarta-validation:$fixtureMonkeyVersion")
+    val fixtureMonkeyVersion = "1.1.2"
+    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-starter-kotlin:$fixtureMonkeyVersion")
+    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-kotest:$fixtureMonkeyVersion")
+    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-jackson:$fixtureMonkeyVersion")
+    testFixturesImplementation("com.navercorp.fixturemonkey:fixture-monkey-jakarta-validation:$fixtureMonkeyVersion")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
