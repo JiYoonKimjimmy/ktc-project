@@ -2,19 +2,19 @@
 -- KEYS[2] = tokenKey
 -- KEYS[3] = lastRefillKey
 -- KEYS[4] = thresholdKey
--- ARGV[1] = token
--- ARGV[2] = score
--- ARGV[3] = now
-
 local zqueueKey = KEYS[1]
 local tokenKey = KEYS[2]
 local lastRefillKey = KEYS[3]
 local thresholdKey = KEYS[4]
 
+-- ARGV[1] = token
+-- ARGV[2] = score
+-- ARGV[3] = now
+-- ARGV[4] = defaultThreshold
 local token = ARGV[1]
 local score = tonumber(ARGV[2])
 local now = tonumber(ARGV[3])
-local defaultThreshold = 1000
+local defaultThreshold = tonumber(ARGV[4]) or 1000
 
 redis.call("ZADD", zqueueKey, "NX", score, token)
 
@@ -28,7 +28,7 @@ local lastRefill = tonumber(redis.call("GET", lastRefillKey)) or 0
 
 local threshold = tonumber(redis.call("GET", thresholdKey))
 if not threshold or threshold <= 0 then
-  threshold = 1
+  threshold = defaultThreshold
   redis.call("SET", thresholdKey, tostring(threshold))
 end
 

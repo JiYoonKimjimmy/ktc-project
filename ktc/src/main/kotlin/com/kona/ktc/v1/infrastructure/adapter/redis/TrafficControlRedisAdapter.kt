@@ -4,6 +4,7 @@ import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
 import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.Instant
@@ -11,7 +12,11 @@ import java.time.Instant
 @Repository
 class TrafficControlRedisAdapter(
     private val trafficControlRedisScript: TrafficControlRedisScript,
-    private val reactiveStringRedisTemplate: ReactiveStringRedisTemplate
+    private val reactiveStringRedisTemplate: ReactiveStringRedisTemplate,
+
+    @Value("\${ktc.traffic.control.defaultThreshold}")
+    private val defaultThreshold: Long
+
 ) : TrafficControlPort {
 
     override suspend fun controlTraffic(token: TrafficToken): TrafficWaiting {
@@ -30,7 +35,8 @@ class TrafficControlRedisAdapter(
         val args = listOf(
             token.token,
             score.toString(),
-            now.toString()
+            now.toString(),
+            defaultThreshold.toString()
         )
 
         val result = reactiveStringRedisTemplate.execute(script, keys, *args.toTypedArray()).awaitSingle()

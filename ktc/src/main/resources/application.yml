@@ -3,7 +3,7 @@ spring:
     name: ktc
   profiles:
     active: test
-    include: base
+    include: base, ktc
 
 server:
   port: 21000

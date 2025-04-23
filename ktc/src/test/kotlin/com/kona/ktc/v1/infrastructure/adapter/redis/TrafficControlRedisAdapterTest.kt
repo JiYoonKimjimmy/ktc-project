@@ -13,7 +13,8 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
 
     val trafficControlRedisScript = TrafficControlRedisScript().also { it.init() }
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
-    val trafficControlPort = TrafficControlRedisAdapter(trafficControlRedisScript, reactiveStringRedisTemplate)
+    val defaultThreshold = 1L
+    val trafficControlPort = TrafficControlRedisAdapter(trafficControlRedisScript, reactiveStringRedisTemplate, defaultThreshold)
 
     given("트래픽 대기/진입 확인 요청 되어") {
         val zoneId = "test-zone"
