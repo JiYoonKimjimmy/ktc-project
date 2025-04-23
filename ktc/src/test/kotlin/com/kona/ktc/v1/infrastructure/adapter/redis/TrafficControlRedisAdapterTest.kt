@@ -1,7 +1,6 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.common.testsupport.redis.EmbeddedRedis.stringRedisTemplate
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
 import io.kotest.core.spec.style.BehaviorSpec
@@ -18,13 +17,8 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
 
     given("트래픽 대기/진입 확인 요청 되어") {
         val zoneId = "test-zone"
-        val threshold = "1"
 
-        `when`("동일 zoneId 기준 $threshold 트래픽 허용인 경우") {
-            // `threshold` 정책 변경
-            val thresholdKey = "ktc:threshold:$zoneId"
-            stringRedisTemplate.opsForValue().set(thresholdKey, threshold)
-
+        `when`("동일 zoneId 기준 'threshold : $defaultThreshold' 허용인 경우") {
             val token1 = TrafficToken(token = "test-token-1", zoneId = zoneId)
             val token2 = TrafficToken(token = "test-token-2", zoneId = zoneId)
             val token3 = TrafficToken(token = "test-token-3", zoneId = zoneId)
