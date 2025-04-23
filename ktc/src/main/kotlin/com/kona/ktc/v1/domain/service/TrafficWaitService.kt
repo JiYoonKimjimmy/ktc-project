@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class TrafficWaitService(
-    private val trafficRedisScriptAdapter: TrafficControlPort
+    private val trafficControlPort: TrafficControlPort
 ) : TrafficWaitPort {
 
     override suspend fun wait(token: TrafficToken): TrafficWaiting {
-        return trafficRedisScriptAdapter.controlTraffic(token)
+        return trafficControlPort.controlTraffic(token)
     }
 
 } 

@@ -1,6 +1,7 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
 import com.kona.common.testsupport.redis.EmbeddedRedis
+import com.kona.common.testsupport.redis.EmbeddedRedis.stringRedisTemplate
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
 import io.kotest.core.spec.style.BehaviorSpec
@@ -11,8 +12,8 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
     listeners(EmbeddedRedisTestListener())
 
     val trafficControlRedisScript = TrafficControlRedisScript().also { it.init() }
-    val stringRedisTemplate = EmbeddedRedis.stringRedisTemplate
-    val trafficControlPort = TrafficControlRedisAdapter(trafficControlRedisScript, stringRedisTemplate)
+    val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
+    val trafficControlPort = TrafficControlRedisAdapter(trafficControlRedisScript, reactiveStringRedisTemplate)
 
     given("트래픽 대기/진입 확인 요청 되어") {
         val zoneId = "test-zone"

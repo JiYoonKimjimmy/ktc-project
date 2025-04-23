@@ -3,6 +3,7 @@ package com.kona.common.testsupport.redis
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
 import redis.embedded.RedisServer
 
@@ -22,6 +23,7 @@ object EmbeddedRedis {
 
     private val lettuceConnectionFactory: LettuceConnectionFactory by lazy { redisConnectionFactory() }
     val stringRedisTemplate: StringRedisTemplate by lazy { stringRedisTemplate() }
+    val reactiveStringRedisTemplate: ReactiveStringRedisTemplate by lazy { reactiveStringRedisTemplate() }
 
     fun start() {
         if (!redisServer.isActive) {
@@ -47,6 +49,10 @@ object EmbeddedRedis {
 
     private fun stringRedisTemplate(): StringRedisTemplate {
         return StringRedisTemplate(lettuceConnectionFactory).also { it.afterPropertiesSet() }
+    }
+
+    private fun reactiveStringRedisTemplate(): ReactiveStringRedisTemplate {
+        return ReactiveStringRedisTemplate(lettuceConnectionFactory)
     }
 
 }
