@@ -18,7 +18,7 @@ class TrafficWaitingTest : BehaviorSpec({
             )
 
             then("기본 poolingPeriod가 설정된다") {
-                trafficWaiting.poolingPeriod shouldBe 5L
+                trafficWaiting.poolingPeriod shouldBe 5000L
             }
 
             then("다른 필드들이 정상적으로 설정된다") {

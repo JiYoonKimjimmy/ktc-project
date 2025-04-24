@@ -35,7 +35,7 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
                 val result = trafficControlPort.controlTraffic(token2)
                 
                 result.number shouldBe 1L
-                result.estimatedTime shouldBe 60L
+                result.estimatedTime shouldBe 60000L
                 result.totalCount shouldBe 1L
             }
 
@@ -43,7 +43,7 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
                 val result = trafficControlPort.controlTraffic(token3)
 
                 result.number shouldBe 2L
-                result.estimatedTime shouldBe 120L
+                result.estimatedTime shouldBe 120000L
                 result.totalCount shouldBe 2L
             }
         }
