@@ -43,7 +43,7 @@ class TrafficControlRedisAdapter(
         val result = reactiveStringRedisTemplate.execute(script, keys, *args.toTypedArray()).awaitSingle()
         return TrafficWaiting(
             number = result[0] as Long,
-            estimatedTime = result[1] as Long,
+            estimatedTime = (result[1] as Long) * 1000,
             totalCount = result[2] as Long
         )
     }

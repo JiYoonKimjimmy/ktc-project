@@ -28,7 +28,7 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
                 
                 result.number shouldBe 1L
                 result.estimatedTime shouldBe 0L
-                result.totalCount shouldBe 0L
+                result.totalCount shouldBe 1L
             }
 
             then("두 번째 트래픽 대기 순번 '1' 결과 정상 확인한다") {
@@ -56,12 +56,12 @@ class TrafficControlRedisAdapterTest : BehaviorSpec({
                 val result1 = trafficControlPort.controlTraffic(token1)
                 result1.number shouldBe 1L
                 result1.estimatedTime shouldBe 0L
-                result1.totalCount shouldBe 0L
+                result1.totalCount shouldBe 1L
 
                 val result2 = trafficControlPort.controlTraffic(token2)
                 result2.number shouldBe 1L
                 result2.estimatedTime shouldBe 0L
-                result2.totalCount shouldBe 0L
+                result2.totalCount shouldBe 1L
             }
         }
     }

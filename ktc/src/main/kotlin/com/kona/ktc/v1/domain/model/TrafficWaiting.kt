@@ -4,7 +4,7 @@ data class TrafficWaiting(
     val number: Long,
     val estimatedTime: Long,
     val totalCount: Long,
-    val poolingPeriod: Long = 5L
+    val poolingPeriod: Long = 5000L
 ) {
     val canEnter: Boolean by lazy { this.estimatedTime == 0L }
 }

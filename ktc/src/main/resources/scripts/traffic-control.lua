@@ -38,19 +38,24 @@ if now - lastRefill >= 60 then
   redis.call("SET", lastRefillKey, tostring(now))
 end
 
-local estimatedTime = 0
+local totalCount = redis.call("ZCARD", zqueueKey)
 
 if waitingNumber < availableTokens then
   redis.call("ZREM", zqueueKey, token)
   redis.call("DECRBY", tokenKey, 1)
-else
-  estimatedTime = math.floor((waitingNumber - availableTokens + 1) * 60 / threshold)
+  return {
+    waitingNumber + 1,  -- waiting.number
+    0,                  -- waiting.estimatedTime
+    totalCount          -- waiting.totalCount
+  }
 end
 
-local totalCount = redis.call("ZCARD", zqueueKey)
+-- 1분 단위로 대기 시간 계산
+local minutesToWait = math.ceil((waitingNumber - availableTokens + 1) / threshold)
+local estimatedTime = minutesToWait * 60  -- 1분 = 60초
 
 return {
-  waitingNumber + 1,
-  estimatedTime,
-  totalCount
+  waitingNumber + 1,  -- waiting.number
+  estimatedTime,      -- waiting.estimatedTime
+  totalCount          -- waiting.totalCount
 }

@@ -1,0 +1,22 @@
+### 환경 변수 설정
+@token = TEST_TOKEN
+
+### 트래픽 대기 요청 API
+POST http://localhost:21000/ktc/api/v1/traffic/wait
+Content-Type: application/json
+
+{
+  "zoneId": "KTC_TEST_ZONE",
+  "token": "{{token}}",
+  "clientIp": "127.0.0.1",
+  "clientAgent": "WEB"
+}
+
+### 트래픽 진입 요청 API
+POST http://localhost:21000/ktc/api/v1/traffic/entry
+Content-Type: application/json
+
+{
+  "zoneId": "KTC_TEST_ZONE",
+  "token": "{{token}}"
+}
