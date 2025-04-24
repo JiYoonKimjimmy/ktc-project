@@ -1,4 +1,4 @@
-# Redis Cluster `non-local key` Trouble Shooting 🥵
+# Redis Cluster + Lua Script 연동 관련 Trouble Shooting 🥵
 
 ## Redis Cluster + Lua Script 실행 시 "non-local key" 에러 해결하기
 
