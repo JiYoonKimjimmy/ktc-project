@@ -17,7 +17,7 @@ class TrafficControlRedisAdapter(
 
     @Value("\${ktc.traffic.control.defaultThreshold}")
     private val defaultThreshold: Long
-
+    
 ) : TrafficControlPort {
 
     override suspend fun controlTraffic(token: TrafficToken): TrafficWaiting {

@@ -18,9 +18,11 @@ local thresholdKey = "ktc:threshold:" .. zoneId
 ```
 
 ```log
+# Lua Script 내부에서 Key 선언하는 경우
 ... ERR Script attempted to access a non local key in a cluster node script ...
+# Key 해시 태그 없이 Key 선언하는 경우
+... CROSSSLOT Keys in request don't hash to the same slot. ...
 ```
-
 
 ### 원인 분석
 
@@ -31,7 +33,7 @@ local thresholdKey = "ktc:threshold:" .. zoneId
 
 ### 해결 방법
 
-#### 1. `Hash Tag` 활용하여 해시 슬롯` 통일
+#### 1. `Hash Tag` 활용하여 해시 슬롯 통일
 
 - Redis 는 **`{}`(해시 태그)** 안 문자열을 **해시 슬롯 계산에 사용**
 - 같은 해시 태그를 가진 Key 는 Redis 는 같은 해시 슬롯에 저장
