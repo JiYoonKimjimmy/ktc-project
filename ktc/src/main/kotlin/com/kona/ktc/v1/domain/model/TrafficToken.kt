@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.domain.model
 
-import com.kona.common.enum.ClientAgent
+import com.kona.common.enumerate.ClientAgent
 
 data class TrafficToken(
     val zoneId: String,

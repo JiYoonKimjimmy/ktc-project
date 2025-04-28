@@ -1,4 +1,4 @@
-package com.kona.common.enum
+package com.kona.common.enumerate
 
 enum class ClientAgent {
     WEB,

@@ -1,10 +1,10 @@
 package com.kona.ktc.v1.application.adapter.inbound
 
-import com.kona.common.enum.ClientAgent
+import com.kona.common.enumerate.ClientAgent
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.mockMvcBuilder
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.objectMapper
 import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
-import com.kona.ktc.v1.application.mapper.TrafficResponseMapper
+import com.kona.ktc.v1.application.dto.mapper.TrafficTokenMapper
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.inbound.TrafficWaitPort
 import io.kotest.core.spec.style.BehaviorSpec
@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 
 class TrafficWaitAdapterTest : BehaviorSpec({
     val trafficWaitPort = mockk<TrafficWaitPort>()
-    val trafficWaitAdapter = TrafficWaitAdapter(trafficWaitPort, TrafficResponseMapper())
+    val trafficWaitAdapter = TrafficWaitAdapter(trafficWaitPort, TrafficTokenMapper())
 
     val mockMvc = mockMvcBuilder(trafficWaitAdapter)
 

@@ -1,0 +1,44 @@
+package com.kona.ktc.v1.application.dto.mapper
+
+import com.kona.common.infrastructure.util.SnowflakeIdGenerator
+import com.kona.ktc.v1.application.dto.request.TrafficEntryRequest
+import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
+import com.kona.ktc.v1.application.dto.response.TrafficTokenResponse
+import com.kona.ktc.v1.application.dto.response.TrafficTokenResponse.TrafficWaitResponse
+import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.TrafficWaiting
+import org.springframework.stereotype.Component
+
+@Component
+class TrafficTokenMapper {
+
+    fun toDomain(request: TrafficWaitRequest): TrafficToken {
+        return TrafficToken(
+            zoneId = request.zoneId,
+            token = request.token ?: SnowflakeIdGenerator.generate(),
+            clientIp = request.clientIp,
+            clientAgent = request.clientAgent
+        )
+    }
+
+    fun toDomain(request: TrafficEntryRequest): TrafficToken {
+        return TrafficToken(
+            zoneId = request.zoneId,
+            token = request.token
+        )
+    }
+
+    fun toResponse(
+        token: TrafficToken,
+        waiting: TrafficWaiting?,
+        poolingPeriod: Long = 5L
+    ): TrafficTokenResponse {
+        return TrafficTokenResponse(
+            canEnter = waiting?.canEnter ?: false,
+            zoneId = token.zoneId,
+            token = token.token,
+            waiting = waiting?.let(::TrafficWaitResponse)
+        )
+    }
+
+}
