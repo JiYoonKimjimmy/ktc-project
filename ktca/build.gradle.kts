@@ -37,8 +37,8 @@ dependencies {
     implementation("javax.servlet:javax.servlet-api:4.0.1") //for compiling generated source
 
     // Generator
-    implementation("org.openapitools:openapi-generator:6.6.0")
-    implementation("org.openapitools:openapi-generator-gradle-plugin:6.6.0")
+    implementation("org.openapitools:openapi-generator:7.12.0")
+    implementation("org.openapitools:openapi-generator-gradle-plugin:7.12.0")
 
     // ys
 //    implementation("com.kona.ys:ys-library:2.2.33")
@@ -105,12 +105,13 @@ tasks.register("patchGeneratedGradle") {
         if (gradleFile.exists()) {
             gradleFile.writeText(
                 gradleFile.readText()
+                    .replace("val kotlinVersion = \"1.7.10\"", "val kotlinVersion = \"1.9.25\"")
+                    .replace("id(\"org.springframework.boot\") version \"3.0.2\"", "id(\"org.springframework.boot\") version \"3.4.4\"")
+                    .replace("kotlinOptions.jvmTarget = \"17\"", "kotlinOptions.jvmTarget = \"21\"")
                     .replace(
                         "java.sourceCompatibility = JavaVersion.VERSION_17",
                         "java.sourceCompatibility = JavaVersion.VERSION_21\njava.targetCompatibility = JavaVersion.VERSION_21"
                     )
-                    .replace("id(\"org.springframework.boot\") version \"3.0.2\"", "id(\"org.springframework.boot\") version \"3.4.4\"")
-                    .replace("kotlinOptions.jvmTarget = \"17\"", "kotlinOptions.jvmTarget = \"21\"")
             )
         }
 
