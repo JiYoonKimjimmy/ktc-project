@@ -7,4 +7,4 @@ data class TrafficWaitRequest(
     val token: String?,
     val clientIp: String,
     val clientAgent: ClientAgent
-) 
+)

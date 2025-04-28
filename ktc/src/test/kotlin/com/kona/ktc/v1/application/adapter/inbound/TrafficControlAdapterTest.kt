@@ -3,9 +3,10 @@ package com.kona.ktc.v1.application.adapter.inbound
 import com.kona.common.enumerate.ClientAgent
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.mockMvcBuilder
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.objectMapper
+import com.kona.ktc.v1.application.dto.mapper.TrafficControlMapper
 import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
-import com.kona.ktc.v1.application.dto.mapper.TrafficTokenMapper
 import com.kona.ktc.v1.domain.model.TrafficWaiting
+import com.kona.ktc.v1.domain.port.inbound.TrafficEntryPort
 import com.kona.ktc.v1.domain.port.inbound.TrafficWaitPort
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.coEvery
@@ -14,11 +15,13 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
-class TrafficWaitAdapterTest : BehaviorSpec({
+class TrafficControlAdapterTest : BehaviorSpec({
+    val trafficControlMapper = TrafficControlMapper()
     val trafficWaitPort = mockk<TrafficWaitPort>()
-    val trafficWaitAdapter = TrafficWaitAdapter(trafficWaitPort, TrafficTokenMapper())
+    val trafficEntryPort = mockk<TrafficEntryPort>()
+    val trafficControlAdapter = TrafficControlAdapter(trafficControlMapper, trafficWaitPort, trafficEntryPort)
 
-    val mockMvc = mockMvcBuilder(trafficWaitAdapter)
+    val mockMvc = mockMvcBuilder(trafficControlAdapter)
 
     given("트래픽 대기 API 요청되어") {
         val url = "/api/v1/traffic/wait"

@@ -10,7 +10,7 @@ import com.kona.ktc.v1.domain.model.TrafficWaiting
 import org.springframework.stereotype.Component
 
 @Component
-class TrafficTokenMapper {
+class TrafficControlMapper {
 
     fun toDomain(request: TrafficWaitRequest): TrafficToken {
         return TrafficToken(
