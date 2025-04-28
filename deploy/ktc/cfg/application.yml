@@ -2,7 +2,7 @@ spring:
   application:
     name: ktc
   profiles:
-    active: test
+    active: qa
     include: base, ktc
 
 server:
@@ -16,8 +16,3 @@ management:
   endpoints:
     web:
       base-path: /ktc/actuator
-
-logging:
-  file:
-    path: log
-    name: ktc-log

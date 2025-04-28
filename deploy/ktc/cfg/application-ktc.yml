@@ -1,0 +1,4 @@
+ktc:
+  traffic:
+    control:
+      defaultThreshold: 1

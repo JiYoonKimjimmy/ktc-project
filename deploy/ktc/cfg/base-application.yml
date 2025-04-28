@@ -1,0 +1,128 @@
+# server
+server:
+  shutdown: graceful
+  tomcat:
+    threads:
+      min-spare: 10
+      max: 200
+    connection-timeout: 20s
+
+# spring
+spring:
+  threads:
+    virtual:
+      enabled: true
+  data:
+    redis:
+      timeout: 10s
+      connect-timeout: 10s
+      lettuce:
+        pool:
+          enabled: true
+          min-idle: 0
+          max-idle: 8
+          max-active: 30
+          max-wait: 20s
+          time-between-eviction-runs: 20s
+  rabbitmq:
+    connection-timeout: 5s
+    template:
+      mandatory: true
+      receive-timeout: 1s
+      reply-timeout: 5s
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 1s
+        max-interval: 10s
+
+# actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, shutdown, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      access: unrestricted
+  health:
+    redis:
+      enabled: true
+    rabbit:
+      enabled: false
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    redis:
+      host: dev1.konadc.com
+      port: 6379
+      password: 123456
+  rabbitmq:
+    addresses: dev1.konadc.com:5672
+    username: rabbitadmin
+    password: konai
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: qa
+  data:
+    redis:
+      host: dev3.konadc.com
+      port: 6379
+      password: 123456
+      cluster:
+        nodes:
+          - dev3.konadc.com:7000
+          - dev3.konadc.com:7001
+          - dev3.konadc.com:7010
+          - dev3.konadc.com:7011
+          - dev3.konadc.com:7020
+          - dev3.konadc.com:7021
+  rabbitmq:
+    addresses: dev3.konadc.com:5672
+    username: rabbitadmin
+    password: konai
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    redis:
+      host: redis1.konadc.com
+      port: 6379
+      password: 123456
+      sentinel:
+        master: mymaster
+        nodes: redis1.konadc.com:26379, redis2.konadc.com:26379, redis3.konadc.com:26379
+  rabbitmq:
+    addresses: rabbit1.konadc.com:5672,rabbit2.konadc.com:5672
+    username: rabbitadmin
+    password: konai
+
+---
+
+# spring
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+  rabbitmq:
+    addresses: localhost:5672
