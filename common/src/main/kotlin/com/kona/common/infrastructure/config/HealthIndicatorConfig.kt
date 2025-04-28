@@ -1,4 +1,4 @@
-package com.kona.common.infra.config
+package com.kona.common.infrastructure.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health

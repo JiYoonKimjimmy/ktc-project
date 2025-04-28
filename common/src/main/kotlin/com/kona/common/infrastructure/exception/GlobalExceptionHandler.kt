@@ -1,4 +1,4 @@
-package com.kona.common.infra.exception
+package com.kona.common.infrastructure.exception
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

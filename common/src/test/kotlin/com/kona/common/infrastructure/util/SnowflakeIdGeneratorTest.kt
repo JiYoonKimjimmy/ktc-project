@@ -1,4 +1,4 @@
-package com.kona.common.infra.util
+package com.kona.common.infrastructure.util
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.data.forAll

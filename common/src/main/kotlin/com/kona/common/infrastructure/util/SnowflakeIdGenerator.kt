@@ -1,4 +1,4 @@
-package com.kona.common.infra.util
+package com.kona.common.infrastructure.util
 
 import java.net.InetAddress
 

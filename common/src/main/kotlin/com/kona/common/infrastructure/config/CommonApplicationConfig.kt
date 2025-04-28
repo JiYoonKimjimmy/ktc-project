@@ -1,4 +1,4 @@
-package com.kona.common.infra.config
+package com.kona.common.infrastructure.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
