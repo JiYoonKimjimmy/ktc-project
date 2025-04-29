@@ -1,5 +1,8 @@
 package com.kona.common.testsupport.redis
 
+import org.redisson.Redisson
+import org.redisson.api.RedissonClient
+import org.redisson.config.Config
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
@@ -22,6 +25,7 @@ object EmbeddedRedis {
     }
 
     private val lettuceConnectionFactory: LettuceConnectionFactory by lazy { redisConnectionFactory() }
+    val redissonClient: RedissonClient by lazy { redissonClient() }
     val stringRedisTemplate: StringRedisTemplate by lazy { stringRedisTemplate() }
     val reactiveStringRedisTemplate: ReactiveStringRedisTemplate by lazy { reactiveStringRedisTemplate() }
 
@@ -53,6 +57,13 @@ object EmbeddedRedis {
 
     private fun reactiveStringRedisTemplate(): ReactiveStringRedisTemplate {
         return ReactiveStringRedisTemplate(lettuceConnectionFactory)
+    }
+
+    private fun redissonClient(): RedissonClient {
+        val useSingleServerTestConfig: (Config) -> Unit = {
+            it.useSingleServer().setAddress("redis://${REDIS_HOST}:${REDIS_PORT}")
+        }
+        return Redisson.create(Config().apply(useSingleServerTestConfig))
     }
 
 }
