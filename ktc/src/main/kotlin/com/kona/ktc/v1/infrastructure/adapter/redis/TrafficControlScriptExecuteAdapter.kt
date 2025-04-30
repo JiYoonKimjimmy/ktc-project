@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.common.enumerate.TrafficCacheKey
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.redis.RedisExecuteAdapter
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting

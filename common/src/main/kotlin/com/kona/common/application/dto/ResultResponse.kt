@@ -1,6 +1,6 @@
 package com.kona.common.application.dto
 
-import com.kona.common.enumerate.ResultStatus
+import com.kona.common.infrastructure.enumerate.ResultStatus
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.FeatureCode
 import com.kona.common.infrastructure.util.COMPONENT_CODE

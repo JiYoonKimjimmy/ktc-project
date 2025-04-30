@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.application.adapter.inbound
 
-import com.kona.common.enumerate.ClientAgent
+import com.kona.common.infrastructure.enumerate.ClientAgent
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.mockMvcBuilder
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.objectMapper
 import com.kona.ktc.v1.application.dto.mapper.TrafficControlMapper

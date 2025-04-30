@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.application.dto.request
 
-import com.kona.common.enumerate.ClientAgent
+import com.kona.common.infrastructure.enumerate.ClientAgent
 
 data class TrafficWaitRequest(
     val zoneId: String,
