@@ -10,15 +10,15 @@ class TrafficWaitingTest : BehaviorSpec({
         val estimatedTime = 1000L
         val totalCount = 100L
 
-        `when`("기본 poolingPeriod로 생성하면") {
+        `when`("기본 pollingPeriod로 생성하면") {
             val trafficWaiting = TrafficWaiting(
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
             )
 
-            then("기본 poolingPeriod가 설정된다") {
-                trafficWaiting.poolingPeriod shouldBe 5000L
+            then("기본 pollingPeriod가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe 3000L
             }
 
             then("다른 필드들이 정상적으로 설정된다") {
@@ -28,17 +28,17 @@ class TrafficWaitingTest : BehaviorSpec({
             }
         }
 
-        `when`("custom poolingPeriod로 생성하면") {
-            val customPoolingPeriod = 10L
+        `when`("custom pollingPeriod로 생성하면") {
+            val customPollingPeriod = 10L
             val trafficWaiting = TrafficWaiting(
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount,
-                poolingPeriod = customPoolingPeriod
+                pollingPeriod = customPollingPeriod
             )
 
-            then("custom poolingPeriod가 설정된다") {
-                trafficWaiting.poolingPeriod shouldBe customPoolingPeriod
+            then("custom pollingPeriod가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe customPollingPeriod
             }
         }
 

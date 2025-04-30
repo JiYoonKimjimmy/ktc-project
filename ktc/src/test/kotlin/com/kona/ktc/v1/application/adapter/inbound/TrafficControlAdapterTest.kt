@@ -52,7 +52,7 @@ class TrafficControlAdapterTest : BehaviorSpec({
                             jsonPath("$.waiting.number").value(expectedWaiting.number)
                             jsonPath("$.waiting.estimatedTime").value(expectedWaiting.estimatedTime)
                             jsonPath("$.waiting.totalCount").value(expectedWaiting.totalCount)
-                            jsonPath("$.waiting.poolingPeriod").value(expectedWaiting.poolingPeriod)
+                            jsonPath("$.waiting.pollingPeriod").value(expectedWaiting.pollingPeriod)
                             jsonPath("$.result.status").value("SUCCESS")
                         }
                     }
@@ -90,7 +90,7 @@ class TrafficControlAdapterTest : BehaviorSpec({
                             jsonPath("$.waiting.number").value(expectedWaiting.number)
                             jsonPath("$.waiting.estimatedTime").value(expectedWaiting.estimatedTime)
                             jsonPath("$.waiting.totalCount").value(expectedWaiting.totalCount)
-                            jsonPath("$.waiting.poolingPeriod").value(expectedWaiting.poolingPeriod)
+                            jsonPath("$.waiting.pollingPeriod").value(expectedWaiting.pollingPeriod)
                             jsonPath("$.result.status").value("SUCCESS")
                         }
                     }

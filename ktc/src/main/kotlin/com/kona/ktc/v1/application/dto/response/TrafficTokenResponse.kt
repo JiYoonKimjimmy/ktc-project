@@ -16,13 +16,13 @@ data class TrafficTokenResponse(
         val number: Long,
         val estimatedTime: Long,
         val totalCount: Long,
-        val poolingPeriod: Long
+        val pollingPeriod: Long
     ) {
         constructor(waiting: TrafficWaiting): this(
             number = waiting.number,
             estimatedTime = waiting.estimatedTime,
             totalCount = waiting.totalCount,
-            poolingPeriod = waiting.poolingPeriod
+            pollingPeriod = waiting.pollingPeriod
         )
     }
 

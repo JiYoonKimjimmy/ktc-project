@@ -30,7 +30,7 @@ Content-Type: application/json
 
 > {% client.global.set("waitingResponse1", response.body); %}
 
-### 2. 트래픽 진입 폴링 (poolingPeriod 기준)
+### 2. 트래픽 진입 폴링 (pollingPeriod 기준)
 # @name entryPolling1
 POST {{baseUrl}}/traffic/entry
 Content-Type: application/json
@@ -46,13 +46,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse1").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse1").waiting.pollingPeriod;
         client.test("토큰 1 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll1", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -86,13 +86,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse2").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse2").waiting.pollingPeriod;
         client.test("토큰 2 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll2", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -127,13 +127,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse3").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse3").waiting.pollingPeriod;
         client.test("토큰 3 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll3", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -168,13 +168,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse4").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse4").waiting.pollingPeriod;
         client.test("토큰 4 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll4", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -209,13 +209,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse5").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse5").waiting.pollingPeriod;
         client.test("토큰 5 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll5", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -250,13 +250,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse6").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse6").waiting.pollingPeriod;
         client.test("토큰 6 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll6", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -291,13 +291,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse7").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse7").waiting.pollingPeriod;
         client.test("토큰 7 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll7", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -332,13 +332,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse8").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse8").waiting.pollingPeriod;
         client.test("토큰 8 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll8", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -373,13 +373,13 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse9").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse9").waiting.pollingPeriod;
         client.test("토큰 9 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll9", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}
 
@@ -413,12 +413,12 @@ Content-Type: application/json
             client.assert(response.body.canEnter === true, "canEnter가 true가 아님");
         });
     } else {
-        const poolingPeriod = client.global.get("waitingResponse10").waiting.poolingPeriod;
+        const pollingPeriod = client.global.get("waitingResponse10").waiting.pollingPeriod;
         client.test("토큰 10 대기 중", function() {
             client.assert(response.body.canEnter === false, "canEnter가 false가 아님");
         });
         setTimeout(function() {
             client.global.set("shouldPoll10", true);
-        }, poolingPeriod * 1000);
+        }, pollingPeriod * 1000);
     }
 %}

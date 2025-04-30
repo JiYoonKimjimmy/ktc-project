@@ -31,7 +31,7 @@ class TrafficControlMapper {
     fun toResponse(
         token: TrafficToken,
         waiting: TrafficWaiting?,
-        poolingPeriod: Long = 5L
+        pollingPeriod: Long = 5L
     ): TrafficTokenResponse {
         return TrafficTokenResponse(
             canEnter = waiting?.canEnter ?: false,

@@ -40,11 +40,11 @@
 
 ### 네트워크 처리 방식
 
-- **HTTP Long-Term Pooling (선정)** : 일정 주기 `Client > Server` HTTP 요청하여 반복 메시지 전송 방식
+- **HTTP Long-Term Polling (선정)** : 일정 주기 `Client > Server` HTTP 요청하여 반복 메시지 전송 방식
 - HTTP SSEs : `Client < Server` 단방향 메시지 전송 가능한 HTTP Streaming 방식 
 - WebSocket : `Client <> Server` 양방향 메시지 전송 가능한 TCP Socket 방식
 
-> **HTTP Long-Term Pooling 선정 이유** : 요구 사항을 충족하며, 긴 주기 Pooling 방식은 서버 부하를 방지할 수 있는 방법 중 하나로 판단하여 선정
+> **HTTP Long-Term Polling 선정 이유** : 요구 사항을 충족하며, 긴 주기 Polling 방식은 서버 부하를 방지할 수 있는 방법 중 하나로 판단하여 선정
 
 ### 트래픽 제어 처리 방식
 
@@ -149,7 +149,7 @@ return {
 |    waiting.number     | `Number`  |   19   | `MANDATORY` | 현재 대기 순번         |
 | waiting.estimatedTime | `Number`  |   19   | `MANDATORY` | 대기 예상 시간         |
 |  waiting.totalCount   | `Number`  |   19   | `MANDATORY` | 전체 대기자 수         |
-| waiting.poolingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Pooling 요청 주기 |
+| waiting.pollingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Polling 요청 주기 |
 |        result         | `Object`  |   -    | `MANDATORY` | 응답 결과            |
 |     result.status     | `String`  |   10   | `MANDATORY` | 응답 결과 상태         |
 |      result.code      | `String`  |   11   | `OPTIONAL`  | 에러 코드            |
@@ -177,7 +177,7 @@ return {
 |    waiting.number     | `Number`  |   19   | `MANDATORY` | 현재 대기 순번         |
 | waiting.estimatedTime | `Number`  |   19   | `MANDATORY` | 대기 예상 시간         |
 |  waiting.totalCount   | `Number`  |   19   | `MANDATORY` | 전체 대기자 수         |
-| waiting.poolingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Pooling 요청 주기 |
+| waiting.pollingPeriod | `Number`  |   19   | `MANDATORY` | 대기 Polling 요청 주기 |
 |        result         | `Object`  |   -    | `MANDATORY` | 응답 결과            |
 |     result.status     | `String`  |   10   | `MANDATORY` | 응답 결과 상태         |
 |      result.code      | `String`  |   11   | `OPTIONAL`  | 에러 코드            |
