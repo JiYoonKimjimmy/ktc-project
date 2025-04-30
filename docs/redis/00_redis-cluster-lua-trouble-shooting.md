@@ -11,7 +11,7 @@
 ```redis
 local zqueueKey = "ktc:zqueue:" .. zoneId
 local tokenKey = "ktc:tokens:" .. zoneId
-local lastRefillKey = "ktc:last_refill_ts:" .. zoneId
+local lastRefillKey = "ktc:last_refill_time:" .. zoneId
 local thresholdKey = "ktc:threshold:" .. zoneId
 
 -- 이후 redis.call()로 여러 키 접근
@@ -69,7 +69,7 @@ stringRedisTemplate.execute(script, emptyList(), *args.toTypedArray())
 -- 스크립트 안 자체 정의한 Key
 local zqueueKey = "ktc:zqueue:" .. zoneId
 local tokenKey = "ktc:tokens:" .. zoneId
-local lastRefillKey = "ktc:last_refill_ts:" .. zoneId
+local lastRefillKey = "ktc:last_refill_time:" .. zoneId
 local thresholdKey = "ktc:threshold:" .. zoneId
 ```
 

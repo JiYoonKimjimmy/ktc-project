@@ -62,7 +62,7 @@
  
 local zqueueKey = "ktc:zqueue"
 local tokenKey = "ktc:tokens"
-local lastRefillKey = "ktc:last_refill_ts"
+local lastRefillKey = "ktc:last_refill_time"
 local thresholdKey = "ktc:threshold"
 local defaultRate = 1000
  

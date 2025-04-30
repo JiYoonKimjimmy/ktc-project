@@ -1,5 +1,8 @@
 package com.kona.ktca.v1.infrastructure.adapter.redis
 
+import com.kona.common.enumerate.TrafficCacheKey
+import com.kona.common.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
+import com.kona.common.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
 import com.kona.common.infrastructure.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.util.toInstantEpochMilli
 import com.kona.common.testsupport.redis.EmbeddedRedis
@@ -23,8 +26,8 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
 
     given("동일한 Zone 트래픽 3건 대기 중 만료 script 호출하여") {
         val zoneId = "ZONE_1"
-        val zqueueKey = "ktc:{$zoneId}:zqueue"
-        val lastEntryKey = "ktc:{$zoneId}:last_entry_ts"
+        val zqueueKey = TRAFFIC_ZQUEUE.getKey(zoneId)
+        val lastEntryKey = TRAFFIC_LAST_ENTRY_TIME.getKey(zoneId)
 
         val token1 = "token1"
         val token2 = "token2"

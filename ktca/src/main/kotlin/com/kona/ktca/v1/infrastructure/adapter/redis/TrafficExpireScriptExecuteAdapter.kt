@@ -1,5 +1,6 @@
 package com.kona.ktca.v1.infrastructure.adapter.redis
 
+import com.kona.common.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.common.infrastructure.redis.RedisExecuteAdapter
 import com.kona.ktca.v1.domain.port.outbound.TrafficExpirePort
 import jakarta.annotation.PostConstruct
@@ -14,7 +15,8 @@ class TrafficExpireScriptExecuteAdapter(
 
     companion object {
         const val ZQUEUE_KEY_PATTERN = "ktc:*:zqueue"
-        const val LAST_ENTRY_KEY_PATTERN = "ktc:%s:last_entry_ts"
+        const val ZQUEUE_KEY_PREFIX = "ktc:{"
+        const val ZQUEUE_KEY_SUFFIX = "}:zqueue"
     }
 
     private lateinit var script: RedisScript<List<*>>
@@ -33,8 +35,8 @@ class TrafficExpireScriptExecuteAdapter(
 
     private suspend fun expireTraffic(zqueueKey: String): Long {
         // zoneId 추출
-        val zoneId = zqueueKey.substringAfter("ktc:").substringBefore(":zqueue")
-        val lastEntryKey = LAST_ENTRY_KEY_PATTERN.format(zoneId)
+        val zoneId = zqueueKey.substringAfter(ZQUEUE_KEY_PREFIX).substringBefore(ZQUEUE_KEY_SUFFIX)
+        val lastEntryKey = TRAFFIC_LAST_ENTRY_TIME.getKey(zoneId)
 
         // traffic-expire script 실행
         val keys = listOf(zqueueKey, lastEntryKey)

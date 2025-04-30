@@ -13,7 +13,7 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
     val trafficControlScript = TrafficControlScript().also { it.init() }
     val redisScriptAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
-    val defaultThreshold = 1L
+    val defaultThreshold = "1"
 
     val trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
 

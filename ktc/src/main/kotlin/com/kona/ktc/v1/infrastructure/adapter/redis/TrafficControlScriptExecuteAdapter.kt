@@ -1,5 +1,6 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
+import com.kona.common.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.redis.RedisExecuteAdapter
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting
@@ -15,7 +16,7 @@ class TrafficControlScriptExecuteAdapter(
     private val redisExecuteAdapter: RedisExecuteAdapter,
 
     @Value("\${ktc.traffic.control.defaultThreshold}")
-    private val defaultThreshold: Long
+    private val defaultThreshold: String
     
 ) : TrafficControlPort {
 
@@ -24,20 +25,12 @@ class TrafficControlScriptExecuteAdapter(
         val now = Instant.now().epochSecond
         val score = now * 1000 + (now % 1000)
 
-        val baseKey = "ktc:{${token.zoneId}}"
-        val keys = listOf(
-            "$baseKey:zqueue",
-            "$baseKey:tokens",
-            "$baseKey:last_refill_ts",
-            "$baseKey:last_entry_ts",
-            "$baseKey:threshold"
-        )
-
+        val keys = TrafficCacheKey.generateKeys(token.zoneId)
         val args = listOf(
             token.token,
             score.toString(),
             now.toString(),
-            defaultThreshold.toString()
+            defaultThreshold
         )
 
         val result = redisExecuteAdapter.execute(script, keys, args)
