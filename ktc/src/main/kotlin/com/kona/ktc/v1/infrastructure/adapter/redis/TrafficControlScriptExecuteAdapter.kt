@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.common.infrastructure.redis.RedisScriptExecuteAdapter
+import com.kona.common.infrastructure.redis.RedisExecuteAdapter
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository
 import java.time.Instant
 
 @Repository
-class TrafficControlRedisAdapter(
+class TrafficControlScriptExecuteAdapter(
 
     private val trafficControlRedisScript: TrafficControlRedisScript,
-    private val redisScriptExecuteAdapter: RedisScriptExecuteAdapter,
+    private val redisExecuteAdapter: RedisExecuteAdapter,
 
     @Value("\${ktc.traffic.control.defaultThreshold}")
     private val defaultThreshold: Long
@@ -29,6 +29,7 @@ class TrafficControlRedisAdapter(
             "$baseKey:zqueue",
             "$baseKey:tokens",
             "$baseKey:last_refill_ts",
+            "$baseKey:last_entry_ts",
             "$baseKey:threshold"
         )
 
@@ -39,7 +40,7 @@ class TrafficControlRedisAdapter(
             defaultThreshold.toString()
         )
 
-        val result = redisScriptExecuteAdapter.execute(script, keys, args)
+        val result = redisExecuteAdapter.execute(script, keys, args)
         return TrafficWaiting(
             number = result[0] as Long,
             estimatedTime = (result[1] as Long) * 1000,

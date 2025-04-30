@@ -3,20 +3,22 @@ package com.kona.common.infrastructure.redis
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.redis.core.script.DefaultRedisScript
 
-class RedisScriptExecuteAdapterImplTest : StringSpec({
+class RedisExecuteAdapterImplTest : StringSpec({
 
     listeners(EmbeddedRedisTestListener())
 
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
-    val redisScriptExecuteAdapter = RedisScriptExecuteAdapterImpl(reactiveStringRedisTemplate)
+    val redisScriptExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
 
-    "lua script 실행하여 정상 동작 확인한다" {
+    "Redis script 실행 결과 정상 동작 확인한다" {
         // given
         val scriptString = """
         -- KEYS[1] = key
@@ -41,4 +43,31 @@ class RedisScriptExecuteAdapterImplTest : StringSpec({
         result[0] shouldBe "Hello World!"
     }
 
+    "pattern 일치하는 cache key 목록 조회 결과 정상 확인한다" {
+        // given
+        val pattern = "test:*"
+
+        listOf("test:1", "test:2", "test:3", "other:1").forEach { reactiveStringRedisTemplate.opsForValue().set(it, "value").awaitSingle() }
+
+        // when
+        val result = redisScriptExecuteAdapter.keys(pattern)
+
+        // then
+        result.shouldNotBeEmpty()
+        result shouldHaveSize 3
+        result shouldContainAll listOf("test:1", "test:2", "test:3")
+    }
+
+    "pattern 일치하는 cache key 없는 경우 emptyList 정상 확인한다" {
+        // given
+        val pattern = "nonexistent:*"
+
+        listOf("test:1", "test:2", "test:3").forEach { reactiveStringRedisTemplate.opsForValue().set(it, "value").awaitSingle() }
+
+        // when
+        val result = redisScriptExecuteAdapter.keys(pattern)
+
+        // then
+        result.shouldBeEmpty()
+    }
 })

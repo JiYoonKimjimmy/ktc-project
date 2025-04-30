@@ -4,12 +4,14 @@ import java.util.concurrent.TimeUnit
 
 interface DistributedLockManager {
 
-    fun <R> lock(
+    suspend fun <R> lock(
         key: String,
         waitTime: Long = 20,
         leaseTime: Long = 60,
         timeUnit: TimeUnit = TimeUnit.SECONDS,
-        block: () -> R
+        block: suspend () -> R
     ): R?
+
+    suspend fun <R> expireTrafficTokenScheduleLock(now: String, block: suspend () -> R): R
 
 }
