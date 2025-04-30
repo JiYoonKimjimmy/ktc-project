@@ -1,6 +1,5 @@
 package com.kona.ktca.v1.infrastructure.adapter.redis
 
-import com.kona.common.enumerate.TrafficCacheKey
 import com.kona.common.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.common.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
 import com.kona.common.infrastructure.redis.RedisExecuteAdapterImpl
