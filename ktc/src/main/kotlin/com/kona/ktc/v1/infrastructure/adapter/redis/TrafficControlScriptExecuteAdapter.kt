@@ -11,7 +11,7 @@ import java.time.Instant
 @Repository
 class TrafficControlScriptExecuteAdapter(
 
-    private val trafficControlRedisScript: TrafficControlRedisScript,
+    private val trafficControlScript: TrafficControlScript,
     private val redisExecuteAdapter: RedisExecuteAdapter,
 
     @Value("\${ktc.traffic.control.defaultThreshold}")
@@ -20,7 +20,7 @@ class TrafficControlScriptExecuteAdapter(
 ) : TrafficControlPort {
 
     override suspend fun controlTraffic(token: TrafficToken): TrafficWaiting {
-        val script = trafficControlRedisScript.getScript()
+        val script = trafficControlScript.getScript()
         val now = Instant.now().epochSecond
         val score = now * 1000 + (now % 1000)
 

@@ -8,7 +8,7 @@ import org.springframework.scripting.support.ResourceScriptSource
 import org.springframework.stereotype.Component
 
 @Component
-class TrafficControlRedisScript {
+class TrafficControlScript {
     private lateinit var script: RedisScript<List<*>>
 
     @PostConstruct
