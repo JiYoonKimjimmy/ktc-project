@@ -4,8 +4,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-const val DATE_TIME_BASIC_PATTERN = "yyyyMMddHHmmSS"
+const val DATE_TIME_BASIC_PATTERN = "yyyyMMddHHmmss"
 const val DATE_TIME_PATTERN_yyyyMMddHHmm = "yyyyMMddHHmm"
+const val DATE_TIME_PATTERN_yyMMddHHmmss = "yyMMddHHmmss"
 
 fun LocalDateTime.convertPatternOf(pattern: String = DATE_TIME_BASIC_PATTERN): String {
     return this.format(DateTimeFormatter.ofPattern(pattern))

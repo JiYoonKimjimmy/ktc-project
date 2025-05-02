@@ -23,7 +23,7 @@ object SnowflakeIdGenerator {
     }
     
     @Synchronized
-    fun generate(): String {
+    fun generate(radix: Int = RADIX_DEC): String {
         var timestamp = System.currentTimeMillis()
         
         if (timestamp < lastTimestamp) {
@@ -45,7 +45,7 @@ object SnowflakeIdGenerator {
                 or (workerId shl WORKER_ID_SHIFT.toInt())
                 or sequence)
         
-        return id.toString()
+        return id.toString(radix)
     }
     
     private fun tilNextMillis(lastTimestamp: Long): Long {
