@@ -1,4 +1,4 @@
-package com.kona.common.infrastructure.redis
+package com.kona.common.infrastructure.cache.redis
 
 import org.springframework.data.redis.core.script.RedisScript
 

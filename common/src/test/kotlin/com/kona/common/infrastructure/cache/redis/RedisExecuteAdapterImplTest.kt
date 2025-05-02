@@ -1,4 +1,4 @@
-package com.kona.common.infrastructure.redis
+package com.kona.common.infrastructure.cache.redis
 
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener

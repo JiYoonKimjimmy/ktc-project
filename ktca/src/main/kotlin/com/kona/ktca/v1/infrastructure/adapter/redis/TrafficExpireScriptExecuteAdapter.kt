@@ -1,7 +1,7 @@
 package com.kona.ktca.v1.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
-import com.kona.common.infrastructure.redis.RedisExecuteAdapter
+import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.ktca.v1.domain.port.outbound.TrafficExpirePort
 import jakarta.annotation.PostConstruct
 import org.springframework.data.redis.core.script.RedisScript

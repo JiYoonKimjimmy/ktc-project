@@ -2,7 +2,7 @@ package com.kona.ktc.v1.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ENTRY_COUNTER
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
-import com.kona.common.infrastructure.redis.RedisExecuteAdapterImpl
+import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken

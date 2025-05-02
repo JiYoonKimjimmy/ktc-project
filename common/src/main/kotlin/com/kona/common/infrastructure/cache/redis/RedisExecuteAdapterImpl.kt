@@ -1,4 +1,4 @@
-package com.kona.common.infrastructure.redis
+package com.kona.common.infrastructure.cache.redis
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
