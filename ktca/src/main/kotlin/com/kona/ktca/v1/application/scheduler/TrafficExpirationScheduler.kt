@@ -4,7 +4,8 @@ import com.kona.common.infrastructure.lock.DistributedLockManager
 import com.kona.common.infrastructure.util.DATE_TIME_PATTERN_yyyyMMddHHmm
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.v1.domain.port.outbound.TrafficExpirePort
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
@@ -15,23 +16,30 @@ import java.time.LocalDateTime
 class TrafficExpirationScheduler(
     private val distributedLockManager: DistributedLockManager,
     private val trafficExpirePort: TrafficExpirePort,
+    private val defaultCoroutineScope: CoroutineScope
 ) {
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @Async("trafficExpirationTaskExecutor")
     @Scheduled(fixedDelayString = "60000")
-    fun expireTrafficScheduler() = runBlocking {
-        /**
-         * [트래픽 토큰 만료 Scheduler]
-         * 1. 트래픽 토큰 만료 task 실행 분산락 요청
-         * 2. 분산락 획득 후, 현재 시간 - 1min 기준 트래픽 토큰 삭제 요청
-         */
-        val now = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm)
-        val result = distributedLockManager.expireTrafficTokenScheduleLock(now) {
-            trafficExpirePort.expireTraffic()
+    fun handleExpireTrafficScheduler() {
+        defaultCoroutineScope.launch {
+            try {
+                /**
+                 * [트래픽 토큰 만료 Scheduler]
+                 * 1. 트래픽 토큰 만료 task 실행 분산락 요청
+                 * 2. 분산락 획득 후, 현재 시간 - 1min 기준 트래픽 토큰 삭제 요청
+                 */
+                val now = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm)
+                val result = distributedLockManager.expireTrafficTokenScheduleLock(now) {
+                    trafficExpirePort.expireTraffic()
+                }
+                logger.info("Expired Traffic Token count : $result")
+            } catch (e: Exception) {
+                logger.error("Failed to expire traffic tokens", e)
+            }
         }
-        logger.info("Expired Traffic Token count : $result")
     }
 
 }

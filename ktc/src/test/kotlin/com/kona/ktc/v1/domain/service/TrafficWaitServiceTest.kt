@@ -1,5 +1,7 @@
 package com.kona.ktc.v1.domain.service
 
+import com.kona.common.testsupport.rabbit.MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
+import com.kona.common.testsupport.rabbit.MockRabbitMQTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
@@ -9,8 +11,12 @@ import io.mockk.coEvery
 import io.mockk.mockk
 
 class TrafficWaitServiceTest : BehaviorSpec({
+
+    listeners(MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
+
     val trafficControlPort = mockk<TrafficControlPort>()
-    val trafficWaitService = TrafficWaitService(trafficControlPort)
+    val eventPublisher = FakeApplicationEventPublisher()
+    val trafficWaitService = TrafficWaitService(trafficControlPort, eventPublisher)
 
     given("트래픽 진입 요청되어") {
         val zoneId = "test-zone"
@@ -28,7 +34,6 @@ class TrafficWaitServiceTest : BehaviorSpec({
 
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 val result = trafficWaitService.wait(trafficToken)
-
                 result shouldBe expectedWaiting
                 result.canEnter shouldBe false
             }
@@ -45,7 +50,6 @@ class TrafficWaitServiceTest : BehaviorSpec({
 
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 val result = trafficWaitService.wait(trafficToken)
-                
                 result shouldBe expectedWaiting
                 result.canEnter shouldBe false
             }
@@ -62,7 +66,6 @@ class TrafficWaitServiceTest : BehaviorSpec({
 
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 val result = trafficWaitService.wait(trafficToken)
-                
                 result shouldBe expectedWaiting
                 result.canEnter shouldBe true
             }

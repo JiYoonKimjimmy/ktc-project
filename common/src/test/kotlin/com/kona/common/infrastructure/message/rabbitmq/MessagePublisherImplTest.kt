@@ -24,13 +24,15 @@ class MessagePublisherImplTest : StringSpec({
             clientIp = "127.0.0.1",
             clientAgent = "ANDROID",
             waitingNumber = 1,
-            estimatedTime = 60000
+            estimatedTime = 60000,
+            totalCount = 1
         )
 
         // when
         messagePublisher.publishDirectMessage(exchange, message)
 
         // then
+        Thread.sleep(500)
         val received = mockRabbitTemplate.receive(MessageQueue.V1_SAVE_TRAFFIC_STATUS_QUEUE)!!
         received.messageProperties.headers[CORRELATION_ID_HEADER_FIELD] shouldNotBe null
 
@@ -41,6 +43,7 @@ class MessagePublisherImplTest : StringSpec({
         result.clientAgent shouldBe "ANDROID"
         result.waitingNumber shouldBe 1
         result.estimatedTime shouldBe 60000
+        result.totalCount shouldBe 1
     }
 
 })

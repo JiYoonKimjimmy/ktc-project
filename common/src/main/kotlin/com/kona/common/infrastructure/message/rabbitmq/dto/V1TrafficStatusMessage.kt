@@ -8,5 +8,6 @@ data class V1TrafficStatusMessage(
     val clientIp: String?,
     val clientAgent: String?,
     val waitingNumber: Long,
-    val estimatedTime: Long
+    val estimatedTime: Long,
+    val totalCount: Long
 ) : BaseMessage()
