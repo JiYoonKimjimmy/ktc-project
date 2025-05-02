@@ -9,11 +9,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     // redisson
     implementation("org.redisson:redisson-spring-boot-starter:3.34.1")
-    // embedded-redis
-    implementation("com.github.codemonstur:embedded-redis:1.4.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -29,6 +28,11 @@ dependencies {
     testFixturesImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testFixturesImplementation("io.kotest:kotest-property:$kotestVersion")
     testFixturesImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
+
+    // embedded-redis
+    testFixturesImplementation("com.github.codemonstur:embedded-redis:1.4.3")
+    // rabbitmq-mock
+    testFixturesImplementation("com.github.fridujo:rabbitmq-mock:1.2.0")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
