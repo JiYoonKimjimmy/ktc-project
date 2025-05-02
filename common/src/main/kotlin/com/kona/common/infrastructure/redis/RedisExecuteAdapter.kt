@@ -8,4 +8,8 @@ interface RedisExecuteAdapter {
 
     suspend fun keys(pattern: String): List<String>
 
+    suspend fun getValue(key: String): String?
+
+    suspend fun getZSetSize(key: String): Long
+
 }

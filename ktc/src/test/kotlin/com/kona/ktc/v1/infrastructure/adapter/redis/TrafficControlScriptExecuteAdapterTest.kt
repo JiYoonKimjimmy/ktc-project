@@ -1,5 +1,7 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ENTRY_COUNTER
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
 import com.kona.common.infrastructure.redis.RedisExecuteAdapterImpl
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
@@ -25,29 +27,38 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
             val token2 = TrafficToken(token = "test-token-2", zoneId = zoneId)
             val token3 = TrafficToken(token = "test-token-3", zoneId = zoneId)
 
+            val result1 = trafficControlScriptExecuteAdapter.controlTraffic(token1)
+            val result2 = trafficControlScriptExecuteAdapter.controlTraffic(token2)
+            val result3 = trafficControlScriptExecuteAdapter.controlTraffic(token3)
+
             then("첫 번째 트래픽 '즉시 진입 가능' 결과 정상 확인한다") {
-                val result = trafficControlScriptExecuteAdapter.controlTraffic(token1)
-                
-                result.number shouldBe 1L
-                result.estimatedTime shouldBe 0L
-                result.totalCount shouldBe 1L
+                result1.number shouldBe 1L
+                result1.estimatedTime shouldBe 0L
+                result1.totalCount shouldBe 1L
             }
 
             then("두 번째 트래픽 대기 순번 '1' 결과 정상 확인한다") {
-                val result = trafficControlScriptExecuteAdapter.controlTraffic(token2)
-                
-                result.number shouldBe 1L
-                result.estimatedTime shouldBe 60000L
-                result.totalCount shouldBe 1L
+                result2.number shouldBe 1L
+                result2.estimatedTime shouldBe 60000L
+                result2.totalCount shouldBe 1L
             }
 
             then("세 번째 트래픽 대기 순번 '2' 결과 정상 확인한다") {
-                val result = trafficControlScriptExecuteAdapter.controlTraffic(token3)
-
-                result.number shouldBe 2L
-                result.estimatedTime shouldBe 120000L
-                result.totalCount shouldBe 2L
+                result3.number shouldBe 2L
+                result3.estimatedTime shouldBe 120000L
+                result3.totalCount shouldBe 2L
             }
+
+            then("현재 트래픽 entry counter 정보는 1건 정상 확인한다") {
+                val entryCountKey = TRAFFIC_ENTRY_COUNTER.getKey(zoneId)
+                redisScriptAdapter.getValue(entryCountKey)?.toLong() shouldBe 1L
+            }
+
+            then("현재 트래픽 대기 Queue 건수는 2건 정상 확인한다") {
+                val zqueueKey = TRAFFIC_ZQUEUE.getKey(zoneId)
+                redisScriptAdapter.getZSetSize(zqueueKey) shouldBe 2L
+            }
+
         }
 
         `when`("다른 zoneId 기준 각각 요청되는 경우") {

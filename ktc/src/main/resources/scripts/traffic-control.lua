@@ -3,11 +3,13 @@
 -- KEYS[3] = thresholdKey
 -- KEYS[4] = lastRefillTimeKey
 -- KEYS[5] = lastEntryKey
+-- KEYS[6] = entryCounter
 local zqueueKey = KEYS[1]
 local bucketKey = KEYS[2]
 local thresholdKey = KEYS[3]
 local lastRefillTimeKey = KEYS[4]
 local lastEntryTimeKey = KEYS[5]
+local entryCounterKey = KEYS[6]
 
 -- ARGV[1] = token
 -- ARGV[2] = score
@@ -45,6 +47,7 @@ local totalCount = redis.call("ZCARD", zqueueKey)
 if waitingNumber < availableTokens then
   redis.call("ZREM", zqueueKey, token)
   redis.call("DECRBY", bucketKey, 1)
+  redis.call("INCR", entryCounterKey)
 
   local lastEntryTime = tonumber(redis.call("GET", lastEntryTimeKey)) or 0
   if score > lastEntryTime then

@@ -4,7 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
+import org.springframework.data.redis.core.getAndAwait
 import org.springframework.data.redis.core.script.RedisScript
+import org.springframework.data.redis.core.sizeAndAwait
 import org.springframework.stereotype.Component
 
 @Component
@@ -24,4 +26,11 @@ class RedisExecuteAdapterImpl(
         reactiveStringRedisTemplate.keys(pattern).collectList().awaitSingle()
     }
 
+    override suspend fun getValue(key: String): String? {
+        return reactiveStringRedisTemplate.opsForValue().getAndAwait(key)
+    }
+
+    override suspend fun getZSetSize(key: String): Long {
+        return reactiveStringRedisTemplate.opsForZSet().sizeAndAwait(key)
+    }
 }

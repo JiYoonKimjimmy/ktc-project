@@ -24,6 +24,10 @@ enum class TrafficCacheKey(
     TRAFFIC_LAST_ENTRY_TIME(
         note = "트래픽 Token 마지막 진입 시점 Key",
         key = "ktc:{%s}:last_entry_time"
+    ),
+    TRAFFIC_ENTRY_COUNTER(
+        note = "트래픽 진입 Counter Key",
+        key = "ktc:{%s}:entry_counter"
     )
 
     ;
