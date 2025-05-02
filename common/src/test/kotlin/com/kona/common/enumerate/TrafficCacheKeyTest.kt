@@ -17,10 +17,10 @@ class TrafficCacheKeyTest : StringSpec({
 
         // then
         result[TRAFFIC_ZQUEUE] shouldBe "ktc:{TEST_ZONE}:zqueue"
-        result[TRAFFIC_TOKENS] shouldBe "ktc:{TEST_ZONE}:tokens"
+        result[TRAFFIC_TOKENS] shouldBe "ktc:{TEST_ZONE}:bucket"
+        result[TRAFFIC_THRESHOLD] shouldBe "ktc:{TEST_ZONE}:threshold"
         result[TRAFFIC_LAST_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:last_refill_time"
         result[TRAFFIC_LAST_ENTRY_TIME] shouldBe "ktc:{TEST_ZONE}:last_entry_time"
-        result[TRAFFIC_THRESHOLD] shouldBe "ktc:{TEST_ZONE}:threshold"
     }
 
     "'TEST_ZONE' zoneId 기준 TrafficCacheKey enum 'key' 목록 생성 결과 정상 확인한다" {
@@ -33,7 +33,7 @@ class TrafficCacheKeyTest : StringSpec({
         // then
         val expected = listOf(
             "ktc:{TEST_ZONE}:zqueue",
-            "ktc:{TEST_ZONE}:tokens",
+            "ktc:{TEST_ZONE}:bucket",
             "ktc:{TEST_ZONE}:last_refill_time",
             "ktc:{TEST_ZONE}:last_entry_time",
             "ktc:{TEST_ZONE}:threshold",

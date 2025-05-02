@@ -10,8 +10,12 @@ enum class TrafficCacheKey(
         key = "ktc:{%s}:zqueue"
     ),
     TRAFFIC_TOKENS(
-        note = "트래픽 진입 Tokens Key",
-        key = "ktc:{%s}:tokens"
+        note = "트래픽 진입 Token Bucket Key",
+        key = "ktc:{%s}:bucket"
+    ),
+    TRAFFIC_THRESHOLD(
+        note = "트래픽 분당 임계치 Key",
+        key = "ktc:{%s}:threshold"
     ),
     TRAFFIC_LAST_REFILL_TIME(
         note = "트래픽 Token 마지막 리필 시점 Key",
@@ -20,11 +24,8 @@ enum class TrafficCacheKey(
     TRAFFIC_LAST_ENTRY_TIME(
         note = "트래픽 Token 마지막 진입 시점 Key",
         key = "ktc:{%s}:last_entry_time"
-    ),
-    TRAFFIC_THRESHOLD(
-        note = "트래픽 분당 임계치 Key",
-        key = "ktc:{%s}:threshold"
     )
+
     ;
 
     companion object {
