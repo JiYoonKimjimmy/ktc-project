@@ -1,73 +1,58 @@
 package com.kona.ktc.v1.domain.service
 
+import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.testsupport.rabbit.MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.testsupport.rabbit.MockRabbitMQTestListener
+import com.kona.common.testsupport.redis.EmbeddedRedis
+import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
-import com.kona.ktc.v1.domain.model.TrafficWaiting
-import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
+import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScript
+import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScriptExecuteAdapter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.coEvery
-import io.mockk.mockk
 
 class TrafficWaitServiceTest : BehaviorSpec({
 
-    listeners(MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
+    listeners(EmbeddedRedisTestListener(), MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
 
-    val trafficControlPort = mockk<TrafficControlPort>()
+    val trafficControlScript = TrafficControlScript().also { it.init() }
+    val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
+    val defaultThreshold = "1"
+    val trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, defaultThreshold)
+
     val eventPublisher = FakeApplicationEventPublisher()
-    val trafficWaitService = TrafficWaitService(trafficControlPort, eventPublisher)
+    val trafficWaitService = TrafficWaitService(trafficControlScriptExecuteAdapter, eventPublisher)
 
-    given("트래픽 진입 요청되어") {
+    given("트래픽 대기 3건 요청되어") {
         val zoneId = "test-zone"
-        val token = "test-token"
-        val trafficToken = TrafficToken(zoneId = zoneId, token = token)
+        val result1 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-1"))
+        val result2 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-2"))
+        val result3 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-3"))
 
-        `when`("대기 순번 '1' & 예상 대기 시간 '60s' 인 경우") {
-            val expectedWaiting = TrafficWaiting(
-                number = 1L,
-                estimatedTime = 60L,
-                totalCount = 1L
-            )
-            
-            coEvery { trafficControlPort.controlTraffic(trafficToken) } returns expectedWaiting
-
+        `when`("첫 번째 요청 - 즉시 입장 가능한 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
-                val result = trafficWaitService.wait(trafficToken)
-                result shouldBe expectedWaiting
-                result.canEnter shouldBe false
+                result1.number shouldBe 1
+                result1.estimatedTime shouldBe 0
+                result1.totalCount shouldBe 1
+                result1.canEnter shouldBe true
             }
         }
 
-        `when`("대기 순번 '2', 예상 대기 시간 '120s' 인 경우") {
-            val expectedWaiting = TrafficWaiting(
-                number = 2L,
-                estimatedTime = 120L,
-                totalCount = 2L
-            )
-            
-            coEvery { trafficControlPort.controlTraffic(trafficToken) } returns expectedWaiting
-
+        `when`("두 번째 요청 - 대기 순번 '1', 예상 대기 시간 '60s' 인 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
-                val result = trafficWaitService.wait(trafficToken)
-                result shouldBe expectedWaiting
-                result.canEnter shouldBe false
+                result2.number shouldBe 1
+                result2.estimatedTime shouldBe 60000
+                result2.totalCount shouldBe 1
+                result2.canEnter shouldBe false
             }
         }
 
-        `when`("즉시 진입 가능한 경우") {
-            val expectedWaiting = TrafficWaiting(
-                number = 1L,
-                estimatedTime = 0L,
-                totalCount = 0L
-            )
-            
-            coEvery { trafficControlPort.controlTraffic(trafficToken) } returns expectedWaiting
-
+        `when`("세 번째 요청 - 대기 순번 '2', 예상 대기 시간 '120s' 인 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
-                val result = trafficWaitService.wait(trafficToken)
-                result shouldBe expectedWaiting
-                result.canEnter shouldBe true
+                result3.number shouldBe 2
+                result3.estimatedTime shouldBe 120000
+                result3.totalCount shouldBe 2
+                result3.canEnter shouldBe false
             }
         }
     }
