@@ -1,7 +1,7 @@
 package com.kona.ktca.v1.infrastructure.adapter
 
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.ktca.v1.domain.port.outbound.TrafficExpireExecutePort
 import com.kona.ktca.v1.infrastructure.redis.TrafficExpireRedisScript
 import jakarta.annotation.PostConstruct
@@ -38,10 +38,12 @@ class TrafficExpireScriptExecuteAdapter(
         // zoneId 추출
         val zoneId = zqueueKey.substringAfter(ZQUEUE_KEY_PREFIX).substringBefore(ZQUEUE_KEY_SUFFIX)
         val lastEntryKey = TRAFFIC_LAST_ENTRY_TIME.getKey(zoneId)
+        val keys = listOf(zqueueKey, lastEntryKey)
 
         // traffic-expire script 실행
-        val keys = listOf(zqueueKey, lastEntryKey)
-        return redisExecuteAdapter.execute(script, keys, emptyList())[0] as Long
+        val result = redisExecuteAdapter.execute(script, keys, emptyList()).first() as Long?
+
+        return result ?: 0
     }
 
 }
