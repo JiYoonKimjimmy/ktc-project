@@ -1,10 +1,11 @@
-package com.kona.ktca.v1.infrastructure.adapter.redis
+package com.kona.ktca.v1.infrastructure.adapter
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.util.toInstantEpochMilli
 import com.kona.common.testsupport.redis.EmbeddedRedis
+import com.kona.ktca.v1.infrastructure.redis.TrafficExpireRedisScript
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.reactor.awaitSingle
@@ -14,12 +15,12 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
 
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
 
-    val trafficExpireScript = TrafficExpireScript()
+    val trafficExpireRedisScript = TrafficExpireRedisScript()
     val redisScriptExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
-    val trafficExpireScriptExecuteAdapter = TrafficExpireScriptExecuteAdapter(trafficExpireScript, redisScriptExecuteAdapter)
+    val trafficExpireScriptExecuteAdapter = TrafficExpireScriptExecuteAdapter(trafficExpireRedisScript, redisScriptExecuteAdapter)
 
     beforeSpec {
-        trafficExpireScript.init()
+        trafficExpireRedisScript.init()
         trafficExpireScriptExecuteAdapter.init()
     }
 
@@ -46,7 +47,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
         reactiveStringRedisTemplate.opsForValue().set(lastEntryKey, lastEntry).awaitSingle()
 
         `when`("현재 시간 기준 대기 시간 2분 지난 만료 Token 1건 존재하는 경우") {
-            val result = trafficExpireScriptExecuteAdapter.expireTraffic()
+            val result = trafficExpireScriptExecuteAdapter.execute()
             
             then("1건 만료 처리 결과 정상 확인한다") {
                 result shouldBe 1

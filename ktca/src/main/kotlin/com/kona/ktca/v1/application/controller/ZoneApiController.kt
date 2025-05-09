@@ -1,4 +1,4 @@
-package com.kona.ktca.v1.application.inbound.adapter
+package com.kona.ktca.v1.application.controller
 
 import com.kona.ktca.api.ZoneApiDelegate
 import com.kona.ktca.dto.GetAllZoneInfoResDto
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 
 @Controller
-class ZoneApiAdapter: ZoneApiDelegate {
+class ZoneApiController: ZoneApiDelegate {
 
     override fun deleteZoneInfo(zoneId: String): ResponseEntity<Unit> {
         return ResponseEntity.ok().build()

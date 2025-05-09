@@ -1,17 +1,18 @@
-package com.kona.ktca.v1.infrastructure.adapter.redis
+package com.kona.ktca.v1.infrastructure.adapter
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
-import com.kona.ktca.v1.domain.port.outbound.TrafficExpirePort
+import com.kona.ktca.v1.domain.port.outbound.TrafficExpireExecutePort
+import com.kona.ktca.v1.infrastructure.redis.TrafficExpireRedisScript
 import jakarta.annotation.PostConstruct
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 
 @Component
 class TrafficExpireScriptExecuteAdapter(
-    private val trafficExpireScript: TrafficExpireScript,
+    private val trafficExpireRedisScript: TrafficExpireRedisScript,
     private val redisExecuteAdapter: RedisExecuteAdapter,
-) : TrafficExpirePort {
+) : TrafficExpireExecutePort {
 
     companion object {
         const val ZQUEUE_KEY_PATTERN = "ktc:*:zqueue"
@@ -23,10 +24,10 @@ class TrafficExpireScriptExecuteAdapter(
 
     @PostConstruct
     fun init() {
-        script = trafficExpireScript.getScript()
+        script = trafficExpireRedisScript.getScript()
     }
 
-    override suspend fun expireTraffic(): Long {
+    override suspend fun execute(): Long {
         // 모든 zqueue key 목록 조회
         return redisExecuteAdapter.keys(ZQUEUE_KEY_PATTERN)
             // 각 zone 별 토큰 만료 처리

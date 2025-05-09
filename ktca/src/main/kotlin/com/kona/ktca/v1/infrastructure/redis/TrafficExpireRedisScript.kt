@@ -1,4 +1,4 @@
-package com.kona.ktca.v1.infrastructure.adapter.redis
+package com.kona.ktca.v1.infrastructure.redis
 
 import jakarta.annotation.PostConstruct
 import org.springframework.core.io.ClassPathResource
@@ -8,7 +8,7 @@ import org.springframework.scripting.support.ResourceScriptSource
 import org.springframework.stereotype.Component
 
 @Component
-class TrafficExpireScript {
+class TrafficExpireRedisScript {
     private lateinit var script: RedisScript<List<*>>
 
     @PostConstruct
