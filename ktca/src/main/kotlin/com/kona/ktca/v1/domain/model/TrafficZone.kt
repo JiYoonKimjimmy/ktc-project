@@ -9,5 +9,21 @@ data class TrafficZone(
     val threshold: Long,
     val activationTime: LocalDateTime,
     val status: TrafficZoneStatus,
-    val waiting: TrafficZoneWaiting,
-)
+    var waiting: TrafficZoneWaiting,
+) {
+
+    constructor(zoneId: String, threshold: Long) : this(
+        zoneId = zoneId,
+        name = zoneId,
+        threshold = threshold,
+        activationTime = LocalDateTime.now(),
+        status = TrafficZoneStatus.ACTIVE,
+        waiting = TrafficZoneWaiting(),
+    )
+
+    fun applyWaiting(waiting : TrafficZoneWaiting): TrafficZone {
+        this.waiting = waiting
+        return this
+    }
+
+}

@@ -4,6 +4,6 @@ import com.kona.ktca.v1.domain.model.TrafficMonitoring
 
 interface TrafficZoneMonitorPort {
 
-    fun monitoring(zoneId: String): TrafficMonitoring
+    suspend fun monitoring(zoneId: String? = null): TrafficMonitoring
 
 }

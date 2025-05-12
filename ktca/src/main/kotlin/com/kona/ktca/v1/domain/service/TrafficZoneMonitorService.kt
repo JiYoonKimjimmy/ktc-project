@@ -2,12 +2,15 @@ package com.kona.ktca.v1.domain.service
 
 import com.kona.ktca.v1.domain.model.TrafficMonitoring
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneMonitorPort
+import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
 import org.springframework.stereotype.Service
 
 @Service
-class TrafficZoneMonitorService : TrafficZoneMonitorPort {
+class TrafficZoneMonitorService(
+    private val trafficZoneFindPort: TrafficZoneFindPort,
+) : TrafficZoneMonitorPort {
 
-    override fun monitoring(zoneId: String): TrafficMonitoring {
+    override suspend fun monitoring(zoneId: String?): TrafficMonitoring {
         /**
          * [트래픽 Zone 제어 현황 모니터링]
          * 1. 트래픽 제어 활성화 상태 Zone 목록 조회
@@ -16,7 +19,9 @@ class TrafficZoneMonitorService : TrafficZoneMonitorPort {
          *    - Zone 진입자 수
          *    - Zone 대기 해소 예상 시간
          */
-        TODO("Not yet implemented")
+        return trafficZoneFindPort.findAllTrafficZone(zoneId)
+            .let { trafficZoneFindPort.findAllTrafficZoneWaiting(it) }
+            .let { TrafficMonitoring(it) }
     }
 
 }
