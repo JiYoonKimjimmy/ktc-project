@@ -28,7 +28,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
             then("Zone 현황 조회 0건 정상 확인한다") {
                 result shouldNotBe null
-                result.zones.size shouldBe 0
+                result.size shouldBe 0
             }
         }
 
@@ -50,11 +50,11 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
             then("Zone 현황 조회 결과 정상 확인한다") {
                 result shouldNotBe null
-                result.zones.size shouldBe 2
+                result.size shouldBe 2
             }
 
             then("'test-zone-1' 트래픽 현황 결과 'waitingNumber : 1, entryCount: 0, estimatedClearTime: 60000' 정상 확인한다") {
-                val zone1 = result.zones.find { it.zoneId == zoneId1 }?.waiting
+                val zone1 = result.find { it.zoneId == zoneId1 }?.waiting
                 zone1!! shouldNotBe null
                 zone1.waitingCount shouldBe 1
                 zone1.entryCount shouldBe 0
@@ -62,7 +62,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
             }
 
             then("'test-zone-2' 트래픽 현황 결과 'waitingNumber : 2, entryCount: 0, estimatedClearTime: 120000' 정상 확인한다") {
-                val zone2 = result.zones.find { it.zoneId == zoneId2 }?.waiting
+                val zone2 = result.find { it.zoneId == zoneId2 }?.waiting
                 zone2!! shouldNotBe null
                 zone2.waitingCount shouldBe 2
                 zone2.entryCount shouldBe 0
@@ -76,7 +76,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
             then("0건 반환 처리 정상 확인한다") {
                 result shouldNotBe null
-                result.zones.size shouldBe 0
+                result.size shouldBe 0
             }
         }
 
@@ -85,11 +85,11 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
             then("Zone 현황 조회 결과 '1건' 정상 확인한다") {
                 result shouldNotBe null
-                result.zones.size shouldBe 1
+                result.size shouldBe 1
             }
 
             then("'test-zone-2' 트래픽 현황 결과 'waitingNumber : 2, entryCount: 0, estimatedClearTime: 120000' 정상 확인한다") {
-                val zone2 = result.zones.find { it.zoneId == zoneId2 }?.waiting
+                val zone2 = result.find { it.zoneId == zoneId2 }?.waiting
                 zone2!! shouldNotBe null
                 zone2.waitingCount shouldBe 2
                 zone2.entryCount shouldBe 0
