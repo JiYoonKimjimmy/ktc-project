@@ -22,6 +22,7 @@ class TrafficCacheKeyTest : StringSpec({
         result[TRAFFIC_LAST_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:last_refill_time"
         result[TRAFFIC_LAST_ENTRY_TIME] shouldBe "ktc:{TEST_ZONE}:last_entry_time"
         result[TRAFFIC_ENTRY_COUNTER] shouldBe "ktc:{TEST_ZONE}:entry_counter"
+        result[TRAFFIC_ACTIVATION_ZONES] shouldBe "ktc:activation:zones"
     }
 
     "'TEST_ZONE' zoneId 기준 TrafficCacheKey enum 'key' 목록 생성 결과 정상 확인한다" {
@@ -29,7 +30,7 @@ class TrafficCacheKeyTest : StringSpec({
         val zoneId = "TEST_ZONE"
 
         // when
-        val result = TrafficCacheKey.generateKeys(zoneId)
+        val result = TrafficCacheKey.generateTrafficControlKeys(zoneId)
 
         // then
         val expected = listOf(

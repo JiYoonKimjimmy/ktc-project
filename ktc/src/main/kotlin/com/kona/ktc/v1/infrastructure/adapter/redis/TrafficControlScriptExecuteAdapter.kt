@@ -25,7 +25,7 @@ class TrafficControlScriptExecuteAdapter(
         val now = Instant.now().epochSecond
         val score = now * 1000 + (now % 1000)
 
-        val keys = TrafficCacheKey.generateKeys(token.zoneId)
+        val keys = TrafficCacheKey.generateTrafficControlKeys(token.zoneId)
         val args = listOf(
             token.token,
             score.toString(),

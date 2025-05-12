@@ -28,8 +28,11 @@ enum class TrafficCacheKey(
     TRAFFIC_ENTRY_COUNTER(
         note = "트래픽 진입 Counter Key",
         key = "ktc:{%s}:entry_counter"
+    ),
+    TRAFFIC_ACTIVATION_ZONES(
+        note = "트래픽 제어 활성화 Zone 목록 Key",
+        key = "ktc:activation:zones"
     )
-
     ;
 
     companion object {
@@ -37,8 +40,17 @@ enum class TrafficCacheKey(
             return entries.associateWith { it.key.format(zoneId) }
         }
 
-        fun generateKeys(zoneId: String): List<String> {
-            return entries.map { it.key.format(zoneId) }
+        fun generateTrafficControlKeys(zoneId: String): List<String> {
+            // !! 순서 중요 !!
+            val keys = listOf(
+                TRAFFIC_ZQUEUE,
+                TRAFFIC_TOKENS,
+                TRAFFIC_THRESHOLD,
+                TRAFFIC_LAST_REFILL_TIME,
+                TRAFFIC_LAST_ENTRY_TIME,
+                TRAFFIC_ENTRY_COUNTER
+            )
+            return keys.map { it.key.format(zoneId) }
         }
     }
 
