@@ -4,27 +4,23 @@ info:
   title: 'KTCA(Kona Traffic Controller API)'
   description: |
     
-    ## 트레이서 API 컴포넌트
-
+    #### KTC API 컴포넌트
+    
     | Component | URL | 설명 |
     | :---: | :---: | --- |
     | KTCA | `http://118.33.122.28:21002` | KTC API 처리 서버 |
-
+    
     - `KTC` 트래픽 제어 대상 Zone 정보 관리
     - `KTC` 트래픽 제어 Zone 현황 모니터링  
     - WALLET, OracleDB 상태 수집기 `DBMT` 컴포넌트로부터 정보 제공받아 트래픽 허용 임계치 조절
     
-    <br>
-    
-    ### 관련문서
+    #### 관련문서
     
     - [KTC 기능정의서](https://konawiki.konai.com/pages/viewpage.action?pageId=386013831)
     - [KTC 프로젝트 Wiki](https://konawiki.konai.com/display/KonaCardDevelopment/KTC-APIs)
     
-    <br>
-  
-    ### 주요 정의
-    
+    #### 주요 정의
+      
     | 명칭 | 의미 |
     | :---: | --- |
     | Zone | KTC 트래픽 제어를 위한 대상 |
