@@ -23,14 +23,6 @@ fun setCorrelationId(correlationId: String?) {
     MDC.put(CORRELATION_ID_LOG_FIELD, correlationId)
 }
 
-fun String.getZoneId(): String {
-    /**
-     * [`zoneId` 정보 추출]
-     * - "ktc:{<zoneId>}:zqueue" 형식의 key 문자열에서 `zoneId` 추출
-     */
-    return this.substringAfter(ZQUEUE_KEY_PREFIX).substringBefore(ZQUEUE_KEY_SUFFIX)
-}
-
 fun Long?.ifNullOrMinus(default: Long): Long {
     return if (this == null || this < 0) {
         default

@@ -1,8 +1,7 @@
 package com.kona.ktca.v1.infrastructure.adapter
 
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_LAST_ENTRY_TIME
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.util.toInstantEpochMilli
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.v1.infrastructure.redis.TrafficExpireRedisScript
@@ -41,6 +40,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
         // 2025-04-29T00:01:00
         val lastEntry = now.plusMinutes(1).toInstantEpochMilli()
 
+        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token1, expiredScore).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token2, score).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token3, score).awaitSingle()

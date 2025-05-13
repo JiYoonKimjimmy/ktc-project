@@ -1,10 +1,8 @@
 package com.kona.ktca.v1.domain.service
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_THRESHOLD
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneFindAdapter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -13,8 +11,6 @@ import kotlinx.coroutines.reactor.awaitSingle
 import java.time.Instant
 
 class TrafficZoneMonitorServiceTest : BehaviorSpec({
-
-    listeners(EmbeddedRedisTestListener())
 
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
     val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
@@ -37,6 +33,9 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
         val token1 = "test-token-1"
         val token2 = "test-token-2"
+
+        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId1).awaitSingle()
+        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId2).awaitSingle()
 
         reactiveStringRedisTemplate.opsForZSet().add(TRAFFIC_ZQUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(TRAFFIC_ZQUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
