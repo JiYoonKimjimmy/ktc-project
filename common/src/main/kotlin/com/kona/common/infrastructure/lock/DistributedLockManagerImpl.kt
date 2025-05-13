@@ -2,6 +2,8 @@ package com.kona.common.infrastructure.lock
 
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.redisson.api.RedissonClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -20,10 +22,10 @@ class DistributedLockManagerImpl(
         leaseTime: Long,
         timeUnit: TimeUnit,
         block: suspend () -> R
-    ): R {
+    ): R = withContext(Dispatchers.IO) {
         val lock = redissonClient.getLock(key)
 
-        return try {
+        try {
             if (lock.tryLock(waitTime, leaseTime, timeUnit)) {
                 logger.info("Redisson '$key' locked.")
                 block()

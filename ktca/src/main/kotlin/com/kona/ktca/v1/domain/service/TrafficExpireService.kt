@@ -25,10 +25,10 @@ class TrafficExpireService(
              * 2. 분산락 획득 후, 현재 시간 - 1min 기준 트래픽 토큰 삭제 요청
              */
             val now = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm)
-            val result = distributedLockManager.expireTrafficTokenScheduleLock(now) {
+             distributedLockManager.expireTrafficTokenScheduleLock(now) {
                 trafficExpireExecutePort.execute()
+                    .also { logger.info("Expired Traffic Token count : $it") }
             }
-            logger.info("Expired Traffic Token count : $result")
         } catch (e: Exception) {
             logger.error("Failed to expire traffic tokens", e)
         }
