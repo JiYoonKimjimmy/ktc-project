@@ -1,12 +1,10 @@
 package com.kona.common.infrastructure.cache.redis
 
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.collections.*
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.redis.core.script.DefaultRedisScript
@@ -16,7 +14,7 @@ class RedisExecuteAdapterImplTest : StringSpec({
     listeners(EmbeddedRedisTestListener())
 
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
-    val redisScriptExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
+    val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
 
     "Redis script 실행 결과 정상 동작 확인한다" {
         // given
@@ -35,7 +33,7 @@ class RedisExecuteAdapterImplTest : StringSpec({
         reactiveStringRedisTemplate.opsForValue().set(key, "Hello World!").awaitSingle()
 
         // when
-        val result = redisScriptExecuteAdapter.execute(script, keys, emptyList())
+        val result = redisExecuteAdapter.execute(script, keys, emptyList())
 
         // then
         result.shouldNotBeEmpty()
@@ -50,7 +48,7 @@ class RedisExecuteAdapterImplTest : StringSpec({
         listOf("test:1", "test:2", "test:3", "other:1").forEach { reactiveStringRedisTemplate.opsForValue().set(it, "value").awaitSingle() }
 
         // when
-        val result = redisScriptExecuteAdapter.keys(pattern)
+        val result = redisExecuteAdapter.keys(pattern)
 
         // then
         result.shouldNotBeEmpty()
@@ -65,9 +63,26 @@ class RedisExecuteAdapterImplTest : StringSpec({
         listOf("test:1", "test:2", "test:3").forEach { reactiveStringRedisTemplate.opsForValue().set(it, "value").awaitSingle() }
 
         // when
-        val result = redisScriptExecuteAdapter.keys(pattern)
+        val result = redisExecuteAdapter.keys(pattern)
 
         // then
         result.shouldBeEmpty()
     }
+
+    "zoneId 를 트래픽 제어 활성화 Zone 목록 Cache 저장 결과 정상 확인한다" {
+        // given
+        val key = TrafficCacheKey.TRAFFIC_ACTIVATION_ZONES.key
+        val value = "test-zone"
+
+        // when
+        val result = redisExecuteAdapter.addValueForSet(key, value)
+
+        // then
+        result shouldBe 1
+
+        val values = redisExecuteAdapter.getValuesForSet(key)
+        values.size shouldBe 1
+        values shouldContain value
+    }
+
 })

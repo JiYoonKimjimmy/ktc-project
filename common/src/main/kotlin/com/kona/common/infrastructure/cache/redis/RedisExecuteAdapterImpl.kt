@@ -26,11 +26,20 @@ class RedisExecuteAdapterImpl(
         reactiveStringRedisTemplate.keys(pattern).collectList().awaitSingle()
     }
 
-    override suspend fun getValue(key: String): String? {
-        return reactiveStringRedisTemplate.opsForValue().getAndAwait(key)
+    override suspend fun getValue(key: String): String? = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForValue().getAndAwait(key)
     }
 
-    override suspend fun getZSetSize(key: String): Long {
-        return reactiveStringRedisTemplate.opsForZSet().sizeAndAwait(key)
+    override suspend fun getSizeForZSet(key: String): Long = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForZSet().sizeAndAwait(key)
     }
+
+    override suspend fun addValueForSet(key: String, value: String): Long = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForSet().add(key, value).awaitSingle()
+    }
+
+    override suspend fun getValuesForSet(key: String): List<String> = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForSet().members(key).collectList().awaitSingle()
+    }
+
 }

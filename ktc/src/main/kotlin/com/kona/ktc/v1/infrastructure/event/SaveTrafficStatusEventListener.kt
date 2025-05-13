@@ -1,10 +1,13 @@
 package com.kona.ktc.v1.infrastructure.event
 
+import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ACTIVATION_ZONES
 import com.kona.common.infrastructure.message.rabbitmq.MessageExchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.infrastructure.message.rabbitmq.MessagePublisher
 import com.kona.common.infrastructure.util.error
 import com.kona.ktc.v1.domain.event.SaveTrafficStatusEvent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class SaveTrafficStatusEventListener(
     private val messagePublisher: MessagePublisher,
+    private val redisExecuteAdapter: RedisExecuteAdapter,
     private val defaultCoroutineScope: CoroutineScope
 ) {
     // logger
@@ -21,10 +25,8 @@ class SaveTrafficStatusEventListener(
     @EventListener
     fun handleSaveTrafficStatusEvent(event: SaveTrafficStatusEvent) = defaultCoroutineScope.launch {
         try {
-            messagePublisher.publishDirectMessage(
-                exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE,
-                message = event.message
-            )
+            async { messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message) }.await()
+            async { redisExecuteAdapter.addValueForSet(TRAFFIC_ACTIVATION_ZONES.key, event.message.zoneId) }.await()
         } catch (e: Exception) {
             logger.error(e)
         }

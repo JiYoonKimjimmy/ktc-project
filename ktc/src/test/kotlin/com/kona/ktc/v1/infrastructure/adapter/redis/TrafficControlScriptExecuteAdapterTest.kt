@@ -56,7 +56,7 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
             then("현재 트래픽 대기 Queue 건수는 2건 정상 확인한다") {
                 val zqueueKey = TRAFFIC_ZQUEUE.getKey(zoneId)
-                redisScriptAdapter.getZSetSize(zqueueKey) shouldBe 2L
+                redisScriptAdapter.getSizeForZSet(zqueueKey) shouldBe 2L
             }
 
         }
