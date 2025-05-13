@@ -1,6 +1,5 @@
 package com.kona.ktca.v1.application.controller
 
-import com.kona.ktca.api.V1ZoneManagementApi
 import com.kona.ktca.api.V1ZoneManagementApiDelegate
 import com.kona.ktca.dto.V1FindAllZoneResponse
 import com.kona.ktca.dto.V1FindZoneResponse

@@ -14,7 +14,7 @@ class TrafficExpirationScheduler(
 ) {
 
     @Async("trafficExpirationTaskExecutor")
-    @Scheduled(fixedDelayString = "60000")
+    @Scheduled(cron = "0 * * * * *")    // 매 0초마다 스케쥴링 실행
     fun handleExpireTrafficScheduler() {
         defaultCoroutineScope.launch {
             trafficExpirePort.expireTraffic()

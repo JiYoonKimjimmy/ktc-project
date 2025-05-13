@@ -1,7 +1,7 @@
 package com.kona.common.infrastructure.util
 
+import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 const val DATE_TIME_BASIC_PATTERN = "yyyyMMddHHmmss"
@@ -12,6 +12,6 @@ fun LocalDateTime.convertPatternOf(pattern: String = DATE_TIME_BASIC_PATTERN): S
     return this.format(DateTimeFormatter.ofPattern(pattern))
 }
 
-fun LocalDateTime.toInstantEpochMilli(): String {
-    return this.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
+fun Instant.toInstantEpochMilli(): String {
+    return this.toEpochMilli().toString()
 }
