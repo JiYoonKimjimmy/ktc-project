@@ -55,16 +55,16 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
             then("'test-zone-1' 트래픽 현황 결과 'waitingNumber : 1, entryCount: 0, estimatedClearTime: 60000' 정상 확인한다") {
                 val zone1 = result.find { it.zoneId == zoneId1 }?.waiting
                 zone1!! shouldNotBe null
-                zone1.waitingCount shouldBe 1
                 zone1.entryCount shouldBe 0
+                zone1.waitingCount shouldBe 1
                 zone1.estimatedClearTime shouldBe 60000
             }
 
             then("'test-zone-2' 트래픽 현황 결과 'waitingNumber : 2, entryCount: 0, estimatedClearTime: 120000' 정상 확인한다") {
                 val zone2 = result.find { it.zoneId == zoneId2 }?.waiting
                 zone2!! shouldNotBe null
-                zone2.waitingCount shouldBe 2
                 zone2.entryCount shouldBe 0
+                zone2.waitingCount shouldBe 2
                 zone2.estimatedClearTime shouldBe 120000
             }
         }
@@ -90,8 +90,8 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
             then("'test-zone-2' 트래픽 현황 결과 'waitingNumber : 2, entryCount: 0, estimatedClearTime: 120000' 정상 확인한다") {
                 val zone2 = result.find { it.zoneId == zoneId2 }?.waiting
                 zone2!! shouldNotBe null
-                zone2.waitingCount shouldBe 2
                 zone2.entryCount shouldBe 0
+                zone2.waitingCount shouldBe 2
                 zone2.estimatedClearTime shouldBe 120000
             }
         }

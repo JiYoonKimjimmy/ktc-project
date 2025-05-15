@@ -4,8 +4,9 @@ local function addToQueue(queueKey, token, score)
 end
 
 -- 2. 토큰-버킷 리필 시간 확인 및 리필 처리
-local function checkAndRefillBucket(bucketRefillTimeKey, queueCursorKey, bucketKey, thresholdKey, nowMillis, defaultThreshold)
+local function checkAndRefillBucket(queueCursorKey, thresholdKey, bucketKey, bucketRefillTimeKey, nowMillis, defaultThreshold)
     redis.call('SETNX', queueCursorKey, 0)
+    redis.call('SETNX', thresholdKey, defaultThreshold)
     redis.call('SETNX', bucketKey, defaultThreshold)
     redis.call('SETNX', bucketRefillTimeKey, nowMillis)
 
@@ -63,5 +64,5 @@ local defaultThreshold    = ARGV[4]
 
 -- 메인 실행 로직
 addToQueue(queueKey, token, score)
-local threshold = checkAndRefillBucket(bucketRefillTimeKey, queueCursorKey, bucketKey, thresholdKey, nowMillis, defaultThreshold)
+local threshold = checkAndRefillBucket(queueCursorKey, thresholdKey, bucketKey, bucketRefillTimeKey, nowMillis, defaultThreshold)
 return checkTrafficEntry(queueKey, queueCursorKey, bucketKey, token, threshold)

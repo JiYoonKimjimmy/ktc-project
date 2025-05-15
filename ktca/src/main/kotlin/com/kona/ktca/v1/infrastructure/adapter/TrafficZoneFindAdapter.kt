@@ -40,13 +40,20 @@ class TrafficZoneFindAdapter(
     }
 
     private suspend fun findTrafficZoneWaiting(zoneId: String, threshold: Long): TrafficZoneWaiting {
-        val zqueueSize = redisExecuteAdapter.getSizeForZSet(QUEUE.getKey(zoneId))
-//        val entryCount = redisExecuteAdapter.getValue(ENTRY_COUNTER.getKey(zoneId))?.toLong().ifNullOrMinus(ZERO)
-        val entryCount = 0L
-        val estimatedClearTime = ceil(zqueueSize.toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
+        val queueKey = QUEUE.getKey(zoneId)
+        val queueCursorKey = QUEUE_CURSOR.getKey(zoneId)
+        val bucketKey = BUCKET.getKey(zoneId)
+
+        val queueSize = redisExecuteAdapter.getSizeForZSet(queueKey)
+        val queueCursor = redisExecuteAdapter.getValue(queueCursorKey)?.toLong() ?: ZERO
+        val bucketSize = redisExecuteAdapter.getValue(bucketKey)?.toLong() ?: threshold
+
+        val entryCount = threshold - bucketSize + queueCursor
+        val waitingCount = queueSize - entryCount
+        val estimatedClearTime = ceil(waitingCount.toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
 
         return TrafficZoneWaiting(
-            waitingCount = zqueueSize,
+            waitingCount = waitingCount,
             entryCount = entryCount,
             estimatedClearTime = estimatedClearTime
         )

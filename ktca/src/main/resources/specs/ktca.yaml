@@ -454,10 +454,10 @@ components:
         waiting:
           type: object
           properties:
-            waitingCount:
-              $ref: '#/components/schemas/waitingCount'
             entryCount:
               $ref: '#/components/schemas/entryCount'
+            waitingCount:
+              $ref: '#/components/schemas/waitingCount'
             estimatedClearTime:
               $ref: '#/components/schemas/estimatedClearTime'
 

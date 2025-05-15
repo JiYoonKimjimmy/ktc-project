@@ -19,8 +19,8 @@ class V1ZoneMonitoringModelMapper {
                 activationTime = it.activationTime.convertPatternOf(),
                 status = ZoneStatus.valueOf(it.status.name),
                 waiting = V1ZoneMonitoringDataWaiting(
-                    waitingCount = it.waiting.waitingCount.toInt(),
                     entryCount = it.waiting.entryCount.toInt(),
+                    waitingCount = it.waiting.waitingCount.toInt(),
                     estimatedClearTime = it.waiting.estimatedClearTime.toInt()
                 ),
             )
