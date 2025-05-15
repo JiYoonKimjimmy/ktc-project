@@ -71,7 +71,7 @@ class RedisExecuteAdapterImplTest : StringSpec({
 
     "zoneId 를 트래픽 제어 활성화 Zone 목록 Cache 저장 결과 정상 확인한다" {
         // given
-        val key = TrafficCacheKey.TRAFFIC_ACTIVATION_ZONES.key
+        val key = TrafficCacheKey.ACTIVATION_ZONES.key
         val value = "test-zone"
 
         // when

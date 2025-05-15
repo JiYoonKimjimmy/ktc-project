@@ -1,6 +1,6 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.QUEUE_CURSOR
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_CURSOR
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.v1.domain.model.TrafficToken

@@ -1,7 +1,7 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.util.toTokenScore
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.domain.model.TrafficWaiting
@@ -28,7 +28,7 @@ class TrafficControlScriptExecuteAdapter(
         val score = now.toTokenScore().toString()
         val nowMillis = now.toEpochMilli().toString()
 
-        val keys = TrafficControlCacheKey.getTrafficControlKeys(zoneId).map { it.value }
+        val keys = TrafficCacheKey.getTrafficControlKeys(zoneId).map { it.value }
         val args = listOf(token, score, nowMillis, defaultThreshold)
 
         val result = redisExecuteAdapter.execute(script, keys, args).map { it as Long }

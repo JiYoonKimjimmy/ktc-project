@@ -13,7 +13,3 @@ const val ONE_MINUTE_MILLIS = 60000L
 const val CORRELATION_ID_HEADER_FIELD = "X-KM-Correlation-Id"
 const val CORRELATION_ID_LOG_FIELD = "correlationId"
 const val CORRELATION_ID_HEX_STRING_LENGTH = 7
-
-const val ZQUEUE_KEY_PATTERN = "ktc:*:zqueue"
-const val ZQUEUE_KEY_PREFIX = "ktc:{"
-const val ZQUEUE_KEY_SUFFIX = "}:zqueue"

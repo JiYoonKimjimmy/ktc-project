@@ -1,8 +1,8 @@
 package com.kona.ktca.v1.infrastructure.adapter
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ACTIVATION_ZONES
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.TRAFFIC_ZQUEUE
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.ACTIVATION_ZONES
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE
 import com.kona.common.infrastructure.util.toInstantEpochMilli
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.v1.infrastructure.redis.TrafficExpireRedisScript
@@ -26,7 +26,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
 
     given("동일한 Zone 트래픽 3건 대기 중 만료 script 호출하여") {
         val zoneId = "ZONE_1"
-        val zqueueKey = TRAFFIC_ZQUEUE.getKey(zoneId)
+        val zqueueKey = QUEUE.getKey(zoneId)
 
         val token1 = "token1"
         val token2 = "token2"
@@ -38,7 +38,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
         // 만료 토큰 score : 현재 시간 - 3분
         val expiredScore = now.minusSeconds(180).toInstantEpochMilli()
 
-        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId).awaitSingle()
+        reactiveStringRedisTemplate.opsForSet().add(ACTIVATION_ZONES.key, zoneId).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token1, expiredScore.toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token2, score.toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(zqueueKey, token3, score.toDouble()).awaitSingle()

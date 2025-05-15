@@ -25,16 +25,16 @@ class TrafficExpireScriptExecuteAdapter(
 
     override suspend fun execute(): Long {
         // 모든 zqueue key 목록 조회
-        return redisExecuteAdapter.getValuesForSet(TRAFFIC_ACTIVATION_ZONES.key)
+        return redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
             // 각 zone 별 토큰 만료 처리
             .sumOf { expireTraffic(it) }
     }
 
     private suspend fun expireTraffic(zoneId: String): Long {
         // zoneId 추출
-        val zqueueKey = TRAFFIC_ZQUEUE.getKey(zoneId)
+        val queueKey = QUEUE.getKey(zoneId)
         val expirationTime = Instant.now().minusSeconds(180).toInstantEpochMilli()
-        val keys = listOf(zqueueKey)
+        val keys = listOf(queueKey)
         val args = listOf(expirationTime)
 
         // traffic-expire script 실행

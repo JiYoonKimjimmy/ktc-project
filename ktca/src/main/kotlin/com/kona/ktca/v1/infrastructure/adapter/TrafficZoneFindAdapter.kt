@@ -23,13 +23,13 @@ class TrafficZoneFindAdapter(
     }
 
     private suspend fun getTrafficZones(zoneId: String?): List<String> {
-        return redisExecuteAdapter.getValuesForSet(TRAFFIC_ACTIVATION_ZONES.key)
+        return redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
             .filter { if (zoneId != null) it == zoneId else true }
     }
 
     private suspend fun getTrafficZoneThresholds(zoneIds: List<String>): Map<String, Long> {
         return zoneIds.associateWith {
-            redisExecuteAdapter.getValue(TRAFFIC_THRESHOLD.getKey(it))?.toLong().ifNullOrMinus(ZERO)
+            redisExecuteAdapter.getValue(THRESHOLD.getKey(it))?.toLong().ifNullOrMinus(ZERO)
         }
     }
 
@@ -40,8 +40,9 @@ class TrafficZoneFindAdapter(
     }
 
     private suspend fun findTrafficZoneWaiting(zoneId: String, threshold: Long): TrafficZoneWaiting {
-        val zqueueSize = redisExecuteAdapter.getSizeForZSet(TRAFFIC_ZQUEUE.getKey(zoneId))
-        val entryCount = redisExecuteAdapter.getValue(TRAFFIC_ENTRY_COUNTER.getKey(zoneId))?.toLong().ifNullOrMinus(ZERO)
+        val zqueueSize = redisExecuteAdapter.getSizeForZSet(QUEUE.getKey(zoneId))
+//        val entryCount = redisExecuteAdapter.getValue(ENTRY_COUNTER.getKey(zoneId))?.toLong().ifNullOrMinus(ZERO)
+        val entryCount = 0L
         val estimatedClearTime = ceil(zqueueSize.toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
 
         return TrafficZoneWaiting(

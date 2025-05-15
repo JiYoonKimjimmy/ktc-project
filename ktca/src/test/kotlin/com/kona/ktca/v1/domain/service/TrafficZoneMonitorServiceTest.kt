@@ -34,15 +34,15 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
         val token1 = "test-token-1"
         val token2 = "test-token-2"
 
-        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId1).awaitSingle()
-        reactiveStringRedisTemplate.opsForSet().add(TRAFFIC_ACTIVATION_ZONES.key, zoneId2).awaitSingle()
+        reactiveStringRedisTemplate.opsForSet().add(ACTIVATION_ZONES.key, zoneId1).awaitSingle()
+        reactiveStringRedisTemplate.opsForSet().add(ACTIVATION_ZONES.key, zoneId2).awaitSingle()
 
-        reactiveStringRedisTemplate.opsForZSet().add(TRAFFIC_ZQUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
-        reactiveStringRedisTemplate.opsForZSet().add(TRAFFIC_ZQUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
-        reactiveStringRedisTemplate.opsForZSet().add(TRAFFIC_ZQUEUE.getKey(zoneId2), token2, Instant.now().toEpochMilli().toDouble()).awaitSingle()
+        reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
+        reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
+        reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token2, Instant.now().toEpochMilli().toDouble()).awaitSingle()
 
-        reactiveStringRedisTemplate.opsForValue().set(TRAFFIC_THRESHOLD.getKey(zoneId1), "1").awaitSingle()
-        reactiveStringRedisTemplate.opsForValue().set(TRAFFIC_THRESHOLD.getKey(zoneId2), "1").awaitSingle()
+        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId1), "1").awaitSingle()
+        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId2), "1").awaitSingle()
 
         `when`("현재 트래픽 제어 활성화된 Zone 2건인 경우") {
             val result = trafficZoneMonitorService.monitoring()

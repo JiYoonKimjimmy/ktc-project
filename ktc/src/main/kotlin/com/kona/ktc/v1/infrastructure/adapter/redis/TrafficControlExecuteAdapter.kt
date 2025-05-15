@@ -1,7 +1,7 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.*
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.Companion.getTrafficControlKeys
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ZERO_STR
 import com.kona.common.infrastructure.util.toTokenScore
