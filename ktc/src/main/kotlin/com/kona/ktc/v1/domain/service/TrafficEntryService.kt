@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class TrafficEntryService(
-    private val trafficControlRedisAdapter: TrafficControlPort,
+    private val trafficControlScriptExecuteAdapter: TrafficControlPort,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficEntryPort {
 
     override suspend fun entry(token: TrafficToken): TrafficWaiting {
-        return trafficControlRedisAdapter.controlTraffic(token)
+        return trafficControlScriptExecuteAdapter.controlTraffic(token)
             .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
     }
 

@@ -7,4 +7,14 @@ data class TrafficWaiting(
     val pollingPeriod: Long = 3000L
 ) {
     val canEnter: Boolean by lazy { this.estimatedTime == 0L }
+
+    companion object {
+        fun entry(): TrafficWaiting {
+            return TrafficWaiting(0, 0, 0)
+        }
+
+        fun waiting(number: Long, estimatedTime: Long, totalCount: Long): TrafficWaiting {
+            return TrafficWaiting(number, estimatedTime, totalCount)
+        }
+    }
 }

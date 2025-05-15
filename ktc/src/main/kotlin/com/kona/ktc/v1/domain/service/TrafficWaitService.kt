@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class TrafficWaitService(
-    private val trafficControlPort: TrafficControlPort,
+    private val trafficControlScriptExecuteAdapter: TrafficControlPort,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficWaitPort {
 
     override suspend fun wait(token: TrafficToken): TrafficWaiting {
-        return trafficControlPort.controlTraffic(token)
+        return trafficControlScriptExecuteAdapter.controlTraffic(token)
             .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
     }
 

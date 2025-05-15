@@ -2,7 +2,7 @@ package com.kona.ktca.v1.infrastructure.adapter
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
-import com.kona.common.infrastructure.util.ONE_MINUTE_MILLE
+import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ZERO
 import com.kona.common.infrastructure.util.ifNullOrMinus
 import com.kona.ktca.v1.domain.model.TrafficZone
@@ -42,7 +42,7 @@ class TrafficZoneFindAdapter(
     private suspend fun findTrafficZoneWaiting(zoneId: String, threshold: Long): TrafficZoneWaiting {
         val zqueueSize = redisExecuteAdapter.getSizeForZSet(TRAFFIC_ZQUEUE.getKey(zoneId))
         val entryCount = redisExecuteAdapter.getValue(TRAFFIC_ENTRY_COUNTER.getKey(zoneId))?.toLong().ifNullOrMinus(ZERO)
-        val estimatedClearTime = ceil(zqueueSize.toDouble() / threshold).toLong() * ONE_MINUTE_MILLE
+        val estimatedClearTime = ceil(zqueueSize.toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
 
         return TrafficZoneWaiting(
             waitingCount = zqueueSize,

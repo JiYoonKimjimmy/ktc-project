@@ -36,6 +36,63 @@
 
 ---
 
+### 트래픽 제어 프로세스
+
+1. **트래픽 요청 토큰 Queue 저장**
+   - 트래픽 대기 요청 토큰 `score`(현재 시간 밀리초) 기준 Queue(`ZSet`) 추가
+   - 이미 동일 토큰 Queue 있는 경우, 추가하지 않음
+2. **토큰-버킷 리필 시간 확인 및 리필 처리**
+   - `현재 시간 - bucketRefillTime > 60000ms(1분)` 인 경우, `queueCursor` & `bucket` & `bucketRefillTime` 업데이트
+     - `queueCursor`: `threshold` 만큼 증가시켜 Cursor 이동
+     - `bucket`: `threshold` 값으로 토큰-버킷 리필
+     - `bucketRefillTime`: 현재 시간으로 업데이트
+
+3. **트래픽 진입 가능 여부 판단**
+   - 현재 토큰의 rank(Queue 내 순번), queueCursor, bucketSize를 조회
+   - 진입 가능 조건:
+     - bucketSize > 0
+     - queueCursor <= rank < queueCursor + threshold
+
+   - **진입 가능한 경우:**
+     - bucketSize를 1 감소(decrement)
+     - 즉시 진입(TrafficWaiting.entry()) 반환
+
+   - **진입 불가(대기)한 경우:**
+     - 전체 Queue 크기(queueSize) 조회
+     - 대기 순번(number), 예상 대기 시간(estimatedTime), 전체 대기 인원(totalCount) 계산
+       - number = rank - queueCursor - threshold - bucketSize + 1
+       - estimatedTime = ceil(number / threshold) * 1분
+       - totalCount = queueSize - queueCursor - threshold - bucketSize
+     - 대기 정보(TrafficWaiting.waiting) 반환
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Redis
+
+    Client->>Server: 트래픽 대기/진입 요청 (token, now)
+    Server->>Redis: ZSet에 token 존재 여부 확인
+    alt 토큰 없음
+        Server->>Redis: ZSet에 token 추가 (score)
+    end
+    Server->>Redis: bucketRefillTime, threshold, bucket, queueCursor 조회
+    alt now - bucketRefillTime > 1분 경과
+        Server->>Redis: queueCursor(+=threshold), bucket(=threshold), bucketRefillTime(=now) 갱신
+    end
+    Server->>Redis: token's rank, bucketSize 조회
+    canEnter = (bucketSize > 0) && (rank in queueCursor until (queueCursor + threshold))
+    alt canEnter: true(진입 가능)
+        Server->>Redis: bucket 차감
+        Server-->>Client: 진입 성공 응답 (canEnter=true)
+    else canEnter: false(진입 불가)
+        Server->>Redis: queueSize 조회
+        Server-->>Client: 대기 정보 응답 (canEnter=false, number, estimatedTime, totalCount)
+    end
+```
+
+---
+
 ## Implementation
 
 ### 네트워크 처리 방식

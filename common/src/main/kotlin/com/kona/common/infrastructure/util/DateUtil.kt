@@ -12,6 +12,11 @@ fun LocalDateTime.convertPatternOf(pattern: String = DATE_TIME_BASIC_PATTERN): S
     return this.format(DateTimeFormatter.ofPattern(pattern))
 }
 
+fun Instant.toTokenScore(): Long {
+    val now = this.epochSecond
+    return now * 1000 + (now % 1000)
+}
+
 fun Instant.toInstantEpochMilli(): String {
     return this.toEpochMilli().toString()
 }

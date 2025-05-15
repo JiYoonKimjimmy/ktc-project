@@ -20,16 +20,16 @@ class TrafficControlScriptExecuteAdapter(
     
 ) : TrafficControlPort {
 
-    override suspend fun controlTraffic(token: TrafficToken): TrafficWaiting {
+    override suspend fun controlTraffic(token: TrafficToken, now: Instant): TrafficWaiting {
         val script = trafficControlScript.getScript()
-        val now = Instant.now().epochSecond
-        val score = now * 1000 + (now % 1000)
+        val nowEpochSecond = now.epochSecond
+        val score = nowEpochSecond * 1000 + (nowEpochSecond % 1000)
 
         val keys = TrafficCacheKey.generateTrafficControlKeys(token.zoneId)
         val args = listOf(
             token.token,
             score.toString(),
-            now.toString(),
+            nowEpochSecond.toString(),
             defaultThreshold
         )
 
