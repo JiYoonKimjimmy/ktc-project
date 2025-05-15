@@ -1,14 +1,12 @@
 package com.kona.ktc.v1.infrastructure.adapter.redis
 
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.*
-import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.Companion.getTrafficControlKeys
+import com.kona.common.infrastructure.enumerate.TrafficControlCacheKey.QUEUE_CURSOR
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.v1.domain.model.TrafficToken
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
-import org.springframework.data.redis.core.setAndAwait
 import java.time.Instant
 
 /**
@@ -45,15 +43,6 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
         val trafficToken1 = TrafficToken(zoneId, "test-token1")
         val trafficToken2 = TrafficToken(zoneId, "test-token2")
         val trafficToken3 = TrafficToken(zoneId, "test-token3")
-
-        // 트래픽 제어 Zone 기본 설정
-        val trafficControlKeys = getTrafficControlKeys(zoneId)
-        val queueCursorKey      = trafficControlKeys[QUEUE_CURSOR]!!
-        val bucketKey           = trafficControlKeys[BUCKET]!!
-        val thresholdKey        = trafficControlKeys[THRESHOLD]!!
-        reactiveStringRedisTemplate.opsForValue().setAndAwait(queueCursorKey, "0")
-        reactiveStringRedisTemplate.opsForValue().setAndAwait(bucketKey, defaultThreshold)
-        reactiveStringRedisTemplate.opsForValue().setAndAwait(thresholdKey, defaultThreshold)
 
         // 트래픽 제어 요청
         var now = Instant.now()

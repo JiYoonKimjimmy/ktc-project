@@ -24,9 +24,9 @@ class TrafficControlExecuteAdapter(
 
 ) : TrafficControlPort {
 
-    override suspend fun controlTraffic(token: TrafficToken, now: Instant): TrafficWaiting {
-        val zoneId = token.zoneId
-        val score = now.toTokenScore()
+    override suspend fun controlTraffic(trafficToken: TrafficToken, now: Instant): TrafficWaiting {
+        val zoneId = trafficToken.zoneId
+
         val trafficControlKeys = getTrafficControlKeys(zoneId)
         val queueKey            = trafficControlKeys[QUEUE]!!
         val queueCursorKey      = trafficControlKeys[QUEUE_CURSOR]!!
@@ -34,13 +34,15 @@ class TrafficControlExecuteAdapter(
         val bucketRefillTimeKey = trafficControlKeys[BUCKET_REFILL_TIME]!!
         val thresholdKey        = trafficControlKeys[THRESHOLD]!!
 
+        val score = now.toTokenScore()
+        val nowMillis = now.toEpochMilli()
+
         // 트래픽 요청 토큰 Queue 저장
-        if (reactiveStringRedisTemplate.rankZSet(queueKey, token.token) < 0) {
-            reactiveStringRedisTemplate.addZSet(queueKey, token.token, score)
+        if (reactiveStringRedisTemplate.rankZSet(queueKey, trafficToken.token) < 0) {
+            reactiveStringRedisTemplate.addZSet(queueKey, trafficToken.token, score)
         }
 
         // 현재시간 - bucketRefillTime >= 60000ms(1분) 인 경우, cursor & bucket & bucketRefillTime 업데이트
-        val nowMillis = now.toEpochMilli()
         val bucketRefillTime = reactiveStringRedisTemplate.getValue(bucketRefillTimeKey, nowMillis.toString())
         val threshold = reactiveStringRedisTemplate.getValue(thresholdKey, defaultThreshold).toLong()
         if (nowMillis - bucketRefillTime.toLong() >= ONE_MINUTE_MILLIS) {
@@ -50,20 +52,20 @@ class TrafficControlExecuteAdapter(
         }
 
         // 트래픽 요청 토큰 rank(순번) 진입 가능 여부 확인
-        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token.token)
+        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, trafficToken.token)
         val queueCursor = reactiveStringRedisTemplate.getValue(queueCursorKey, ZERO_STR).toLong()
         val bucketSize = reactiveStringRedisTemplate.getValue(bucketKey, threshold.toString()).toLong()
 
         val canEnter = (bucketSize > 0) && (rank in queueCursor until (queueCursor + threshold))
         return if (canEnter) {
             reactiveStringRedisTemplate.decrementValue(bucketKey)
-            TrafficWaiting.entry()
+            TrafficWaiting(true, 0, 0, 0)
         } else {
             val queueSize = reactiveStringRedisTemplate.sizeZSet(queueKey)
             val number = rank - queueCursor - threshold - bucketSize + 1
             val estimatedTime = ceil((number.toDouble() / threshold)).toLong() * ONE_MINUTE_MILLIS
             val totalCount = queueSize - queueCursor - threshold - bucketSize
-            TrafficWaiting.waiting(number, estimatedTime, totalCount)
+            TrafficWaiting(false, number, estimatedTime, totalCount)
         }
     }
 

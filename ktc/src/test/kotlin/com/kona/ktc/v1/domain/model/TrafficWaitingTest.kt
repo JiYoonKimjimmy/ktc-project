@@ -12,6 +12,7 @@ class TrafficWaitingTest : BehaviorSpec({
 
         `when`("기본 pollingPeriod로 생성하면") {
             val trafficWaiting = TrafficWaiting(
+                canEnter = false,
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
@@ -31,6 +32,7 @@ class TrafficWaitingTest : BehaviorSpec({
         `when`("custom pollingPeriod로 생성하면") {
             val customPollingPeriod = 10L
             val trafficWaiting = TrafficWaiting(
+                canEnter = false,
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount,
@@ -44,11 +46,13 @@ class TrafficWaitingTest : BehaviorSpec({
 
         `when`("동일한 필드값으로 생성된 두 객체를 비교하면") {
             val trafficWaiting1 = TrafficWaiting(
+                canEnter = false,
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
             )
             val trafficWaiting2 = TrafficWaiting(
+                canEnter = false,
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
@@ -65,11 +69,13 @@ class TrafficWaitingTest : BehaviorSpec({
 
         `when`("다른 필드값으로 생성된 두 객체를 비교하면") {
             val trafficWaiting1 = TrafficWaiting(
+                canEnter = false,
                 number = number,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
             )
             val trafficWaiting2 = TrafficWaiting(
+                canEnter = false,
                 number = 20L,
                 estimatedTime = 2000L,
                 totalCount = 200L

@@ -7,6 +7,7 @@ import com.kona.ktc.v1.domain.port.inbound.TrafficWaitPort
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class TrafficWaitService(
@@ -14,8 +15,8 @@ class TrafficWaitService(
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficWaitPort {
 
-    override suspend fun wait(token: TrafficToken): TrafficWaiting {
-        return trafficControlScriptExecuteAdapter.controlTraffic(token)
+    override suspend fun wait(token: TrafficToken, now: Instant): TrafficWaiting {
+        return trafficControlScriptExecuteAdapter.controlTraffic(token, now)
             .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
     }
 

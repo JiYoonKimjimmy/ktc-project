@@ -1,19 +1,20 @@
 package com.kona.ktc.v1.domain.service
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
+import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.testsupport.rabbit.MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.testsupport.rabbit.MockRabbitMQTestListener
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScript
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScriptExecuteAdapter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.delay
+import java.time.Instant
 
 class TrafficEntryServiceTest : BehaviorSpec({
-    listeners(EmbeddedRedisTestListener(), MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
+
+    listeners(MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
 
     val trafficControlScript = TrafficControlScript().also { it.init() }
     val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
@@ -24,19 +25,18 @@ class TrafficEntryServiceTest : BehaviorSpec({
     val trafficEntryService = TrafficEntryService(trafficControlScriptExecuteAdapter, eventPublisher)
 
     val zoneId = "test-zone"
+    val now = Instant.now()
 
     beforeSpec {
         val trafficWaitService = TrafficWaitService(trafficControlScriptExecuteAdapter, eventPublisher)
-        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-1"))
-        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-2"))
-        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-3"))
+        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-1"), now)
+        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-2"), now)
+        trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-3"), now)
     }
 
     given("트래픽 진입 대기 '2건' 60s 대기 후 진입 요청되어") {
-        delay(60000)
-
-        val result1 = trafficEntryService.entry(TrafficToken(zoneId = zoneId, token = "test-token-2"))
-        val result2 = trafficEntryService.entry(TrafficToken(zoneId = zoneId, token = "test-token-3"))
+        val result1 = trafficEntryService.entry(TrafficToken(zoneId = zoneId, token = "test-token-2"), now.plusMillis(ONE_MINUTE_MILLIS))
+        val result2 = trafficEntryService.entry(TrafficToken(zoneId = zoneId, token = "test-token-3"), now.plusMillis(ONE_MINUTE_MILLIS))
 
         `when`("첫 번째 대기 트래픽 '60s' 이후 진입 요청하는 경우") {
             then("요청 결과 '진입 여부 : true' 정상 확인한다") {

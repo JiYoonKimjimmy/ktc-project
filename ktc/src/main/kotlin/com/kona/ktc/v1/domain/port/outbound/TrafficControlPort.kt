@@ -6,6 +6,6 @@ import java.time.Instant
 
 interface TrafficControlPort {
 
-    suspend fun controlTraffic(token: TrafficToken, now: Instant = Instant.now()): TrafficWaiting
+    suspend fun controlTraffic(trafficToken: TrafficToken, now: Instant = Instant.now()): TrafficWaiting
 
 } 

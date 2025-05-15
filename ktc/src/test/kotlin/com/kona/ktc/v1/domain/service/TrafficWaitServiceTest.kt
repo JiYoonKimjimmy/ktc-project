@@ -4,7 +4,6 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.testsupport.rabbit.MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.testsupport.rabbit.MockRabbitMQTestListener
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.common.testsupport.redis.EmbeddedRedisTestListener
 import com.kona.ktc.v1.domain.model.TrafficToken
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScript
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScriptExecuteAdapter
@@ -13,7 +12,7 @@ import io.kotest.matchers.shouldBe
 
 class TrafficWaitServiceTest : BehaviorSpec({
 
-    listeners(EmbeddedRedisTestListener(), MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
+    listeners(MockRabbitMQTestListener(V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
 
     val trafficControlScript = TrafficControlScript().also { it.init() }
     val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
@@ -31,28 +30,28 @@ class TrafficWaitServiceTest : BehaviorSpec({
 
         `when`("첫 번째 요청 - 즉시 입장 가능한 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
-                result1.number shouldBe 1
-                result1.estimatedTime shouldBe 0
-                result1.totalCount shouldBe 1
                 result1.canEnter shouldBe true
+                result1.number shouldBe 0
+                result1.estimatedTime shouldBe 0
+                result1.totalCount shouldBe 0
             }
         }
 
         `when`("두 번째 요청 - 대기 순번 '1', 예상 대기 시간 '60s' 인 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
+                result2.canEnter shouldBe false
                 result2.number shouldBe 1
                 result2.estimatedTime shouldBe 60000
                 result2.totalCount shouldBe 1
-                result2.canEnter shouldBe false
             }
         }
 
         `when`("세 번째 요청 - 대기 순번 '2', 예상 대기 시간 '120s' 인 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {
+                result3.canEnter shouldBe false
                 result3.number shouldBe 2
                 result3.estimatedTime shouldBe 120000
                 result3.totalCount shouldBe 2
-                result3.canEnter shouldBe false
             }
         }
     }

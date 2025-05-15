@@ -65,14 +65,14 @@ class DistributedLockManagerImplTest : StringSpec({
         // given
         val dateTime = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm)
         val block: () -> String = {
-            Thread.sleep(2000)
+            Thread.sleep(500)
             "Hello World, $dateTime."
         }
 
         // when
         val task1 = async(Dispatchers.Default) { distributedLockManager.expireTrafficTokenScheduleLock(dateTime) { block() } }
         val task2 = async(Dispatchers.Default) {
-            delay(1000)
+            delay(100)
             shouldThrow<InternalServiceException> { distributedLockManager.expireTrafficTokenScheduleLock(dateTime) { block() } }
         }
 
