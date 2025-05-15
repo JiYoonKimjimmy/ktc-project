@@ -13,7 +13,7 @@ class MessagePublisherImplTest : StringSpec({
     listeners(MockRabbitMQTestListener(MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE))
 
     val mockRabbitTemplate = MockRabbitMQ.rabbitTemplate
-    val messagePublisher = MessagePublisherImpl(mockRabbitTemplate)
+    val messagePublisher = MessagePublisherImpl(mockRabbitTemplate, true)
 
     "V1TrafficStatusMessage 발행 결과 정상 확인한다" {
         // given

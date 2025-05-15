@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationEventPublisher
 class FakeApplicationEventPublisher : ApplicationEventPublisher {
 
     private val defaultCoroutineScope = TestCoroutineScope.defaultCoroutineScope
-    private val messagePublisher = MessagePublisherImpl(MockRabbitMQ.rabbitTemplate)
+    private val messagePublisher = MessagePublisherImpl(MockRabbitMQ.rabbitTemplate, true)
 
     override fun publishEvent(event: Any) {
         defaultCoroutineScope.launch {
