@@ -5,7 +5,7 @@ import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTra
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ZERO_STR
 import com.kona.common.infrastructure.util.toTokenScore
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
 import org.springframework.beans.factory.annotation.Value
@@ -24,8 +24,8 @@ class TrafficControlExecuteAdapter(
 
 ) : TrafficControlPort {
 
-    override suspend fun controlTraffic(trafficToken: TrafficToken, now: Instant): TrafficWaiting {
-        val zoneId = trafficToken.zoneId
+    override suspend fun controlTraffic(traffic: Traffic, now: Instant): TrafficWaiting {
+        val zoneId = traffic.zoneId
 
         val trafficControlKeys = getTrafficControlKeys(zoneId)
         val queueKey            = trafficControlKeys[QUEUE]!!
@@ -38,8 +38,8 @@ class TrafficControlExecuteAdapter(
         val nowMillis = now.toEpochMilli()
 
         // 트래픽 요청 토큰 Queue 저장
-        if (reactiveStringRedisTemplate.rankZSet(queueKey, trafficToken.token) < 0) {
-            reactiveStringRedisTemplate.addZSet(queueKey, trafficToken.token, score)
+        if (reactiveStringRedisTemplate.rankZSet(queueKey, traffic.token) < 0) {
+            reactiveStringRedisTemplate.addZSet(queueKey, traffic.token, score)
         }
 
         // 현재시간 - bucketRefillTime >= 60000ms(1분) 인 경우, cursor & bucket & bucketRefillTime 업데이트
@@ -52,7 +52,7 @@ class TrafficControlExecuteAdapter(
         }
 
         // 트래픽 요청 토큰 rank(순번) 진입 가능 여부 확인
-        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, trafficToken.token)
+        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, traffic.token)
         val queueCursor = reactiveStringRedisTemplate.getValue(queueCursorKey, ZERO_STR).toLong()
         val bucketSize = reactiveStringRedisTemplate.getValue(bucketKey, threshold.toString()).toLong()
 

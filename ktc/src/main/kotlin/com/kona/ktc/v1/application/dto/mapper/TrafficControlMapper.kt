@@ -5,15 +5,15 @@ import com.kona.ktc.v1.application.dto.request.TrafficEntryRequest
 import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
 import com.kona.ktc.v1.application.dto.response.TrafficTokenResponse
 import com.kona.ktc.v1.application.dto.response.TrafficTokenResponse.TrafficWaitResponse
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import org.springframework.stereotype.Component
 
 @Component
 class TrafficControlMapper {
 
-    fun toDomain(request: TrafficWaitRequest): TrafficToken {
-        return TrafficToken(
+    fun toDomain(request: TrafficWaitRequest): Traffic {
+        return Traffic(
             zoneId = request.zoneId,
             token = request.token ?: SnowflakeIdGenerator.generate(),
             clientIp = request.clientIp,
@@ -21,15 +21,15 @@ class TrafficControlMapper {
         )
     }
 
-    fun toDomain(request: TrafficEntryRequest): TrafficToken {
-        return TrafficToken(
+    fun toDomain(request: TrafficEntryRequest): Traffic {
+        return Traffic(
             zoneId = request.zoneId,
             token = request.token
         )
     }
 
     fun toResponse(
-        token: TrafficToken,
+        token: Traffic,
         waiting: TrafficWaiting?,
         pollingPeriod: Long = 5L
     ): TrafficTokenResponse {

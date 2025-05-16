@@ -3,7 +3,7 @@ package com.kona.ktc.v1.infrastructure.adapter.redis
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_CURSOR
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
@@ -40,15 +40,15 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
 
     given("트래픽 제어 3건 요청 되어") {
         val zoneId = "test-zone"
-        val trafficToken1 = TrafficToken(zoneId, "test-token1")
-        val trafficToken2 = TrafficToken(zoneId, "test-token2")
-        val trafficToken3 = TrafficToken(zoneId, "test-token3")
+        val traffic1 = Traffic(zoneId, "test-token1")
+        val traffic2 = Traffic(zoneId, "test-token2")
+        val traffic3 = Traffic(zoneId, "test-token3")
 
         // 트래픽 제어 요청
         var now = Instant.now()
-        val result1 = trafficControlExecuteAdapter.controlTraffic(trafficToken1, now)
-        var result2 = trafficControlExecuteAdapter.controlTraffic(trafficToken2, now.plusMillis(2))
-        var result3 = trafficControlExecuteAdapter.controlTraffic(trafficToken3, now.plusMillis(3))
+        val result1 = trafficControlExecuteAdapter.controlTraffic(traffic1, now)
+        var result2 = trafficControlExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
+        var result3 = trafficControlExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
 
         `when`("'1건 진입 / 2건 대기' 처리되는 경우") {
 
@@ -78,8 +78,8 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
         }
 
         now = now.plusSeconds(ONE_MINUTE_MILLIS)
-        result2 = trafficControlExecuteAdapter.controlTraffic(trafficToken2, now.plusMillis(2))
-        result3 = trafficControlExecuteAdapter.controlTraffic(trafficToken3, now.plusMillis(3))
+        result2 = trafficControlExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
+        result3 = trafficControlExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
 
         `when`("1분 경과 후 1건 진입 / 1건 대기 처리되는 경우") {
 
@@ -101,7 +101,7 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
         }
 
         now = now.plusSeconds(ONE_MINUTE_MILLIS)
-        result3 = trafficControlExecuteAdapter.controlTraffic(trafficToken3, now)
+        result3 = trafficControlExecuteAdapter.controlTraffic(traffic3, now)
 
         `when`("2분 경과 후 1건 진입 / 0건 대기 처리되는 경우") {
 

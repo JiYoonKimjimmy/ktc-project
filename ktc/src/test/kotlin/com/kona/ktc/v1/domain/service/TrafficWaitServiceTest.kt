@@ -4,7 +4,7 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.testsupport.rabbit.MockRabbitMQ.Exchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.testsupport.rabbit.MockRabbitMQTestListener
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScript
 import com.kona.ktc.v1.infrastructure.adapter.redis.TrafficControlScriptExecuteAdapter
 import io.kotest.core.spec.style.BehaviorSpec
@@ -24,9 +24,9 @@ class TrafficWaitServiceTest : BehaviorSpec({
 
     given("트래픽 대기 3건 요청되어") {
         val zoneId = "test-zone"
-        val result1 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-1"))
-        val result2 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-2"))
-        val result3 = trafficWaitService.wait(TrafficToken(zoneId = zoneId, token = "test-token-3"))
+        val result1 = trafficWaitService.wait(Traffic(zoneId = zoneId, token = "test-token-1"))
+        val result2 = trafficWaitService.wait(Traffic(zoneId = zoneId, token = "test-token-2"))
+        val result3 = trafficWaitService.wait(Traffic(zoneId = zoneId, token = "test-token-3"))
 
         `when`("첫 번째 요청 - 즉시 입장 가능한 경우") {
             then("트래픽 대기 정보 결과 정상 확인한다") {

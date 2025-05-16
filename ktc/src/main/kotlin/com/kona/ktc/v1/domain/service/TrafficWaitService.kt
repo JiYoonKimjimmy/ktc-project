@@ -1,7 +1,7 @@
 package com.kona.ktc.v1.domain.service
 
 import com.kona.ktc.v1.domain.event.SaveTrafficStatusEvent
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.inbound.TrafficWaitPort
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
@@ -15,7 +15,7 @@ class TrafficWaitService(
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficWaitPort {
 
-    override suspend fun wait(token: TrafficToken, now: Instant): TrafficWaiting {
+    override suspend fun wait(token: Traffic, now: Instant): TrafficWaiting {
         return trafficControlScriptExecuteAdapter.controlTraffic(token, now)
             .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
     }

@@ -3,7 +3,7 @@ package com.kona.ktc.v1.infrastructure.adapter.redis
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.util.toTokenScore
-import com.kona.ktc.v1.domain.model.TrafficToken
+import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.outbound.TrafficControlPort
 import org.springframework.beans.factory.annotation.Value
@@ -21,10 +21,10 @@ class TrafficControlScriptExecuteAdapter(
     
 ) : TrafficControlPort {
 
-    override suspend fun controlTraffic(trafficToken: TrafficToken, now: Instant): TrafficWaiting {
+    override suspend fun controlTraffic(traffic: Traffic, now: Instant): TrafficWaiting {
         val script = trafficControlScript.getScript()
-        val zoneId = trafficToken.zoneId
-        val token = trafficToken.token
+        val zoneId = traffic.zoneId
+        val token = traffic.token
         val score = now.toTokenScore().toString()
         val nowMillis = now.toEpochMilli().toString()
 
