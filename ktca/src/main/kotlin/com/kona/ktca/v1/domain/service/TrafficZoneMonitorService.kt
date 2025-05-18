@@ -1,7 +1,6 @@
 package com.kona.ktca.v1.domain.service
 
 import com.kona.ktca.v1.domain.model.TrafficZone
-import com.kona.ktca.v1.domain.model.TrafficZoneWaiting
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneMonitorPort
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
 import org.springframework.stereotype.Service
