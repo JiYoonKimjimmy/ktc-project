@@ -1,6 +1,7 @@
 package com.kona.ktca.v1.domain.service
 
 import com.kona.ktca.v1.domain.model.TrafficZone
+import com.kona.ktca.v1.domain.model.TrafficZoneWaiting
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneMonitorPort
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
 import org.springframework.stereotype.Service
@@ -20,7 +21,7 @@ class TrafficZoneMonitorService(
          *    - Zone 대기 해소 예상 시간
          */
         return trafficZoneFindPort.findAllTrafficZone(zoneId)
-            .let { trafficZoneFindPort.findAllTrafficZoneWaiting(it) }
+            .map { it.applyWaiting(trafficZoneFindPort::findTrafficZoneWaiting) }
     }
 
 }

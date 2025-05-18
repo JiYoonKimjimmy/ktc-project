@@ -25,6 +25,10 @@ enum class TrafficCacheKey(
         note = "트래픽 분당 임계치 Key",
         key = "ktc:{%s}:threshold"
     ),
+    ENTRY_COUNT(
+        note = "트래픽 진입 Count Key",
+        key = "ktc:{%s}:entry_count"
+    ),
     ACTIVATION_ZONES(
         note = "트래픽 제어 활성화 Zone 목록 Key",
         key = "ktc:activation:zones"
@@ -40,10 +44,10 @@ enum class TrafficCacheKey(
         fun getTrafficControlKeys(zoneId: String): Map<TrafficCacheKey, String> {
             return mapOf(
                 QUEUE               to QUEUE.getKey(zoneId),
-                QUEUE_CURSOR        to QUEUE_CURSOR.getKey(zoneId),
+                THRESHOLD           to THRESHOLD.getKey(zoneId),
                 BUCKET              to BUCKET.getKey(zoneId),
                 BUCKET_REFILL_TIME  to BUCKET_REFILL_TIME.getKey(zoneId),
-                THRESHOLD           to THRESHOLD.getKey(zoneId),
+                ENTRY_COUNT         to ENTRY_COUNT.getKey(zoneId),
             )
         }
 

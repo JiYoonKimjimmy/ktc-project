@@ -33,23 +33,12 @@ class TrafficZoneFindAdapter(
         }
     }
 
-    override suspend fun findAllTrafficZoneWaiting(zones: List<TrafficZone>): List<TrafficZone> {
-        return zones.map {
-            it.applyWaiting(findTrafficZoneWaiting(it.zoneId, it.threshold))
-        }
-    }
-
-    private suspend fun findTrafficZoneWaiting(zoneId: String, threshold: Long): TrafficZoneWaiting {
+    override suspend fun findTrafficZoneWaiting(zoneId: String, threshold: Long): TrafficZoneWaiting {
         val queueKey = QUEUE.getKey(zoneId)
-        val queueCursorKey = QUEUE_CURSOR.getKey(zoneId)
-        val bucketKey = BUCKET.getKey(zoneId)
+        val entyCountKey = ENTRY_COUNT.getKey(zoneId)
 
-        val queueSize = redisExecuteAdapter.getSizeForZSet(queueKey)
-        val queueCursor = redisExecuteAdapter.getValue(queueCursorKey)?.toLong() ?: ZERO
-        val bucketSize = redisExecuteAdapter.getValue(bucketKey)?.toLong() ?: threshold
-
-        val entryCount = threshold - bucketSize + queueCursor
-        val waitingCount = queueSize - entryCount
+        val waitingCount = redisExecuteAdapter.getSizeForZSet(queueKey)
+        val entryCount = redisExecuteAdapter.getValue(entyCountKey)?.toLong() ?: ZERO
         val estimatedClearTime = ceil(waitingCount.toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
 
         return TrafficZoneWaiting(

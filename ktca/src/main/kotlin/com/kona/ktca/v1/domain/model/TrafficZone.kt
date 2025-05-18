@@ -21,8 +21,8 @@ data class TrafficZone(
         waiting = TrafficZoneWaiting(),
     )
 
-    fun applyWaiting(waiting : TrafficZoneWaiting): TrafficZone {
-        this.waiting = waiting
+    suspend fun applyWaiting(function: suspend (String, Long) -> TrafficZoneWaiting): TrafficZone {
+        this.waiting = function(zoneId, threshold)
         return this
     }
 
