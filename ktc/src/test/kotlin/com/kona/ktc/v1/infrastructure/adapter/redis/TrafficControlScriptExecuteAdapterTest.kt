@@ -19,7 +19,7 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
     val defaultThreshold = "1"
     val trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
 
-    given("트래픽 제어 요청 되어") {
+    given("'threshold: 1' 트래픽 Zone 제어 요청 되어") {
         val zoneId = "traffic-zone"
         val traffic1 = Traffic(zoneId, "test-token1")
         val traffic2 = Traffic(zoneId, "test-token2")

@@ -38,7 +38,7 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
     val defaultThreshold = "1"
     val trafficControlExecuteAdapter = TrafficControlExecuteAdapter(reactiveStringRedisTemplate, defaultThreshold)
 
-    given("트래픽 제어 요청 되어") {
+    given("'threshold: 1' 트래픽 Zone 제어 요청 되어") {
         val zoneId = "test-zone"
         val traffic1 = Traffic(zoneId, "test-token1")
         val traffic2 = Traffic(zoneId, "test-token2")
