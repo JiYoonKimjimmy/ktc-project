@@ -5,8 +5,8 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-class TrafficTokenTest : BehaviorSpec({
-    given("TrafficToken 생성 시") {
+class TrafficTest : BehaviorSpec({
+    given("Traffic 생성 시") {
         val zoneId = "test-zone"
         val token = "test-token"
 

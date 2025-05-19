@@ -6,6 +6,8 @@ import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
 import com.kona.ktc.v1.application.dto.response.TrafficControlResponse
 import com.kona.ktc.v1.domain.port.inbound.TrafficEntryPort
 import com.kona.ktc.v1.domain.port.inbound.TrafficWaitPort
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,17 +22,17 @@ class TrafficControlAdapter(
 ) {
 
     @PostMapping("/wait")
-    suspend fun wait(@RequestBody request: TrafficWaitRequest): TrafficControlResponse {
-        val token = trafficMapper.toDomain(request)
-        val waiting = trafficWaitPort.wait(token)
-        return trafficMapper.toResponse(token, waiting)
+    suspend fun wait(@RequestBody request: TrafficWaitRequest): ResponseEntity<TrafficControlResponse> {
+        val traffic = trafficMapper.toDomain(request)
+        val waiting = trafficWaitPort.wait(traffic)
+        return trafficMapper.toResponse(traffic, waiting).success(HttpStatus.OK)
     }
 
     @PostMapping("/entry")
-    suspend fun entry(@RequestBody request: TrafficEntryRequest): TrafficControlResponse {
-        val token = trafficMapper.toDomain(request)
-        val waiting = trafficEntryPort.entry(token)
-        return trafficMapper.toResponse(token, waiting)
+    suspend fun entry(@RequestBody request: TrafficEntryRequest): ResponseEntity<TrafficControlResponse> {
+        val traffic = trafficMapper.toDomain(request)
+        val waiting = trafficEntryPort.entry(traffic)
+        return trafficMapper.toResponse(traffic, waiting).success(HttpStatus.OK)
     }
 
 }

@@ -7,12 +7,12 @@ import com.kona.ktc.v1.domain.model.TrafficWaiting
 data class SaveTrafficStatusEvent(
     val message: V1TrafficStatusMessage
 ) {
-    constructor(token: Traffic, waiting: TrafficWaiting) : this(
+    constructor(traffic: Traffic, waiting: TrafficWaiting) : this(
         message = V1TrafficStatusMessage(
-            zoneId = token.zoneId,
-            token = token.token,
-            clientIp = token.clientIp,
-            clientAgent = token.clientAgent?.name,
+            zoneId = traffic.zoneId,
+            token = traffic.token,
+            clientIp = traffic.clientIp,
+            clientAgent = traffic.clientAgent?.name,
             waitingNumber = waiting.number,
             estimatedTime = waiting.estimatedTime,
             totalCount = waiting.totalCount

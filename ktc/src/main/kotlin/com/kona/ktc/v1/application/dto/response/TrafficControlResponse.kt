@@ -9,10 +9,10 @@ data class TrafficControlResponse(
     val canEnter: Boolean,
     val zoneId: String,
     val token: String,
-    val waiting: TrafficWaitResponse? = null
+    val waiting: TrafficWaitingResponse? = null
 ) : BaseResponse<TrafficControlResponse>() {
 
-    data class TrafficWaitResponse(
+    data class TrafficWaitingResponse(
         val number: Long,
         val estimatedTime: Long,
         val totalCount: Long,

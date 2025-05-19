@@ -15,9 +15,9 @@ class TrafficEntryService(
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficEntryPort {
 
-    override suspend fun entry(token: Traffic, now: Instant): TrafficWaiting {
-        return trafficControlScriptExecuteAdapter.controlTraffic(token, now)
-            .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
+    override suspend fun entry(traffic: Traffic, now: Instant): TrafficWaiting {
+        return trafficControlScriptExecuteAdapter.controlTraffic(traffic, now)
+            .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(traffic = traffic, waiting = it)) }
     }
 
 }

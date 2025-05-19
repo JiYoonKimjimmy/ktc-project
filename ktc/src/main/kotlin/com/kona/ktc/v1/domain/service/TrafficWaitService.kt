@@ -15,9 +15,9 @@ class TrafficWaitService(
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficWaitPort {
 
-    override suspend fun wait(token: Traffic, now: Instant): TrafficWaiting {
-        return trafficControlScriptExecuteAdapter.controlTraffic(token, now)
-            .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(token = token, waiting = it)) }
+    override suspend fun wait(traffic: Traffic, now: Instant): TrafficWaiting {
+        return trafficControlScriptExecuteAdapter.controlTraffic(traffic, now)
+            .also { eventPublisher.publishEvent(SaveTrafficStatusEvent(traffic = traffic, waiting = it)) }
     }
 
 } 
