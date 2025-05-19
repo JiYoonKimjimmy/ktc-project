@@ -29,9 +29,10 @@ local function checkEntry(queueKey, bucketKey, entryCountKey, token, nowMillis, 
     if (rank < threshold) and (bucketSize > 0) then
         canEnter = true
     else
-        local waitingTime = tonumber(redis.call('ZSCORE', queueKey, token)) or 0
+        local score = tonumber(redis.call('ZSCORE', queueKey, token))
+        local waitingTime = tonumber(nowMillis) - score + 1000
         local estimatedTime = math.ceil(rank + 1 / threshold) * 60000
-        if tonumber(nowMillis) - waitingTime >= estimatedTime and bucketSize > 0 then
+        if waitingTime >= estimatedTime and bucketSize > 0 then
             canEnter = true
         end
     end

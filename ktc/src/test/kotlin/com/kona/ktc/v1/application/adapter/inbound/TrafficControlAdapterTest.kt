@@ -3,7 +3,7 @@ package com.kona.ktc.v1.application.adapter.inbound
 import com.kona.common.infrastructure.enumerate.ClientAgent
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.mockMvcBuilder
 import com.kona.ktc.testsupport.KtcProjectConfig.Companion.objectMapper
-import com.kona.ktc.v1.application.dto.mapper.TrafficControlMapper
+import com.kona.ktc.v1.application.dto.mapper.TrafficMapper
 import com.kona.ktc.v1.application.dto.request.TrafficWaitRequest
 import com.kona.ktc.v1.domain.model.TrafficWaiting
 import com.kona.ktc.v1.domain.port.inbound.TrafficEntryPort
@@ -16,10 +16,10 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
 class TrafficControlAdapterTest : BehaviorSpec({
-    val trafficControlMapper = TrafficControlMapper()
+    val trafficMapper = TrafficMapper()
     val trafficWaitPort = mockk<TrafficWaitPort>()
     val trafficEntryPort = mockk<TrafficEntryPort>()
-    val trafficControlAdapter = TrafficControlAdapter(trafficControlMapper, trafficWaitPort, trafficEntryPort)
+    val trafficControlAdapter = TrafficControlAdapter(trafficMapper, trafficWaitPort, trafficEntryPort)
 
     val mockMvc = mockMvcBuilder(trafficControlAdapter)
 

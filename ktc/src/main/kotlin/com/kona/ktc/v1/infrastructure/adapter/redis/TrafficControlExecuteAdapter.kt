@@ -3,6 +3,7 @@ package com.kona.ktc.v1.infrastructure.adapter.redis
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
+import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.toTokenScore
 import com.kona.ktc.v1.domain.model.Traffic
 import com.kona.ktc.v1.domain.model.TrafficWaiting
@@ -57,9 +58,10 @@ class TrafficControlExecuteAdapter(
         if (rank < threshold && bucketSize > 0) {
             canEnter = true
         } else {
-            val waitingTime = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()
+            val tokenScore = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()
+            val waitingTime = nowMillis - tokenScore + ONE_SECONDS_MILLIS
             val estimatedTime = ceil((rank + 1).toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
-            if (nowMillis - waitingTime >= estimatedTime && bucketSize > 0) {
+            if (waitingTime >= estimatedTime && bucketSize > 0) {
                 canEnter = true
             }
         }

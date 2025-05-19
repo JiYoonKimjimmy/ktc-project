@@ -163,6 +163,9 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
 
             then("트래픽-4 'canEnter: true' 처리 결과 정상 확인한다") {
                 result4.canEnter shouldBe true
+                result4.number shouldBe 0
+                result4.estimatedTime shouldBe 0
+                result4.totalCount shouldBe 0
             }
 
             then("트래픽 진입 Count 캐시 조회 결과 '4' 정상 확인한다") {

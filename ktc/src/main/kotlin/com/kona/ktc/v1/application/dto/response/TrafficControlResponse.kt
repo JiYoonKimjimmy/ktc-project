@@ -5,12 +5,12 @@ import com.kona.ktc.v1.domain.model.TrafficWaiting
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
-data class TrafficTokenResponse(
+data class TrafficControlResponse(
     val canEnter: Boolean,
     val zoneId: String,
     val token: String,
     val waiting: TrafficWaitResponse? = null
-) : BaseResponse<TrafficTokenResponse>() {
+) : BaseResponse<TrafficControlResponse>() {
 
     data class TrafficWaitResponse(
         val number: Long,
@@ -26,7 +26,7 @@ data class TrafficTokenResponse(
         )
     }
 
-    override fun success(httpStatus: HttpStatus): ResponseEntity<TrafficTokenResponse> {
+    override fun success(httpStatus: HttpStatus): ResponseEntity<TrafficControlResponse> {
         return ok(this)
     }
 
