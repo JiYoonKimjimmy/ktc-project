@@ -10,6 +10,8 @@ interface RedisExecuteAdapter {
 
     suspend fun getValue(key: String): String?
 
+    suspend fun setValue(key: String, value: String): Boolean
+
     suspend fun getSizeForZSet(key: String): Long
 
     suspend fun addValueForSet(key: String, value: String): Long

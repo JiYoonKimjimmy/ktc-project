@@ -1,34 +1,29 @@
 package com.kona.ktca.v1.infrastructure.adapter
 
-import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.ACTIVATION_ZONES
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.THRESHOLD
-import com.kona.common.infrastructure.util.ZERO
-import com.kona.common.infrastructure.util.ifNullOrMinus
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
+import com.kona.common.infrastructure.error.ErrorCode
+import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.ktca.v1.domain.model.TrafficZone
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
+import com.kona.ktca.v1.infrastructure.repository.TrafficZoneRepository
 import org.springframework.stereotype.Component
 
 @Component
 class TrafficZoneFindAdapter(
-    private val redisExecuteAdapter: RedisExecuteAdapter
+    private val trafficZoneRepository: TrafficZoneRepository
 ) : TrafficZoneFindPort {
 
     override suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone> {
-        val zones = getTrafficZones(zoneId)
-        val thresholds = getTrafficZoneThresholds(zones)
-        return zones.map { TrafficZone(it, thresholds[it] ?: ZERO) }
+        return trafficZoneRepository.findAllByStatus(ACTIVE)
+            .filter { if (zoneId != null) it.id == zoneId else true }
+            .map { it.toDomain() }
     }
 
-    private suspend fun getTrafficZones(zoneId: String?): List<String> {
-        return redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
-            .filter { if (zoneId != null) it == zoneId else true }
-    }
-
-    private suspend fun getTrafficZoneThresholds(zoneIds: List<String>): Map<String, Long> {
-        return zoneIds.associateWith {
-            redisExecuteAdapter.getValue(THRESHOLD.getKey(it))?.toLong().ifNullOrMinus(ZERO)
-        }
+    override suspend fun findTrafficZone(zoneId: String): TrafficZone {
+        return trafficZoneRepository.findByZoneId(zoneId)
+            .takeIf { it != null }
+            ?.toDomain()
+            ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 
 }

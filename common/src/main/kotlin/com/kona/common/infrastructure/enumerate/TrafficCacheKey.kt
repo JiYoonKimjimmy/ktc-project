@@ -9,9 +9,9 @@ enum class TrafficCacheKey(
         note = "트래픽 대기 Queue Key",
         key = "ktc:{%s}:queue"
     ),
-    QUEUE_CURSOR(
-        note = "트래픽 대기 Queue Cursor Key",
-        key = "ktc:{%s}:queue_cursor"
+    QUEUE_STATUS(
+        note = "트래픽 대기 Queue 상태 Key",
+        key = "ktc:{%s}:queue_status"
     ),
     BUCKET(
         note = "트래픽 Bucket Key",

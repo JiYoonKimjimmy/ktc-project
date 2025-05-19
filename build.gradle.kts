@@ -30,6 +30,7 @@ subprojects {
 	apply(plugin = "java")
 	apply(plugin = "kotlin")
 	apply(plugin = "kotlin-spring")
+	apply(plugin = "kotlin-jpa")
 	apply(plugin = "org.springframework.boot")
 	apply(plugin = "io.spring.dependency-management")
 	apply(plugin = "com.gorylenko.gradle-git-properties")

@@ -6,4 +6,6 @@ interface TrafficZoneFindPort {
 
     suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone>
 
+    suspend fun findTrafficZone(zoneId: String): TrafficZone
+
 }

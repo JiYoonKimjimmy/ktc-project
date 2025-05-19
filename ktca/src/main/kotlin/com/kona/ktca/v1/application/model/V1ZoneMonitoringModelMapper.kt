@@ -14,7 +14,7 @@ class V1ZoneMonitoringModelMapper {
         return domain.map {
             V1ZoneMonitoringData(
                 zoneId = it.zoneId,
-                zoneAlias = it.name,
+                zoneAlias = it.zoneAlias,
                 threshold = it.threshold.toInt(),
                 activationTime = it.activationTime.convertPatternOf(),
                 status = ZoneStatus.valueOf(it.status.name),

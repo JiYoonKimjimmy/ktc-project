@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.data.redis.core.getAndAwait
 import org.springframework.data.redis.core.script.RedisScript
+import org.springframework.data.redis.core.setAndAwait
 import org.springframework.data.redis.core.sizeAndAwait
 import org.springframework.stereotype.Component
 
@@ -28,6 +29,10 @@ class RedisExecuteAdapterImpl(
 
     override suspend fun getValue(key: String): String? = withContext(Dispatchers.IO) {
         reactiveStringRedisTemplate.opsForValue().getAndAwait(key)
+    }
+
+    override suspend fun setValue(key: String, value: String): Boolean = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForValue().setAndAwait(key, value)
     }
 
     override suspend fun getSizeForZSet(key: String): Long = withContext(Dispatchers.IO) {

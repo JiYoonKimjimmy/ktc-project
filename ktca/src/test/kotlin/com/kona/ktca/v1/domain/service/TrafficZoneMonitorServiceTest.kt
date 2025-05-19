@@ -1,22 +1,29 @@
 package com.kona.ktca.v1.domain.service
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneFindAdapter
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneWaitingFindAdapter
+import com.kona.ktca.v1.infrastructure.repository.FakeTrafficZoneRepository
+import com.kona.ktca.v1.infrastructure.repository.entity.TrafficZoneEntity
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.reactor.awaitSingle
 import java.time.Instant
+import java.time.LocalDateTime
 
 class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
+    val trafficZoneRepository = FakeTrafficZoneRepository()
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
     val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
-    val trafficZoneFindAdapter = TrafficZoneFindAdapter(redisExecuteAdapter)
+
+    val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
     val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
+
     val trafficZoneMonitorService = TrafficZoneMonitorService(trafficZoneFindAdapter, trafficZoneWaitingFindAdapter)
 
     given("전체 트래픽 제어 Zone 모니터링 요청되어") {
@@ -36,15 +43,12 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
         val token1 = "test-token-1"
         val token2 = "test-token-2"
 
-        reactiveStringRedisTemplate.opsForSet().add(ACTIVATION_ZONES.key, zoneId1).awaitSingle()
-        reactiveStringRedisTemplate.opsForSet().add(ACTIVATION_ZONES.key, zoneId2).awaitSingle()
+        trafficZoneRepository.save(TrafficZoneEntity(id = zoneId1, alias = zoneId1, threshold = 1, activationTime = LocalDateTime.now(), status = ACTIVE))
+        trafficZoneRepository.save(TrafficZoneEntity(id = zoneId2, alias = zoneId2, threshold = 1, activationTime = LocalDateTime.now(), status = ACTIVE))
 
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token2, Instant.now().toEpochMilli().toDouble()).awaitSingle()
-
-        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId1), "1").awaitSingle()
-        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId2), "1").awaitSingle()
 
         `when`("현재 트래픽 제어 활성화된 Zone 2건인 경우") {
             val result = trafficZoneMonitorService.monitoring()

@@ -8,6 +8,9 @@ enum class ErrorCode(
     val message: String
 ) {
 
+    TRAFFIC_ZONE_NOT_FOUND(HttpStatus.NOT_FOUND, "100", "Traffic zone not found"),
+    DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED(HttpStatus.BAD_REQUEST, "101", "Deleted traffic zone status not changed"),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900", "Internal server error"),
     EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "901", "External API service error"),
     ARGUMENT_NOT_VALID_ERROR(HttpStatus.BAD_REQUEST, "902", "Argument not valid"),

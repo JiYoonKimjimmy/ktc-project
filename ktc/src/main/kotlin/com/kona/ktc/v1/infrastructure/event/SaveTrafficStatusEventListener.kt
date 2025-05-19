@@ -1,7 +1,5 @@
 package com.kona.ktc.v1.infrastructure.event
 
-import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.ACTIVATION_ZONES
 import com.kona.common.infrastructure.message.rabbitmq.MessageExchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.infrastructure.message.rabbitmq.MessagePublisher
 import com.kona.common.infrastructure.util.error
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Component
 @Component
 class SaveTrafficStatusEventListener(
     private val messagePublisher: MessagePublisher,
-    private val redisExecuteAdapter: RedisExecuteAdapter,
     private val defaultCoroutineScope: CoroutineScope
 ) {
     // logger
@@ -26,7 +23,6 @@ class SaveTrafficStatusEventListener(
     fun handleSaveTrafficStatusEvent(event: SaveTrafficStatusEvent) = defaultCoroutineScope.launch {
         try {
             async { messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message) }.await()
-            async { redisExecuteAdapter.addValueForSet(ACTIVATION_ZONES.key, event.message.zoneId) }.await()
         } catch (e: Exception) {
             logger.error(e)
         }
