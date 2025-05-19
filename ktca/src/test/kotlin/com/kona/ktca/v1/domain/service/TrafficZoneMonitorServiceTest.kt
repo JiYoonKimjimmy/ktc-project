@@ -4,6 +4,7 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneFindAdapter
+import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneWaitingFindAdapter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -15,7 +16,8 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
     val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(redisExecuteAdapter)
-    val trafficZoneMonitorService = TrafficZoneMonitorService(trafficZoneFindAdapter)
+    val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
+    val trafficZoneMonitorService = TrafficZoneMonitorService(trafficZoneFindAdapter, trafficZoneWaitingFindAdapter)
 
     given("전체 트래픽 제어 Zone 모니터링 요청되어") {
 

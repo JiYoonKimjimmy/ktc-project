@@ -3,7 +3,6 @@ info:
   version: '81.0'
   title: 'KTCA(Kona Traffic Controller API)'
   description: |
-    
     #### KTC API 컴포넌트
     
     | Component | URL | 설명 |
@@ -46,7 +45,7 @@ paths:
         - V1.Zone Management
       operationId: saveZone
       description: |
-        트래픽 제어 Zone 등록/생성 <br>
+        트래픽 제어 Zone 등록/생성<br>
         - 요청 `zoneId` 정보 미포함인 경우, 신규 등록 처리<br>
         - 요청 `zoneId` 정보 포함인 경우, 정보 수정 처리<br>
       requestBody:
