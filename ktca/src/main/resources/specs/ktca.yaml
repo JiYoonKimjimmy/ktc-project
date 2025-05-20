@@ -400,6 +400,8 @@ components:
           $ref: '#/components/schemas/threshold'
         activationTime:
           $ref: '#/components/schemas/activationTime'
+        status:
+          $ref: '#/components/schemas/zoneStatus'
 
     V1SaveZoneResponse:
       type: object

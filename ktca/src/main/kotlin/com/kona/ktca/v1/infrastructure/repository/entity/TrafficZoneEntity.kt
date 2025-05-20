@@ -5,7 +5,7 @@ import com.kona.ktca.v1.domain.model.TrafficZone
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Table(name = "TRAFFIC_ZONES")
+@Table(name = "KTC_TRAFFIC_ZONES")
 @Entity
 class TrafficZoneEntity(
 

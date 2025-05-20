@@ -1,5 +1,6 @@
 package com.kona.ktca.v1.application.controller
 
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.api.V1ZoneManagementApiDelegate
 import com.kona.ktca.dto.V1FindAllZoneResponse
@@ -25,9 +26,11 @@ class V1ZoneManagementController(
             zoneAlias = v1SaveZoneRequest.zoneAlias,
             threshold = v1SaveZoneRequest.threshold?.toLong(),
             activationTime = v1SaveZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
+            status = v1SaveZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
         )
         val result = trafficZoneManagePort.save(dto)
-        ResponseEntity(V1SaveZoneResponse(zoneId = result.zoneId), HttpStatus.CREATED)
+        val httpStatus = if (dto.isUpdate) HttpStatus.OK else HttpStatus.CREATED
+        ResponseEntity(V1SaveZoneResponse(zoneId = result.zoneId),  httpStatus)
     }
 
     override fun findZone(zoneId: String): ResponseEntity<V1FindZoneResponse> {
