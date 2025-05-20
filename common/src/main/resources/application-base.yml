@@ -53,6 +53,12 @@ management:
     rabbit:
       enabled: false
 
+# message
+message:
+  publish:
+    rabbit:
+      enabled: false
+
 ---
 
 spring:
