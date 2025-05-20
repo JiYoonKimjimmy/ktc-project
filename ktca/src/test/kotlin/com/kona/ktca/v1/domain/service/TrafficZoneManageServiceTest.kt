@@ -66,6 +66,11 @@ class TrafficZoneManageServiceTest : BehaviorSpec({
                 zoneId shouldStartWith TRAFFIC_ZONE_ID_PREFIX
                 zoneId shouldHaveMaxLength 21
             }
+
+            then("신규 등록 트래픽 Zone 'ACTIVATION_ZONES' Cache 저장 정보 정상 확인한다") {
+                val zones = redisExecuteAdapter.getValuesForSet(TrafficCacheKey.ACTIVATION_ZONES.key)
+                zones.contains(saved.zoneId) shouldBe true
+            }
         }
 
         val updateZoneAlias = "test-zone-alias-updated"
@@ -127,8 +132,13 @@ class TrafficZoneManageServiceTest : BehaviorSpec({
             }
 
             then("트래픽 Zone 'status: BLOCKED' Cache 변경 결과 정상 확인한다") {
-                val threshold = redisExecuteAdapter.getValue(TrafficCacheKey.QUEUE_STATUS.getKey(result.zoneId))
-                threshold shouldBe "BLOCKED"
+                val status = redisExecuteAdapter.getValue(TrafficCacheKey.QUEUE_STATUS.getKey(result.zoneId))
+                status shouldBe "BLOCKED"
+            }
+
+            then("트래픽 Zone 'status: BLOCKED' 되어 'ACTIVATION_ZONES' Cache 삭제 정상 확인한다") {
+                val zones = redisExecuteAdapter.getValuesForSet(TrafficCacheKey.ACTIVATION_ZONES.key)
+                zones.contains(saved.zoneId) shouldBe false
             }
         }
 
@@ -169,6 +179,11 @@ class TrafficZoneManageServiceTest : BehaviorSpec({
             then("트래픽 Zone 'status: DELETED' Cache 변경 결과 정상 확인한다") {
                 val threshold = redisExecuteAdapter.getValue(TrafficCacheKey.QUEUE_STATUS.getKey(result.zoneId))
                 threshold shouldBe "DELETED"
+            }
+
+            then("트래픽 Zone 'status: DELETED' 되어 'ACTIVATION_ZONES' Cache 삭제 정상 확인한다") {
+                val zones = redisExecuteAdapter.getValuesForSet(TrafficCacheKey.ACTIVATION_ZONES.key)
+                zones.contains(saved.zoneId) shouldBe false
             }
         }
 

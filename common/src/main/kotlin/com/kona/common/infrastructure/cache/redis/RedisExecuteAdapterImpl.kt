@@ -3,11 +3,8 @@ package com.kona.common.infrastructure.cache.redis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate
-import org.springframework.data.redis.core.getAndAwait
+import org.springframework.data.redis.core.*
 import org.springframework.data.redis.core.script.RedisScript
-import org.springframework.data.redis.core.setAndAwait
-import org.springframework.data.redis.core.sizeAndAwait
 import org.springframework.stereotype.Component
 
 @Component
@@ -41,6 +38,10 @@ class RedisExecuteAdapterImpl(
 
     override suspend fun addValueForSet(key: String, value: String): Long = withContext(Dispatchers.IO) {
         reactiveStringRedisTemplate.opsForSet().add(key, value).awaitSingle()
+    }
+
+    override suspend fun removeValueForSet(key: String, value: String): Long = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForSet().removeAndAwait(key, value)
     }
 
     override suspend fun getValuesForSet(key: String): List<String> = withContext(Dispatchers.IO) {

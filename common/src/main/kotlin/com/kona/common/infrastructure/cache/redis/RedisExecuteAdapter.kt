@@ -16,6 +16,8 @@ interface RedisExecuteAdapter {
 
     suspend fun addValueForSet(key: String, value: String): Long
 
+    suspend fun removeValueForSet(key: String, value: String): Long
+
     suspend fun getValuesForSet(key: String): List<String>
 
 }
