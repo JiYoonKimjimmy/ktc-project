@@ -27,7 +27,6 @@ dependencies {
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
@@ -35,34 +34,26 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // Swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0") //for spring 3.4.x
-    implementation("javax.servlet:javax.servlet-api:4.0.1") //for compiling generated source
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    //implementation("javax.servlet:javax.servlet-api:4.0.1") // for compiling generated source
 
     // Generator
     implementation("org.openapitools:openapi-generator:7.12.0")
     implementation("org.openapitools:openapi-generator-gradle-plugin:7.12.0")
 
     // ys
-//    implementation("com.kona.ys:ys-library:2.2.33")
+    //implementation("com.kona.ys:ys-library:2.2.33")
 
-    //ksl - for common lib
-//    implementation("com.konasl.commonlibs:spring-web:7.0.2") {
-//        exclude(group = "org.springframework.boot", module = "spring-boot-starter-amqp") //why automatic rabbit?
-//    }
-//    implementation("com.konasl.commonlibs:logger:7.0.1")
+    // ksl - for common lib
     implementation(fileTree(rootProject.projectDir.resolve("libs")).matching {
         include("*.jar")
     })
-//    implementation("commons-io:commons-io:2.4")
-//    implementation("com.konasl:kona-iso8583:1.0.5") //for ppSender
-//    implementation("org.apache.httpcomponents.client5:httpclient5:5.4")
-
-//    implementation("com.konasl.commonlibs:spring-web:3.6.4")
-//    implementation("org.apache.httpcomponents:httpclient:4.5.14")
-//    implementation("org.springframework.retry:spring-retry:2.0.4")
 
     // JPA QueryDSL
     implementation("com.querydsl:querydsl-jpa:5.0.0")
+
+    // oracle
+    runtimeOnly("com.oracle.database.jdbc:ojdbc11")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -92,7 +83,7 @@ sourceSets {
 
 configurations.all {
     exclude(group = "org.slf4j", module = "slf4j-simple") //logback 과 slf4j 가 겹쳐서 에러발생...
-    exclude(group = "org.springframework.boot", module = "spring-boot-starter-web")
+//    exclude(group = "org.springframework.boot", module = "spring-boot-starter-web")
 }
 
 tasks.register<GenerateTask>("generateFromYaml") {

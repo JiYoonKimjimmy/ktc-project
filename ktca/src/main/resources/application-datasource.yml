@@ -1,0 +1,81 @@
+spring:
+  datasource:
+    hikari:
+      pool-name: hikaricp-pool
+      minimum-idle: 5
+      maximum-pool-size: 20
+      max-lifetime: 60000
+      idle-timeout: 30000
+      connection-timeout: 10000
+      connection-test-query: SELECT 1 FROM DUAL
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    properties:
+      hibernate:
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 1000
+        jdbc:
+          batch_size: 1000
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@db-dev1.konadc.com:15322:KMDBP19
+    username: mis
+    password: StgMIS1104#
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: qa
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@db-dev3.konadc.com:15321:KMDBP
+    username: mis
+    password: StgMIS1104#
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@db.konadc.com:15321/KMDBP
+    username: mis
+    password: StgMIS1104#
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
