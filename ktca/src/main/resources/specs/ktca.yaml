@@ -333,7 +333,7 @@ components:
     zoneAlias:
       type: string
       description: Zone 별칭
-      example: "경기(00014000000000) 메인 화면 진입"
+      example: "KTC TEST ZONE"
 
     zoneStatus:
       type: string
@@ -348,6 +348,7 @@ components:
         | ACTIVE | Zone 트래픽 제어 활성화 상태 |
         | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
         | DELETED | Zone 삭제 상태 |
+      example: "ACTIVE"
 
     threshold:
       type: integer
