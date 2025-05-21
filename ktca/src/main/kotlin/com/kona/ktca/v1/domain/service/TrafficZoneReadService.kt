@@ -1,9 +1,12 @@
 package com.kona.ktca.v1.domain.service
 
+import com.kona.ktca.v1.domain.dto.PageableDTO
+import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import com.kona.ktca.v1.domain.model.TrafficZone
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneReadPort
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneWaitingFindPort
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 
 @Service
@@ -23,6 +26,10 @@ class TrafficZoneReadService(
         } else {
             zones
         }
+    }
+
+    override suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
+        return trafficZoneFindPort.findPageTrafficZone(trafficZone, pageable)
     }
 
 }

@@ -284,6 +284,7 @@ components:
 
     totalElements:
       type: integer
+      format: int64
       description: 전체 항목 수
       example: 100
 
@@ -516,7 +517,7 @@ components:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/V1FindZoneResponse'
+            $ref: '#/components/schemas/V1ZoneData'
         result:
           $ref: '#/components/schemas/ResultResponse'
 

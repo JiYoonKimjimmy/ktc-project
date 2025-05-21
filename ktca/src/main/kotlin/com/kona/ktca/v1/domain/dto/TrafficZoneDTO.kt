@@ -2,6 +2,9 @@ package com.kona.ktca.v1.domain.dto
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.ktca.v1.domain.model.TrafficZone
+import com.kona.ktca.v1.infrastructure.jdsl.JpqlPredicateGenerator.whereEqualTo
+import com.kona.ktca.v1.infrastructure.repository.entity.TrafficZoneEntity
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import java.time.LocalDateTime
 
 data class TrafficZoneDTO(
@@ -19,6 +22,13 @@ data class TrafficZoneDTO(
             threshold = threshold!!,
             activationTime = activationTime!!,
             status = status!!
+        )
+    }
+
+    fun toPredicatable(): Array<Predicatable?> {
+        return arrayOf(
+            zoneId?.let { whereEqualTo(it, TrafficZoneEntity::id) },
+            status?.let { whereEqualTo(it, TrafficZoneEntity::status) }
         )
     }
 

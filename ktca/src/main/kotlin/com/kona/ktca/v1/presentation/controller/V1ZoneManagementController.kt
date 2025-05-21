@@ -6,6 +6,7 @@ import com.kona.ktca.api.V1ZoneManagementApiDelegate
 import com.kona.ktca.dto.*
 import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import com.kona.ktca.v1.application.usecase.TrafficZoneManagementUseCase
+import com.kona.ktca.v1.domain.dto.PageableDTO
 import com.kona.ktca.v1.presentation.model.V1ZoneModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
@@ -37,8 +38,23 @@ class V1ZoneManagementController(
         ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(result)), HttpStatus.OK)
     }
 
-    override fun findZoneList(page: Int?, size: Int?, zoneId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> {
-        return super.findZoneList(page, size, zoneId, status)
+    override fun findZoneList(page: Int?, size: Int?, zoneId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> = runBlocking {
+        val trafficZone = TrafficZoneDTO(zoneId = zoneId, status = status?.let(TrafficZoneStatus::valueOf))
+        val pageable = PageableDTO(number = page ?: 0, size = size ?: 20)
+        val result = trafficZoneManagementUseCase.findPageTrafficZone(trafficZone, pageable)
+        val response = V1FindAllZoneResponse(
+            pageable = Pageable(
+                first = result.isFirst,
+                last = result.isLast,
+                number = result.number,
+                numberOfElements = result.numberOfElements,
+                propertySize = result.size,
+                totalPages = result.totalPages,
+                totalElements = result.totalElements,
+            ),
+            content = result.content.map { v1ZoneModelMapper.domainToModel(it) }
+        )
+        ResponseEntity(response, HttpStatus.OK)
     }
 
     override fun deleteZone(zoneId: String): ResponseEntity<V1DeleteZoneResponse> = runBlocking {

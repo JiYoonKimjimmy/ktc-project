@@ -1,9 +1,11 @@
 package com.kona.ktca.v1.application.usecase
 
+import com.kona.ktca.v1.domain.dto.PageableDTO
 import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import com.kona.ktca.v1.domain.model.TrafficZone
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneCommandPort
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneReadPort
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,6 +27,10 @@ class TrafficZoneManagementUseCase(
 
     suspend fun findTrafficZone(zoneId: String): TrafficZone {
         return trafficZoneReadPort.findTrafficZone(zoneId)
+    }
+
+    suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
+        return trafficZoneReadPort.findPageTrafficZone(trafficZone, pageable)
     }
 
     @Transactional

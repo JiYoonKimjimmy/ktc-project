@@ -22,11 +22,3 @@ fun getCorrelationId(): String {
 fun setCorrelationId(correlationId: String?) {
     MDC.put(CORRELATION_ID_LOG_FIELD, correlationId)
 }
-
-fun Long?.ifNullOrMinus(default: Long): Long {
-    return if (this == null || this < 0) {
-        default
-    } else {
-        this
-    }
-}

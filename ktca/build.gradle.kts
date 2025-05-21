@@ -49,8 +49,11 @@ dependencies {
         include("*.jar")
     })
 
-    // JPA QueryDSL
-    implementation("com.querydsl:querydsl-jpa:5.0.0")
+    // kotlin-jdsl
+    val jdslVersion = "3.5.5"
+    implementation("com.linecorp.kotlin-jdsl:jpql-dsl:$jdslVersion")
+    implementation("com.linecorp.kotlin-jdsl:jpql-render:$jdslVersion")
+    implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:$jdslVersion")
 
     // oracle
     runtimeOnly("com.oracle.database.jdbc:ojdbc11")

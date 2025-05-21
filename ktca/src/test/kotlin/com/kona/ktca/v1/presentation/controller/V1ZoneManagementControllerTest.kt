@@ -10,8 +10,7 @@ import com.kona.ktca.v1.domain.port.outbound.TrafficZoneFindPort
 import com.kona.ktca.v1.domain.port.outbound.TrafficZoneSavePort
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.notNullValue
+import org.hamcrest.Matchers.*
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
@@ -167,6 +166,24 @@ class V1ZoneManagementControllerTest(
                     status { isOk() }
                     content { jsonPath("$.data.zoneId", equalTo(activeTrafficZone.zoneId)) }
                     content { jsonPath("$.result.status", equalTo("SUCCESS")) }
+                }
+            }
+        }
+    }
+
+    given("트래픽 Zone 정보 목록 조회 API 요청하여") {
+        val url = "/api/v1/zone/list"
+
+        `when`("정상 조회 성공인 경우") {
+            val result = mockMvc
+                .get(url)
+                .andDo { print() }
+
+            then("'200 Ok' 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.pageable.number", equalTo(0)) }
+                    content { jsonPath("$.pageable.totalElements", greaterThanOrEqualTo(0)) }
                 }
             }
         }
