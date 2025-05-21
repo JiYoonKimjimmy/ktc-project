@@ -141,6 +141,7 @@ paths:
         - $ref: '#/components/parameters/query-page'
         - $ref: '#/components/parameters/query-size'
         - $ref: '#/components/parameters/query-zoneId'
+        - $ref: '#/components/parameters/query-zoneStatus'
       responses:
         '200':
           description: '성공'
@@ -204,17 +205,6 @@ components:
           `KCTA` 자체 생성 > `KZ + yyyyMMddHHmmss + random 4자리`
 
     ##### query
-    query-zoneId:
-      in: query
-      name: zoneId
-      required: false
-      schema:
-        type: string
-      example: "KZ202504111730001234"
-      description: |
-        트래픽 제어 Zone 고유 식별 ID<br>
-        `KCTA` 자체 생성 > `KZ + yyyyMMddHHmmss + random 4자리`
-
     query-page:
       in: query
       name: page
@@ -232,6 +222,33 @@ components:
         type: integer
       example: 10
       description: Page 크기
+
+    query-zoneId:
+      in: query
+      name: zoneId
+      required: false
+      schema:
+        type: string
+      example: "KZ202504111730001234"
+      description: |
+        트래픽 제어 Zone 고유 식별 ID<br>
+        `KCTA` 자체 생성 > `KZ + yyyyMMddHHmmss + random 4자리`
+
+    query-zoneStatus:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [ACTIVE, BLOCKED, DELETED]
+      example: "ACTIVE"
+      description: |
+        Zone 상태
+        | 구분 | 내용 |
+        |:----:|----|
+        | ACTIVE | Zone 트래픽 제어 활성화 상태 |
+        | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
+        | DELETED | Zone 삭제 상태 |
 
   schemas:
     ##### common schema start
