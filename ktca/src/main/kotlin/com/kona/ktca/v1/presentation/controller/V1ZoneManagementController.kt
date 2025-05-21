@@ -37,8 +37,8 @@ class V1ZoneManagementController(
         ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(result)), HttpStatus.OK)
     }
 
-    override fun findZoneList(page: Int?, size: Int?, zoneId: String?): ResponseEntity<V1FindAllZoneResponse> {
-        return super.findZoneList(page, size, zoneId)
+    override fun findZoneList(page: Int?, size: Int?, zoneId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> {
+        return super.findZoneList(page, size, zoneId, status)
     }
 
     override fun deleteZone(zoneId: String): ResponseEntity<V1DeleteZoneResponse> = runBlocking {
