@@ -27,4 +27,9 @@ class TrafficZoneManagementUseCase(
         return trafficZoneReadPort.findTrafficZone(zoneId)
     }
 
+    @Transactional
+    suspend fun deleteTrafficZone(zoneId: String) {
+        trafficZoneCommandPort.delete(zoneId)
+    }
+
 }

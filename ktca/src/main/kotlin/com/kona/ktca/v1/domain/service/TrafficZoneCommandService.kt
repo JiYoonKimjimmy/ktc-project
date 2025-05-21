@@ -23,4 +23,8 @@ class TrafficZoneCommandService(
             .let { trafficZoneSavePort.save(it) }
     }
 
+    override suspend fun delete(zoneId: String) {
+        trafficZoneFindPort.findTrafficZone(zoneId).delete()
+            .let { trafficZoneSavePort.save(it) }
+    }
 }

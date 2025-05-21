@@ -44,8 +44,9 @@ class V1ZoneManagementController(
         return super.findZoneList(page, size, zoneId)
     }
 
-    override fun deleteZone(zoneId: String): ResponseEntity<Unit> {
-        return super.deleteZone(zoneId)
+    override fun deleteZone(zoneId: String): ResponseEntity<Unit> = runBlocking {
+        trafficZoneManagementUseCase.deleteTrafficZone(zoneId)
+        ResponseEntity(Unit, HttpStatus.OK)
     }
 
 }

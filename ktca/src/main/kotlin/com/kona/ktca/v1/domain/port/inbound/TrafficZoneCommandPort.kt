@@ -9,4 +9,6 @@ interface TrafficZoneCommandPort {
 
     suspend fun update(dto: TrafficZoneDTO): TrafficZone
 
+    suspend fun delete(zoneId: String)
+
 }

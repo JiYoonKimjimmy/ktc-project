@@ -25,6 +25,11 @@ data class TrafficZone(
         }
     }
 
+    suspend fun applyWaiting(function: suspend (String, Long) -> TrafficZoneWaiting): TrafficZone {
+        this.waiting = function(zoneId, threshold)
+        return this
+    }
+
     fun update(dto: TrafficZoneDTO): TrafficZone {
         if (dto.status != null && status == DELETED) {
             throw InternalServiceException(ErrorCode.DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED)
@@ -37,9 +42,8 @@ data class TrafficZone(
         )
     }
 
-    suspend fun applyWaiting(function: suspend (String, Long) -> TrafficZoneWaiting): TrafficZone {
-        this.waiting = function(zoneId, threshold)
-        return this
+    fun delete(): TrafficZone {
+        return this.copy(status = DELETED)
     }
 
 }
