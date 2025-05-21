@@ -12,7 +12,7 @@ class TrafficZoneMonitoringUseCase(
 ) {
 
     suspend fun trafficZoneMonitoring(zoneId: String? = null): List<TrafficZone> {
-        return trafficZoneReadPort.getTrafficZones(zoneId, true)
+        return trafficZoneReadPort.findTrafficZones(zoneId, true)
     }
 
 }

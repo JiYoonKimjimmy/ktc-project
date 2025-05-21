@@ -9,6 +9,7 @@ import com.kona.ktca.dto.V1SaveZoneRequest
 import com.kona.ktca.dto.V1SaveZoneResponse
 import com.kona.ktca.v1.application.dto.TrafficZoneDTO
 import com.kona.ktca.v1.application.usecase.TrafficZoneManagementUseCase
+import com.kona.ktca.v1.presentation.model.V1ZoneModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +18,8 @@ import java.time.LocalDateTime
 
 @Controller
 class V1ZoneManagementController(
-    private val trafficZoneManagementUseCase: TrafficZoneManagementUseCase
+    private val trafficZoneManagementUseCase: TrafficZoneManagementUseCase,
+    private val v1ZoneModelMapper: V1ZoneModelMapper
 ) : V1ZoneManagementApiDelegate {
 
     override fun saveZone(v1SaveZoneRequest: V1SaveZoneRequest): ResponseEntity<V1SaveZoneResponse> = runBlocking {
@@ -33,8 +35,9 @@ class V1ZoneManagementController(
         ResponseEntity(V1SaveZoneResponse(zoneId = result.zoneId),  httpStatus)
     }
 
-    override fun findZone(zoneId: String): ResponseEntity<V1FindZoneResponse> {
-        return super.findZone(zoneId)
+    override fun findZone(zoneId: String): ResponseEntity<V1FindZoneResponse> = runBlocking {
+        val result = trafficZoneManagementUseCase.findTrafficZone(zoneId)
+        ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(result)), HttpStatus.OK)
     }
 
     override fun findZoneList(page: Int?, size: Int?, zoneId: String?): ResponseEntity<V1FindAllZoneResponse> {

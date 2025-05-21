@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDateTime
 
@@ -43,13 +44,12 @@ class V1ZoneManagementControllerTest(
                 .andDo { print() }
 
             then("'201 Created' 응답 정상 확인한다") {
-                result
-                    .andExpect {
-                        status { isCreated() }
-                        content {
-                            jsonPath("$.zoneId", notNullValue())
-                        }
+                result.andExpect {
+                    status { isCreated() }
+                    content {
+                        jsonPath("$.zoneId", notNullValue())
                     }
+                }
             }
         }
 
@@ -70,11 +70,10 @@ class V1ZoneManagementControllerTest(
                 .andDo { print() }
 
             then("'200 Ok' 응답 정상 확인한다") {
-                result
-                    .andExpect {
-                        status { isOk() }
-                        jsonPath("$.zoneId", equalTo(activeTrafficZone.zoneId))
-                    }
+                result.andExpect {
+                    status { isOk() }
+                    jsonPath("$.zoneId", equalTo(activeTrafficZone.zoneId))
+                }
             }
         }
 
@@ -94,12 +93,11 @@ class V1ZoneManagementControllerTest(
                 .andDo { print() }
 
             then("'404 Not Found' 응답 정상 확인한다") {
-                result
-                    .andExpect {
-                        status { isNotFound() }
-                        content { jsonPath("$.result.code", equalTo("228_1002_100")) }
-                        content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
-                    }
+                result.andExpect {
+                    status { isNotFound() }
+                    content { jsonPath("$.result.code", equalTo("228_1002_100")) }
+                    content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
+                }
             }
         }
 
@@ -120,12 +118,46 @@ class V1ZoneManagementControllerTest(
                 .andDo { print() }
 
             then("'400 Bad Request' 응답 정상 확인한다") {
-                result
-                    .andExpect {
-                        status { isBadRequest() }
-                        content { jsonPath("$.result.code", equalTo("228_1002_101")) }
-                        content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Deleted traffic zone status not changed.")) }
-                    }
+                result.andExpect {
+                    status { isBadRequest() }
+                    content { jsonPath("$.result.code", equalTo("228_1002_101")) }
+                    content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Deleted traffic zone status not changed.")) }
+                }
+            }
+        }
+    }
+
+    given("트래픽 Zone 정보 단일 조회 API 요청하여") {
+        val url = "/api/v1/zone"
+        val notFoundZoneId = "not-found-zone-id"
+
+        `when`("존재하지 않는 'zoneId' 기준 요청인 경우") {
+            val result = mockMvc
+                .get("$url/$notFoundZoneId")
+                .andDo { print() }
+
+            then("'404 Not Found' 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isNotFound() }
+                    content { jsonPath("$.result.code", equalTo("228_1002_100")) }
+                    content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
+                }
+            }
+        }
+
+        val activeTrafficZone = TrafficZone("test-zone-id", "test-zone-alias", 1, LocalDateTime.now(), TrafficZoneStatus.ACTIVE)
+        trafficZoneSavePort.save(activeTrafficZone)
+
+        `when`("존재하는 'zoneId' 기준 요청인 경우") {
+            val result = mockMvc
+                .get("$url/${activeTrafficZone.zoneId}")
+                .andDo { print() }
+
+            then("'200 Ok' 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.data.zoneId", equalTo(activeTrafficZone.zoneId)) }
+                }
             }
         }
     }

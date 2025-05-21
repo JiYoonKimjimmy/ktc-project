@@ -12,7 +12,11 @@ class TrafficZoneReadService(
     private val trafficZoneWaitingFindPort: TrafficZoneWaitingFindPort
 ) : TrafficZoneReadPort {
 
-    override suspend fun getTrafficZones(zoneId: String?, includeWaiting: Boolean): List<TrafficZone> {
+    override suspend fun findTrafficZone(zoneId: String): TrafficZone {
+        return trafficZoneFindPort.findTrafficZone(zoneId)
+    }
+
+    override suspend fun findTrafficZones(zoneId: String?, includeWaiting: Boolean): List<TrafficZone> {
         val zones = trafficZoneFindPort.findAllTrafficZone(zoneId)
         return if (includeWaiting) {
             zones.map { it.applyWaiting(trafficZoneWaitingFindPort::findTrafficZoneWaiting) }

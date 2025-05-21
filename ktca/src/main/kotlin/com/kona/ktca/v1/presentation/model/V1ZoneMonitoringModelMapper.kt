@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 @Component
 class V1ZoneMonitoringModelMapper {
 
-    fun domainToContent(domain: TrafficZone): V1ZoneMonitoringData {
+    fun domainToModel(domain: TrafficZone): V1ZoneMonitoringData {
         return V1ZoneMonitoringData(
             zoneId = domain.zoneId,
             zoneAlias = domain.zoneAlias,

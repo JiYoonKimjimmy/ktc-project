@@ -23,14 +23,13 @@ class V1ZoneMonitoringControllerTest(
                 .andDo { print() }
 
             then("'200 Ok' 응답 정상 확인한다") {
-                result
-                    .andExpect {
-                        status { isOk() }
-                        content {
-                            jsonPath("$.content", notNullValue())
-                            jsonPath("$.content.size()", greaterThanOrEqualTo(0))
-                        }
+                result.andExpect {
+                    status { isOk() }
+                    content {
+                        jsonPath("$.content", notNullValue())
+                        jsonPath("$.content.size()", greaterThanOrEqualTo(0))
                     }
+                }
             }
         }
     }

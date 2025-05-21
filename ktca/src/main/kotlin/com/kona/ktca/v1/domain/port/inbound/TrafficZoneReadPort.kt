@@ -4,6 +4,8 @@ import com.kona.ktca.v1.domain.model.TrafficZone
 
 interface TrafficZoneReadPort {
 
-    suspend fun getTrafficZones(zoneId: String?, includeWaiting: Boolean = false): List<TrafficZone>
+    suspend fun findTrafficZone(zoneId: String): TrafficZone
+
+    suspend fun findTrafficZones(zoneId: String?, includeWaiting: Boolean = false): List<TrafficZone>
 
 }
