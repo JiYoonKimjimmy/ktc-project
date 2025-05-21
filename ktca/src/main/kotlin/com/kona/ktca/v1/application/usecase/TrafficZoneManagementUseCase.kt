@@ -1,6 +1,6 @@
 package com.kona.ktca.v1.application.usecase
 
-import com.kona.ktca.v1.application.dto.TrafficZoneDTO
+import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import com.kona.ktca.v1.domain.model.TrafficZone
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneCommandPort
 import com.kona.ktca.v1.domain.port.inbound.TrafficZoneReadPort

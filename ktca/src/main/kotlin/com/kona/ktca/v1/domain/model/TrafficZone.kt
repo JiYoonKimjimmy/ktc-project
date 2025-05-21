@@ -6,7 +6,7 @@ import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.util.SnowflakeIdGenerator
 import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ID_PREFIX
-import com.kona.ktca.v1.application.dto.TrafficZoneDTO
+import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import java.time.LocalDateTime
 
 data class TrafficZone(

@@ -1,4 +1,4 @@
-package com.kona.ktca.v1.application.dto
+package com.kona.ktca.v1.domain.dto
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.ktca.v1.domain.model.TrafficZone

@@ -4,7 +4,7 @@ import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.api.V1ZoneManagementApiDelegate
 import com.kona.ktca.dto.*
-import com.kona.ktca.v1.application.dto.TrafficZoneDTO
+import com.kona.ktca.v1.domain.dto.TrafficZoneDTO
 import com.kona.ktca.v1.application.usecase.TrafficZoneManagementUseCase
 import com.kona.ktca.v1.presentation.model.V1ZoneModelMapper
 import kotlinx.coroutines.runBlocking
