@@ -17,8 +17,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
 
     val trafficExpireRedisScript = TrafficExpireRedisScript()
     val redisScriptExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
-    val trafficExpireScriptExecuteAdapter =
-        com.kona.ktca.infrastructure.adapter.TrafficExpireScriptExecuteAdapter(trafficExpireRedisScript, redisScriptExecuteAdapter)
+    val trafficExpireScriptExecuteAdapter = TrafficExpireScriptExecuteAdapter(trafficExpireRedisScript, redisScriptExecuteAdapter)
 
     beforeSpec {
         trafficExpireRedisScript.init()
