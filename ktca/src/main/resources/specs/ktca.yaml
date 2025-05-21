@@ -113,6 +113,10 @@ paths:
       responses:
         '200':
           description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1DeleteZoneResponse'
         '400':
           description: |
             Failed
@@ -382,12 +386,15 @@ components:
         status:
           type: string
           description: 응답 결과 상태
+          default: SUCCESS
         code:
           type: string
           description: 에러 코드
+          default: null
         message:
           type: string
           description: 에러 메시지
+          default: null
 
     ErrorResponse:
       type: object
@@ -401,31 +408,6 @@ components:
         message:
           type: string
           description: 에러 메시지
-
-    ##### request/response schema start
-    V1SaveZoneRequest:
-      type: object
-      properties:
-        zoneId:
-          $ref: '#/components/schemas/zoneId'
-        zoneAlias:
-          $ref: '#/components/schemas/zoneAlias'
-        threshold:
-          $ref: '#/components/schemas/threshold'
-        activationTime:
-          $ref: '#/components/schemas/activationTime'
-        status:
-          $ref: '#/components/schemas/zoneStatus'
-
-    V1SaveZoneResponse:
-      type: object
-      required:
-        - zoneId
-      properties:
-        zoneId:
-          $ref: '#/components/schemas/zoneId'
-        result:
-          $ref: '#/components/schemas/ResultResponse'
 
     V1ZoneData:
       type: object
@@ -444,26 +426,6 @@ components:
           $ref: '#/components/schemas/created'
         updated:
           $ref: '#/components/schemas/updated'
-
-    V1FindZoneResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/V1ZoneData'
-        result:
-          $ref: '#/components/schemas/ResultResponse'
-
-    V1FindAllZoneResponse:
-      type: object
-      properties:
-        pageable:
-          $ref: '#/components/schemas/pageable'
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/V1FindZoneResponse'
-        result:
-          $ref: '#/components/schemas/ResultResponse'
 
     V1ZoneMonitoringData:
       type: object
@@ -488,8 +450,72 @@ components:
             estimatedClearTime:
               $ref: '#/components/schemas/estimatedClearTime'
 
+    ##### request/response schema start
+    V1SaveZoneRequest:
+      type: object
+      properties:
+        zoneId:
+          $ref: '#/components/schemas/zoneId'
+        zoneAlias:
+          $ref: '#/components/schemas/zoneAlias'
+        threshold:
+          $ref: '#/components/schemas/threshold'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
+        status:
+          $ref: '#/components/schemas/zoneStatus'
+
+    V1SaveZoneResponse:
+      type: object
+      required:
+        - zoneId
+        - result
+      properties:
+        zoneId:
+          $ref: '#/components/schemas/zoneId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindZoneResponse:
+      type: object
+      required:
+        - data
+        - result
+      properties:
+        data:
+          $ref: '#/components/schemas/V1ZoneData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindAllZoneResponse:
+      type: object
+      required:
+        - pageable
+        - content
+        - result
+      properties:
+        pageable:
+          $ref: '#/components/schemas/pageable'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1FindZoneResponse'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1DeleteZoneResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
     V1ZoneMonitoringResponse:
       type: object
+      required:
+        - content
+        - result
       properties:
         content:
           type: array

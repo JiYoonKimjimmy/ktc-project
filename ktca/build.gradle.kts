@@ -131,6 +131,18 @@ tasks.register("patchGeneratedGradle") {
             targetFile.writeText(content)
             sourceFile.delete()
         }
+
+        val dtoFilaPath = "$projectDir/generated/src/main/kotlin/com/kona/ktca/dto"
+        fileTree(dtoFilaPath)
+            .matching { include("**/*Response.kt") }
+            .forEach { file ->
+                val content = file.readText()
+                val fixedContent = content.replace(
+                    "val result: ResultResponse",
+                    "val result: ResultResponse = ResultResponse()"
+                )
+                file.writeText(fixedContent)
+            }
     }
 }
 

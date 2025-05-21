@@ -3,10 +3,7 @@ package com.kona.ktca.v1.presentation.controller
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.api.V1ZoneManagementApiDelegate
-import com.kona.ktca.dto.V1FindAllZoneResponse
-import com.kona.ktca.dto.V1FindZoneResponse
-import com.kona.ktca.dto.V1SaveZoneRequest
-import com.kona.ktca.dto.V1SaveZoneResponse
+import com.kona.ktca.dto.*
 import com.kona.ktca.v1.application.dto.TrafficZoneDTO
 import com.kona.ktca.v1.application.usecase.TrafficZoneManagementUseCase
 import com.kona.ktca.v1.presentation.model.V1ZoneModelMapper
@@ -44,9 +41,9 @@ class V1ZoneManagementController(
         return super.findZoneList(page, size, zoneId)
     }
 
-    override fun deleteZone(zoneId: String): ResponseEntity<Unit> = runBlocking {
+    override fun deleteZone(zoneId: String): ResponseEntity<V1DeleteZoneResponse> = runBlocking {
         trafficZoneManagementUseCase.deleteTrafficZone(zoneId)
-        ResponseEntity(Unit, HttpStatus.OK)
+        ResponseEntity(V1DeleteZoneResponse(), HttpStatus.OK)
     }
 
 }

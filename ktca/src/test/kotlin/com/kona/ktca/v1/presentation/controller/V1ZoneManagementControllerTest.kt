@@ -52,6 +52,7 @@ class V1ZoneManagementControllerTest(
                     status { isCreated() }
                     content {
                         jsonPath("$.zoneId", notNullValue())
+                        content { jsonPath("$.result.status", equalTo("SUCCESS")) }
                     }
                 }
             }
@@ -77,6 +78,7 @@ class V1ZoneManagementControllerTest(
                 result.andExpect {
                     status { isOk() }
                     jsonPath("$.zoneId", equalTo(activeTrafficZone.zoneId))
+                    content { jsonPath("$.result.status", equalTo("SUCCESS")) }
                 }
             }
         }
@@ -99,6 +101,7 @@ class V1ZoneManagementControllerTest(
             then("'404 Not Found' 응답 정상 확인한다") {
                 result.andExpect {
                     status { isNotFound() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
                     content { jsonPath("$.result.code", equalTo("228_1002_100")) }
                     content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
                 }
@@ -124,6 +127,7 @@ class V1ZoneManagementControllerTest(
             then("'400 Bad Request' 응답 정상 확인한다") {
                 result.andExpect {
                     status { isBadRequest() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
                     content { jsonPath("$.result.code", equalTo("228_1002_101")) }
                     content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Deleted traffic zone status not changed.")) }
                 }
@@ -143,6 +147,7 @@ class V1ZoneManagementControllerTest(
             then("'404 Not Found' 응답 정상 확인한다") {
                 result.andExpect {
                     status { isNotFound() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
                     content { jsonPath("$.result.code", equalTo("228_1002_100")) }
                     content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
                 }
@@ -161,6 +166,7 @@ class V1ZoneManagementControllerTest(
                 result.andExpect {
                     status { isOk() }
                     content { jsonPath("$.data.zoneId", equalTo(activeTrafficZone.zoneId)) }
+                    content { jsonPath("$.result.status", equalTo("SUCCESS")) }
                 }
             }
         }
@@ -178,6 +184,7 @@ class V1ZoneManagementControllerTest(
             then("'404 Not Found' 응답 정상 확인한다") {
                 result.andExpect {
                     status { isNotFound() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
                     content { jsonPath("$.result.code", equalTo("228_1002_100")) }
                     content { jsonPath("$.result.message", equalTo("Traffic Zone Management Service failed. Traffic zone not found.")) }
                 }
@@ -195,6 +202,7 @@ class V1ZoneManagementControllerTest(
             then("'200 Ok' 응답 정상 확인한다") {
                 result.andExpect {
                     status { isOk() }
+                    content { jsonPath("$.result.status", equalTo("SUCCESS")) }
                 }
             }
 
