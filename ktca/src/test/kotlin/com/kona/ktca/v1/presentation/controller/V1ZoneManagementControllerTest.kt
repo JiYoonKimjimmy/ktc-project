@@ -1,4 +1,4 @@
-package com.kona.ktca.v1.application.controller
+package com.kona.ktca.v1.presentation.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
@@ -20,12 +20,9 @@ import java.time.LocalDateTime
 @AutoConfigureMockMvc
 @SpringBootTest
 class V1ZoneManagementControllerTest(
-
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
-
     private val trafficZoneSavePort: TrafficZoneSavePort
-
 ) : BehaviorSpec({
 
     given("트래픽 Zone 정보 저장 API 요청하여") {

@@ -1,9 +1,10 @@
-package com.kona.ktca.v1.domain.service
+package com.kona.ktca.v1.application.usecase
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
 import com.kona.common.testsupport.redis.EmbeddedRedis
+import com.kona.ktca.v1.domain.service.TrafficZoneReadService
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneFindAdapter
 import com.kona.ktca.v1.infrastructure.adapter.TrafficZoneWaitingFindAdapter
 import com.kona.ktca.v1.infrastructure.repository.FakeTrafficZoneRepository
@@ -15,7 +16,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import java.time.Instant
 import java.time.LocalDateTime
 
-class TrafficZoneMonitorServiceTest : BehaviorSpec({
+class TrafficZoneMonitoringUseCaseTest : BehaviorSpec({
 
     val trafficZoneRepository = FakeTrafficZoneRepository()
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
@@ -23,13 +24,14 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
     val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
+    val trafficZoneReadService = TrafficZoneReadService(trafficZoneFindAdapter, trafficZoneWaitingFindAdapter)
 
-    val trafficZoneMonitorService = TrafficZoneMonitorService(trafficZoneFindAdapter, trafficZoneWaitingFindAdapter)
+    val trafficZoneMonitorUseCase = TrafficZoneMonitoringUseCase(trafficZoneReadService)
 
     given("전체 트래픽 제어 Zone 모니터링 요청되어") {
 
         `when`("현재 트래픽 제어 활성화된 Zone 없는 경우") {
-            val result = trafficZoneMonitorService.monitoring()
+            val result = trafficZoneMonitorUseCase.trafficZoneMonitoring()
 
             then("Zone 현황 조회 0건 정상 확인한다") {
                 result shouldNotBe null
@@ -51,7 +53,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token2, Instant.now().toEpochMilli().toDouble()).awaitSingle()
 
         `when`("현재 트래픽 제어 활성화된 Zone 2건인 경우") {
-            val result = trafficZoneMonitorService.monitoring()
+            val result = trafficZoneMonitorUseCase.trafficZoneMonitoring()
 
             then("Zone 현황 조회 결과 정상 확인한다") {
                 result shouldNotBe null
@@ -77,7 +79,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
 
 
         `when`("특정 zoneId 기준 트래픽 제어 Zone 없는 경우") {
-            val result = trafficZoneMonitorService.monitoring("unknown-zone")
+            val result = trafficZoneMonitorUseCase.trafficZoneMonitoring("unknown-zone")
 
             then("0건 반환 처리 정상 확인한다") {
                 result shouldNotBe null
@@ -86,7 +88,7 @@ class TrafficZoneMonitorServiceTest : BehaviorSpec({
         }
 
         `when`("특정 zoneId 기준 트래픽 제어 Zone 있는 경우") {
-            val result = trafficZoneMonitorService.monitoring(zoneId2)
+            val result = trafficZoneMonitorUseCase.trafficZoneMonitoring(zoneId2)
 
             then("Zone 현황 조회 결과 '1건' 정상 확인한다") {
                 result shouldNotBe null

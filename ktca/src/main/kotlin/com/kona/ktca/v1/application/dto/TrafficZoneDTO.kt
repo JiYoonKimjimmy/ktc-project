@@ -1,4 +1,4 @@
-package com.kona.ktca.v1.domain.port.dto
+package com.kona.ktca.v1.application.dto
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.ktca.v1.domain.model.TrafficZone
@@ -11,7 +11,7 @@ data class TrafficZoneDTO(
     val activationTime: LocalDateTime? = null,
     val status: TrafficZoneStatus? = null,
 ) {
-    val isUpdate: Boolean by lazy { zoneId != null }
+    val isCreate: Boolean by lazy { zoneId == null }
 
     fun toDomain(): TrafficZone {
         return TrafficZone(

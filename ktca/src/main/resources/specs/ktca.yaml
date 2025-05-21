@@ -376,18 +376,31 @@ components:
       example: 60000
 
     ##### api dto start
+    ResultResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 응답 결과 상태
+        code:
+          type: string
+          description: 에러 코드
+        message:
+          type: string
+          description: 에러 메시지
+
     ErrorResponse:
       type: object
       properties:
-        returnCode:
+        status:
           type: string
-          description: Error Code
-        returnMessage:
+          description: 응답 결과 상태
+        code:
           type: string
-          description: Error Message
-        printMessage:
+          description: 에러 코드
+        message:
           type: string
-          description: Error Print Message
+          description: 에러 메시지
 
     ##### request/response schema start
     V1SaveZoneRequest:
@@ -411,8 +424,10 @@ components:
       properties:
         zoneId:
           $ref: '#/components/schemas/zoneId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
 
-    V1FindZoneResponse:
+    V1ZoneData:
       type: object
       properties:
         zoneId:
@@ -430,6 +445,14 @@ components:
         updated:
           $ref: '#/components/schemas/updated'
 
+    V1FindZoneResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/V1ZoneData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
     V1FindAllZoneResponse:
       type: object
       properties:
@@ -439,6 +462,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1FindZoneResponse'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
 
     V1ZoneMonitoringData:
       type: object
@@ -470,3 +495,5 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1ZoneMonitoringData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
