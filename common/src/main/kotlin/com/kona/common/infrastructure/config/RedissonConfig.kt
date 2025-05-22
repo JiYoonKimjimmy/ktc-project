@@ -5,16 +5,15 @@ import org.redisson.Redisson
 import org.redisson.api.RedissonClient
 import org.redisson.config.Config
 import org.redisson.spring.data.connection.RedissonConnectionFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import java.time.Duration
 
 @Configuration
 class RedissonConfig(
-    @Value("\${spring.profiles.active}")
-    private val environment: String,
+    private val environment: Environment,
     private val redisProperties: RedisProperties
 ) {
 
@@ -22,6 +21,9 @@ class RedissonConfig(
         const val CONNECTION_MIN_IDLE_SIZE = 0
         const val CONNECTION_MAX_POOL_SIZE = 30
     }
+
+    private val profiles = listOf("test", "dev", "qa", "prod")
+    lateinit var activeProfile: String
 
     lateinit var host: String
     lateinit var port: String
@@ -32,14 +34,16 @@ class RedissonConfig(
 
     lateinit var redissonConfig: Config
 
+
     @PostConstruct
     fun initialize() {
+        this.activeProfile = environment.activeProfiles.find { profiles.contains(it) } ?: "test"
         this.host = redisProperties.host
         this.port = redisProperties.port.toString()
         this.password = redisProperties.password
         this.timeout = redisProperties.timeout
         this.connectTimeout = redisProperties.connectTimeout
-        this.nodes = when (environment) {
+        this.nodes = when (this.activeProfile) {
             "test" -> emptyList()
             else -> redisProperties.cluster.nodes
         }
@@ -57,7 +61,7 @@ class RedissonConfig(
     }
 
     private fun redissonClientConfig(): Config {
-        val config = when (environment) {
+        val config = when (this.activeProfile) {
             "test" -> this::useSingleServerConfig
             else -> this::useClusterServersConfig
         }
