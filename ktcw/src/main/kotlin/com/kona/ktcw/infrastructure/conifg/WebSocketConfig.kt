@@ -8,14 +8,14 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 
 @Configuration
 class WebSocketConfig(
-    private val ktcWebSocketHandler: WebSocketHandler,
+    private val trafficControlWebSocketHandler: WebSocketHandler,
 ) {
 
     @Bean
     fun webSocketMapping(): SimpleUrlHandlerMapping {
         val mapping = SimpleUrlHandlerMapping()
-        mapping.order = -1 // 필터보다 먼저 실행
-        mapping.urlMap = mapOf<String, Any?>("/waiting" to ktcWebSocketHandler) // ws 엔드포인트 등록
+        mapping.order = -1
+        mapping.urlMap = mapOf<String, WebSocketHandler>("/waiting" to trafficControlWebSocketHandler)
         return mapping
     }
 

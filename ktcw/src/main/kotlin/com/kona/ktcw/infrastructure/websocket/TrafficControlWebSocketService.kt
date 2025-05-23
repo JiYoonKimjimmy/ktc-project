@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 @Service
-class KtcWebSocketService {
+class TrafficControlWebSocketService {
 
     private final val connectionCount = AtomicInteger(0)
     private final val sessionOrderMap = ConcurrentHashMap<String, Int>()
