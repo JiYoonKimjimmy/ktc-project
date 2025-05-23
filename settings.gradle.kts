@@ -1,6 +1,6 @@
 rootProject.name = "ktc-project"
 
-include("ktc", "ktca", "common")
+include("ktc", "ktca", "ktcw", "common")
 
 pluginManagement {
     repositories {

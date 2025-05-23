@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: ktcw
+  web:
+    resources:
+      static-locations: classpath:/static/
+  main:
+    web-application-type: reactive
+
+server:
+  port: 21004
+  servlet:
+    context-path: /ktcw
+
+#management:
+#  server:
+#    port: 21005
+#  endpoints:
+#    web:
+#      base-path: /ktcw/actuator

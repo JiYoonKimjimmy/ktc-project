@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>KTC - 대기열 PoC</title>
+    <!-- Stomp.js (순수 WebSocket 지원 가능) -->
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <style>
+        body {
+            font-size: 4em;
+            margin: 0.5em;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            padding: 0.5em 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+        }
+        button:hover {
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+<h1>KTC - 대기열 PoC</h1>
+<div>
+    <button onclick="connect()">대기열 접속</button>
+    <button onclick="disconnect()">대기열 나가기</button>
+</div>
+<pre id="output"></pre>
+<script>
+    const SERVER_URL = "ws://10.205.0.108:8080/ws";  // ✅ 순수 WebSocket 주소
+    let stompClient = null;
+    let currentOrder = 0;
+    let leftOrder = 0;
+    let sessions = 0;
+    let outReserve = false;
+
+    function log(message) {
+        const output = document.getElementById("output");
+        output.innerHTML = message + "<br>" + output.innerHTML;
+    }
+
+    function cleanLog(message) {
+        const output = document.getElementById("output");
+        output.innerHTML = message;
+    }
+
+    function connect() {
+        if (stompClient && stompClient.connected) {
+            log("이미 연결되어 있습니다.");
+            log(" ");
+            return;
+        }
+
+        stompClient = new StompJs.Client({
+            brokerURL: SERVER_URL, // ✅ 직접 WebSocket URL 지정
+            connectHeaders: {},
+            debug: function (str) {
+                //console.log(str); // 필요 시 활성화
+            },
+            heartbeatIncoming: 5000,
+            heartbeatOutgoing: 5000,
+            reconnectDelay: 0,
+            onConnect: function (frame) {
+                cleanLog("대기열에 연결되었습니다.");
+                log(" ");
+
+                // 개인메세지 받는 토픽
+                stompClient.subscribe('/user/queue/order', function(message) {
+                    currentOrder = parseInt(message.body, 10);
+                    log("고객님의 순번은: " + currentOrder + "번째 입니다.");
+                    log(" ");
+                    if (currentOrder === 1) {
+                        log("🎉 고객님이 입장하실 차례입니다! 30초 후에 메인화면으로 진입합니다...");
+                        log(" ");
+                        setTimeout(function () {
+                            stompClient.webSocket.close();
+                            log("⛔ 메인화면 입장 완료 - 대기열에서 나갔습니다.");
+                            //log(" 부하테스트를 위해 5초 후 대기열에 재입장 합니다.");
+                            log(" ");
+                            outReserve = true;
+                        }, 30000);
+                    }
+                });
+
+                // 몇번째 대기자가 일탈했다는 브로드캐스팅 토픽
+                stompClient.subscribe('/topic/waiting', function(message) {
+                    leftOrder = parseInt(message.body, 10);
+                    if (currentOrder > 1 && currentOrder > leftOrder) {
+                        currentOrder--;
+                        log("고객님의 순번은: " + currentOrder + "번째 입니다.");
+                        log(" ");
+                        // 클라이언트의 순번을 서버로 전송
+                        stompClient.publish({
+                            destination: "/app/update-order",
+                            body: JSON.stringify({ newOrder: currentOrder })
+                        });
+                    }
+
+                    if (!outReserve && currentOrder === 1) {
+                        log("🎉 고객님이 입장하실 차례입니다! 30초 후에 메인화면으로 진입합니다...");
+                        setTimeout(function () {
+                            //disconnect();
+                            stompClient.webSocket.close();  // 자동재접속으로 서버에 부하를 주기 위해서
+                            log("⛔ 메인화면으로 진입 - 대기열에서 나갔습니다.");
+                            //log(" 부하테스트를 위해 5초 후 대기열에 재입장 합니다.");
+                            log(" ");
+                        }, 30000);
+                    }
+                });
+
+                // 서버의 활설 세션 수를 받는 브로드캐스팅 토픽
+                stompClient.subscribe('/topic/sessions', function(message) {
+                    sessions = parseInt(message.body, 10);
+                    if (currentOrder > sessions) {
+                        currentOrder = sessions;
+                        log("고객님의 순번은: " + currentOrder + "번째 입니다.");
+                        log(" ");
+                        stompClient.publish({
+                            destination: "/app/update-order",
+                            body: JSON.stringify({ newOrder: currentOrder })
+                        });
+                    }
+                });
+
+                // 순번 할당 요청. 서버의 응답은 개인 토픽으로 전달.
+                stompClient.publish({
+                    destination: "/app/join",
+                    body: ""
+                });
+            },
+            onStompError: function (frame) {
+                log("❗ STOMP 에러 발생: " + frame.headers['message']);
+            },
+            onWebSocketClose: function () {
+                // ✅ 연결 끊겼을 때 순번 초기화
+                currentOrder = 0;
+                log("❌ 대기열 연결이 끊겼습니다.");
+            }
+        });
+
+        stompClient.activate();
+    }
+
+    function disconnect() {
+        if (stompClient && stompClient.connected) {
+            stompClient.deactivate();
+            log("대기열 연결 종료됨");
+            currentOrder = 0;
+        } else {
+            log("연결되어 있지 않습니다.");
+        }
+    }
+</script>
+</body>
+</html>
