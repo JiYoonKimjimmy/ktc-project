@@ -13,9 +13,10 @@ class TrafficControlWebSocketService {
     private final val sessionMap = ConcurrentHashMap<String, WebSocketSession>()
 
     fun assignOrder(sessionId: String, session: WebSocketSession): Int {
+        val order = connectionCount.incrementAndGet()
         sessionMap[sessionId] = session
-        sessionOrderMap[sessionId] = sessionMap.size
-        return sessionMap.size
+        sessionOrderMap[sessionId] = order
+        return order
     }
 
     fun updateOrder(sessionId: String, newOrder: Int) {
@@ -33,7 +34,7 @@ class TrafficControlWebSocketService {
     }
 
     fun clearDeadSessions() {
-        sessionMap.forEach { sessionId, session ->
+        sessionMap.forEach { (sessionId, session) ->
             if (!session.isOpen) {
                 removeSession(sessionId)
             }
