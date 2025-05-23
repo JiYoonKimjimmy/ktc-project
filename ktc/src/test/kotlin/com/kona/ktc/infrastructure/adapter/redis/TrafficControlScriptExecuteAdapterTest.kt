@@ -3,6 +3,7 @@ package com.kona.ktc.infrastructure.adapter.redis
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
+import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.infrastructure.adapter.redis.TrafficControlScript
@@ -18,8 +19,8 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
     val trafficControlScript = TrafficControlScript().also { it.init() }
     val redisScriptAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
-    val defaultThreshold = "1"
-    val trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
+    var defaultThreshold = "1"
+    var trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
 
     given("'threshold: 1' 트래픽 Zone 제어 요청 되어") {
         val zoneId = "traffic-zone"
@@ -151,6 +152,72 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
             then("트래픽 진입 Count 캐시 조회 결과 '4' 정상 확인한다") {
                 val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
                 entryCount shouldBe "4"
+            }
+        }
+    }
+
+    given("'threshold: 100' 트래픽 Zone 제어, 200건 요청 되어") {
+        defaultThreshold = "100"
+        trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
+
+        val zoneId = "test-zone2"
+        val traffics = (1..200).map { Traffic(zoneId, "test-token-$it") }.toList()
+
+        // 트래픽 제어 요청
+        var now = Instant.now()
+        val results1to100 = traffics.take(100).mapIndexed { index, traffic ->
+            trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(index.toLong() * 1))
+        }
+        var results101to200 = traffics.drop(100).mapIndexed { index, traffic ->
+            trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(101 + index.toLong() * 1))
+        }
+
+        `when`("'100건 진입' 처리되는 경우") {
+
+            then("트래픽-1to100 'canEnter: true' 처리 결과 정상 확인한다") {
+                results1to100.forEach { it.canEnter shouldBe true }
+            }
+
+            then("트래픽-101, 102, 103 'canEnter: false' 처리 결과 확인한다") {
+                results101to200.forEach { it.canEnter shouldBe false }
+                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "2"
+            }
+
+            then("트래픽 진입 Count 캐시 조회 결과 '100' 정상 확인한다") {
+                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
+                entryCount shouldBe "100"
+            }
+        }
+
+        `when`("'1분 뒤 나머지 100건' 처리되는 경우") {
+            now = now.plusMillis(ONE_MINUTE_MILLIS)
+
+            var processedCount = 100
+            var remainingTraffics = traffics.drop(processedCount)
+            var secondsElapsed = 0
+
+            then("초당 트래픽-2건씩 진입하여 100건이 처리될 때까지 결과 확인") {
+                while (remainingTraffics.isNotEmpty() && processedCount < 200) {
+                    val currentResults = remainingTraffics.take(remainingTraffics.size.coerceAtMost(10)).mapIndexed { index, traffic ->
+                        trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(1 + index.toLong() * 1))
+                    }
+
+                    currentResults.take(2).forEach { it.canEnter shouldBe true }
+                    currentResults.drop(2).forEach { it.canEnter shouldBe false }
+
+                    processedCount += 2
+                    val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
+                    entryCount shouldBe processedCount.toString()
+
+                    remainingTraffics = traffics.drop(processedCount)
+                    now = now.plusMillis(ONE_SECONDS_MILLIS)
+                    secondsElapsed++
+                }
+
+                val finalEntryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
+                finalEntryCount shouldBe "200"  // 100 + 100
+                secondsElapsed shouldBe 50
             }
         }
     }

@@ -13,17 +13,25 @@ enum class TrafficCacheKey(
         note = "트래픽 대기 Queue 상태 Key",
         key = "ktc:{%s}:queue_status"
     ),
-    BUCKET(
-        note = "트래픽 Bucket Key",
-        key = "ktc:{%s}:bucket"
-    ),
-    BUCKET_REFILL_TIME(
-        note = "마지막 Bucket 리필 시간 Key",
-        key = "ktc:{%s}:bucket_refill_time"
-    ),
     THRESHOLD(
         note = "트래픽 분당 임계치 Key",
         key = "ktc:{%s}:threshold"
+    ),
+    MINUTE_BUCKET(
+        note = "분당 트래픽 Bucket Key",
+        key = "ktc:{%s}:minute_bucket"
+    ),
+    MINUTE_BUCKET_REFILL_TIME(
+        note = "마지막 분당 Bucket 리필 시간 Key",
+        key = "ktc:{%s}:minute_bucket_refill_time"
+    ),
+    SECOND_BUCKET(
+        note = "초당 트래픽 Bucket Key",
+        key = "ktc:{%s}:second_bucket"
+    ),
+    SECOND_BUCKET_REFILL_TIME(
+        note = "마지막 초당 Bucket 리필 시간 Key",
+        key = "ktc:{%s}:second_bucket_refill_time"
     ),
     ENTRY_COUNT(
         note = "트래픽 진입 Count Key",
@@ -43,11 +51,13 @@ enum class TrafficCacheKey(
 
         fun getTrafficControlKeys(zoneId: String): Map<TrafficCacheKey, String> {
             return mapOf(
-                QUEUE               to QUEUE.getKey(zoneId),
-                THRESHOLD           to THRESHOLD.getKey(zoneId),
-                BUCKET              to BUCKET.getKey(zoneId),
-                BUCKET_REFILL_TIME  to BUCKET_REFILL_TIME.getKey(zoneId),
-                ENTRY_COUNT         to ENTRY_COUNT.getKey(zoneId),
+                QUEUE                       to QUEUE.getKey(zoneId),
+                THRESHOLD                   to THRESHOLD.getKey(zoneId),
+                MINUTE_BUCKET               to MINUTE_BUCKET.getKey(zoneId),
+                MINUTE_BUCKET_REFILL_TIME   to MINUTE_BUCKET_REFILL_TIME.getKey(zoneId),
+                SECOND_BUCKET               to SECOND_BUCKET.getKey(zoneId),
+                SECOND_BUCKET_REFILL_TIME   to SECOND_BUCKET_REFILL_TIME.getKey(zoneId),
+                ENTRY_COUNT                 to ENTRY_COUNT.getKey(zoneId),
             )
         }
 

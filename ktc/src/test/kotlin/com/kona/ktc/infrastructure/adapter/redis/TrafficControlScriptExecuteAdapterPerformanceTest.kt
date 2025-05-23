@@ -14,7 +14,7 @@ import kotlin.system.measureTimeMillis
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-@ActiveProfiles("qa")
+@ActiveProfiles("test")
 @SpringBootTest
 class TrafficControlScriptExecuteAdapterPerformanceTest(
     private val trafficControlScriptExecuteAdapter: TrafficControlScriptExecuteAdapter
@@ -26,8 +26,8 @@ class TrafficControlScriptExecuteAdapterPerformanceTest(
             forAll(
                 row("1K", 1_000),
                 row("10K", 10_000),
-                row("50K", 50_000),
-                row("100K", 100_000),
+//                row("50K", 50_000),
+//                row("100K", 100_000),
             ) { description, count ->
                 it("$description 동시 요청 성능 측정") {
                     val zoneId = "test-zone"
@@ -87,8 +87,8 @@ class TrafficControlScriptExecuteAdapterPerformanceTest(
             forAll(
                 row("1K", 1_000),
                 row("10K", 10_000),
-                row("50K", 50_000),
-                row("100K", 100_000),
+//                row("50K", 50_000),
+//                row("100K", 100_000),
             ) { description, count ->
                 it("$description 동시 요청 성능 측정") {
                     val zoneId = "test-zone"

@@ -30,53 +30,81 @@ class TrafficControlExecuteAdapter(
         val score = now.toTokenScore()
         val nowMillis = now.toEpochMilli()
 
+        // TrafficCacheKey enum에서 기본 키 가져오기
         val trafficControlKeys = getTrafficControlKeys(zoneId)
         val queueKey            = trafficControlKeys[QUEUE]!!
-        val thresholdKey        = trafficControlKeys[THRESHOLD]!!
-        val bucketKey           = trafficControlKeys[BUCKET]!!
-        val bucketRefillTimeKey = trafficControlKeys[BUCKET_REFILL_TIME]!!
+        val minuteThresholdKey  = trafficControlKeys[THRESHOLD]!!
         val entryCountKey       = trafficControlKeys[ENTRY_COUNT]!!
 
-        // 트래픽 대기 token Queue 저장
+        // 초당 버킷 관리를 위한 키
+        val secondBucketKey           = trafficControlKeys[SECOND_BUCKET]!!
+        val secondBucketRefillTimeKey = trafficControlKeys[SECOND_BUCKET_REFILL_TIME]!!
+
+        // 분당 버킷 수 관리를 위한 키
+        val minuteBucketKey    = trafficControlKeys[MINUTE_BUCKET]!!
+        val minuteLastResetTimeKey = trafficControlKeys[MINUTE_BUCKET_REFILL_TIME]!!
+
+        // 1. 요청 토큰을 대기열(ZSET)에 추가 (이미 있다면 점수 업데이트 안함)
+        // rankZSet 결과가 0보다 작으면 해당 멤버가 없다는 의미
         if (reactiveStringRedisTemplate.rankZSet(queueKey, token) < 0) {
-            reactiveStringRedisTemplate.addZSet(queueKey, token, score)
+            reactiveStringRedisTemplate.addZSet(queueKey, token, score) // 도착 시간(score) 기준으로 정렬
         }
 
-        // bucket refill 여부 확인 : nowMills - bucketRefillTime >= 60000ms 인 경우, bucket 리필 처리
-        val threshold = reactiveStringRedisTemplate.getValue(thresholdKey, defaultThreshold).toLong()
-        val bucketRefillTime = reactiveStringRedisTemplate.getValue(bucketRefillTimeKey, nowMillis.toString()).toLong()
-        if (nowMillis - bucketRefillTime >= ONE_MINUTE_MILLIS) {
-            reactiveStringRedisTemplate.setValue(bucketKey, threshold.toString())
-            reactiveStringRedisTemplate.setValue(bucketRefillTimeKey, nowMillis.toString())
+        // 2. 분당 허용량 조회 및 분당 버킷 리필
+        val minuteThreshold = reactiveStringRedisTemplate.getValue(minuteThresholdKey, defaultThreshold).toLong()
+        val minuteBucketLastRefillTime = reactiveStringRedisTemplate.getValue(minuteLastResetTimeKey, nowMillis.toString()).toLong()
+        if (nowMillis - minuteBucketLastRefillTime >= ONE_MINUTE_MILLIS) {
+            reactiveStringRedisTemplate.setValue(minuteBucketKey, minuteThreshold.toString())
+            reactiveStringRedisTemplate.setValue(minuteLastResetTimeKey, nowMillis.toString())
         }
 
-        // 트래픽 진입 가능 여부 확인 : rank < threshold && bucketSize > 0
-        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
-        val bucketSize = reactiveStringRedisTemplate.getValue(bucketKey, threshold.toString()).toLong()
-        var canEnter = false
-
-        if (rank < threshold && bucketSize > 0) {
-            canEnter = true
-        } else {
-            val tokenScore = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()
-            val waitingTime = nowMillis - tokenScore + ONE_SECONDS_MILLIS
-            val estimatedTime = ceil((rank + 1).toDouble() / threshold).toLong() * ONE_MINUTE_MILLIS
-            if (waitingTime >= estimatedTime && bucketSize > 0) {
-                canEnter = true
+        // 3. 초당 허용량 조회 및 초당 버킷 리필 (대기열이 있는 경우에만 버킷 리필)
+        val totalCountInQueue = reactiveStringRedisTemplate.sizeZSet(queueKey)
+        val applySecondBucket = totalCountInQueue >= 2L
+        val perSecondThreshold = ceil(minuteThreshold.toDouble() / 60.0).toLong().coerceAtLeast(1)
+        if (applySecondBucket) {
+            val secondBucketLastRefillTime = reactiveStringRedisTemplate.getValue(secondBucketRefillTimeKey, nowMillis.toString()).toLong()
+            if (nowMillis - secondBucketLastRefillTime >= ONE_SECONDS_MILLIS) {
+                reactiveStringRedisTemplate.setValue(secondBucketKey, perSecondThreshold.toString())
+                reactiveStringRedisTemplate.setValue(secondBucketRefillTimeKey, nowMillis.toString())
             }
         }
 
+        // 4. 요청 진입 가능 여부 판단
+        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token) // 대기열에서 현재 토큰의 순위 (0부터 시작)
+        val currentMinuteBucketSize = reactiveStringRedisTemplate.getValue(minuteBucketKey, minuteThreshold.toString()).toLong()
+        val currentSecondBucketSize = reactiveStringRedisTemplate.getValue(secondBucketKey, perSecondThreshold.toString()).toLong()
+
+        var canEnter = false // 진입 가능 여부 플래그
+        if (currentMinuteBucketSize > 0 && currentSecondBucketSize > 0) {
+            if (rank < minuteThreshold) {
+                canEnter = true
+            } else {
+                val tokenScore = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()
+                val waitingTime = nowMillis - tokenScore + ONE_SECONDS_MILLIS
+                val estimatedTime = ceil((rank + 1).toDouble() / minuteThreshold).toLong() * ONE_MINUTE_MILLIS
+                if (waitingTime >= estimatedTime) {
+                    canEnter = true
+                }
+            }
+        }
+
+        // 5. 진입 가능/불가능에 따른 처리
         return if (canEnter) {
-            reactiveStringRedisTemplate.decrementValue(bucketKey)
+            // 요청 진입 허용
+            reactiveStringRedisTemplate.decrementValue(minuteBucketKey)
+            if (applySecondBucket) {
+                reactiveStringRedisTemplate.decrementValue(secondBucketKey)
+            }
             reactiveStringRedisTemplate.incrementValue(entryCountKey)
             reactiveStringRedisTemplate.removeZSet(queueKey, token)
             TrafficWaiting(true, 0, 0, 0)
         } else {
-            // 트래픽 대기 정보 응답 처리
-            val number = rank + 1
-            val estimatedTime = ceil((number.toDouble() / threshold)).toLong() * ONE_MINUTE_MILLIS
-            val totalCount = reactiveStringRedisTemplate.sizeZSet(queueKey)
-            TrafficWaiting(false, number, estimatedTime, totalCount)
+            val numberInQueue = rank + 1
+            val effectiveMinuteThreshold = minuteThreshold.coerceAtLeast(1)
+            // TODO 예상대기시간 분이 아닌 초 단위로 수정?
+            val estimatedWaitTimeMillis = ceil(numberInQueue.toDouble() / effectiveMinuteThreshold).toLong() * ONE_MINUTE_MILLIS
+            TrafficWaiting(false, numberInQueue, estimatedWaitTimeMillis, totalCountInQueue)
         }
     }
 

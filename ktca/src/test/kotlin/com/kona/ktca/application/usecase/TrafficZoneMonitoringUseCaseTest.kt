@@ -1,7 +1,7 @@
 package com.kona.ktca.application.usecase
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.service.TrafficZoneReadService
@@ -51,6 +51,9 @@ class TrafficZoneMonitoringUseCaseTest : BehaviorSpec({
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token2, Instant.now().toEpochMilli().toDouble()).awaitSingle()
+
+        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId1), "1").awaitSingle()
+        reactiveStringRedisTemplate.opsForValue().set(THRESHOLD.getKey(zoneId2), "1").awaitSingle()
 
         `when`("현재 트래픽 제어 활성화된 Zone 2건인 경우") {
             val result = trafficZoneMonitorUseCase.trafficZoneMonitoring()
