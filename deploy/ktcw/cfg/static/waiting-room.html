@@ -34,7 +34,10 @@
             return;
         }
 
-        socket = new WebSocket("ws://localhost:21004/waiting");
+        const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
+        const wsHost = location.host;
+        const wsPath = "/waiting";
+        socket = new WebSocket(`${wsProtocol}//${wsHost}${wsPath}`);
 
         socket.onopen = () => {
             log("✅ 연결됨");

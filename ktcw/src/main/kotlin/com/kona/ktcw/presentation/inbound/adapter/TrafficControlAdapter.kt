@@ -12,7 +12,7 @@ class TrafficControlAdapter {
 
     @GetMapping("/waiting-room", produces = [MediaType.TEXT_HTML_VALUE])
     fun waitingRoom(): Mono<ResponseEntity<ClassPathResource>> {
-        val html = ClassPathResource("static/netty_webflux_websocket_client1.html")
+        val html = ClassPathResource("static/waiting-room.html")
         return Mono.just(ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html))
     }
 
