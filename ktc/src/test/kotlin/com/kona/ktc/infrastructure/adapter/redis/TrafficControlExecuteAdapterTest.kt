@@ -5,7 +5,6 @@ import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
-import com.kona.ktc.infrastructure.adapter.redis.TrafficControlExecuteAdapter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
