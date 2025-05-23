@@ -102,7 +102,6 @@ class TrafficControlExecuteAdapter(
         } else {
             val numberInQueue = rank + 1
             val effectiveMinuteThreshold = minuteThreshold.coerceAtLeast(1)
-            // TODO 예상대기시간 분이 아닌 초 단위로 수정?
             val estimatedWaitTimeMillis = ceil(numberInQueue.toDouble() / effectiveMinuteThreshold).toLong() * ONE_MINUTE_MILLIS
             TrafficWaiting(false, numberInQueue, estimatedWaitTimeMillis, totalCountInQueue)
         }

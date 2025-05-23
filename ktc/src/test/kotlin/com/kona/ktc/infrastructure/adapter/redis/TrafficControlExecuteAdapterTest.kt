@@ -248,7 +248,7 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
         val results1to100 = traffics.take(100).mapIndexed { index, traffic ->
             trafficControlExecuteAdapter.controlTraffic(traffic, now.plusMillis(index.toLong() * 1))
         }
-        var results101to200 = traffics.drop(100).mapIndexed { index, traffic ->
+        val results101to200 = traffics.drop(100).mapIndexed { index, traffic ->
             trafficControlExecuteAdapter.controlTraffic(traffic, now.plusMillis(101 + index.toLong() * 1))
         }
 
