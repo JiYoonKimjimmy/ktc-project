@@ -52,6 +52,7 @@ enum class TrafficCacheKey(
         fun getTrafficControlKeys(zoneId: String): Map<TrafficCacheKey, String> {
             return mapOf(
                 QUEUE                       to QUEUE.getKey(zoneId),
+                QUEUE_STATUS                to QUEUE_STATUS.getKey(zoneId),
                 THRESHOLD                   to THRESHOLD.getKey(zoneId),
                 MINUTE_BUCKET               to MINUTE_BUCKET.getKey(zoneId),
                 MINUTE_BUCKET_REFILL_TIME   to MINUTE_BUCKET_REFILL_TIME.getKey(zoneId),

@@ -31,7 +31,7 @@ class TrafficControlAdapterTest : BehaviorSpec({
         `when`("'요청 token' 정보 포함된 경우") {
             val request = TrafficWaitRequest(zoneId = zoneId, token = token, clientIp = clientIp, clientAgent = clientAgent)
 
-            val expectedWaiting = TrafficWaiting(canEnter = false, number = 1L, estimatedTime = 60L, totalCount = 1L)
+            val expectedWaiting = TrafficWaiting(result = 0, number = 1L, estimatedTime = 60L, totalCount = 1L)
             coEvery { trafficControlUseCase.controlTraffic(any()) } returns expectedWaiting
 
             then("요청 'token' 정보 기반 트래픽 대기 정보 응답 결과 정상 확인한다") {
@@ -60,7 +60,7 @@ class TrafficControlAdapterTest : BehaviorSpec({
         `when`("요청 'token' 정보 없는 경우") {
             val request = TrafficWaitRequest(zoneId = zoneId, token = null, clientIp = clientIp, clientAgent = clientAgent)
 
-            val expectedWaiting = TrafficWaiting(canEnter = true, number = 1L, estimatedTime = 0L, totalCount = 0L)
+            val expectedWaiting = TrafficWaiting(result = 1, number = 1L, estimatedTime = 0L, totalCount = 0L)
             coEvery {
                 trafficControlUseCase.controlTraffic(
                     match { token ->

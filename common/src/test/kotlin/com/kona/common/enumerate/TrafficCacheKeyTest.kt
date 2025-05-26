@@ -17,6 +17,7 @@ class TrafficCacheKeyTest : StringSpec({
 
         // then
         result[QUEUE] shouldBe "ktc:{TEST_ZONE}:queue"
+        result[QUEUE_STATUS] shouldBe "ktc:{TEST_ZONE}:queue_status"
         result[MINUTE_BUCKET] shouldBe "ktc:{TEST_ZONE}:minute_bucket"
         result[MINUTE_BUCKET_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:minute_bucket_refill_time"
         result[SECOND_BUCKET] shouldBe "ktc:{TEST_ZONE}:second_bucket"
@@ -35,6 +36,7 @@ class TrafficCacheKeyTest : StringSpec({
         // then
         val expected = listOf(
             "ktc:{TEST_ZONE}:queue",
+            "ktc:{TEST_ZONE}:queue_status",
             "ktc:{TEST_ZONE}:threshold",
             "ktc:{TEST_ZONE}:minute_bucket",
             "ktc:{TEST_ZONE}:minute_bucket_refill_time",

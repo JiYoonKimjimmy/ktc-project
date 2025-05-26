@@ -2,6 +2,7 @@ package com.kona.ktc.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.toTokenScore
@@ -33,6 +34,7 @@ class TrafficControlExecuteAdapter(
         // TrafficCacheKey enum에서 기본 키 가져오기
         val trafficControlKeys = getTrafficControlKeys(zoneId)
         val queueKey            = trafficControlKeys[QUEUE]!!
+        val queueStatusKey      = trafficControlKeys[QUEUE_STATUS]!!
         val minuteThresholdKey  = trafficControlKeys[THRESHOLD]!!
         val entryCountKey       = trafficControlKeys[ENTRY_COUNT]!!
 
@@ -43,6 +45,10 @@ class TrafficControlExecuteAdapter(
         // 분당 버킷 수 관리를 위한 키
         val minuteBucketKey    = trafficControlKeys[MINUTE_BUCKET]!!
         val minuteLastResetTimeKey = trafficControlKeys[MINUTE_BUCKET_REFILL_TIME]!!
+
+        if (reactiveStringRedisTemplate.getValue(queueStatusKey, TrafficZoneStatus.ACTIVE.name) == TrafficZoneStatus.BLOCKED.name) {
+            return TrafficWaiting(-1, 0, 0, 0)
+        }
 
         // 1. 요청 토큰을 대기열(ZSET)에 추가 (이미 있다면 점수 업데이트 안함)
         // rankZSet 결과가 0보다 작으면 해당 멤버가 없다는 의미
@@ -98,12 +104,12 @@ class TrafficControlExecuteAdapter(
             }
             reactiveStringRedisTemplate.incrementValue(entryCountKey)
             reactiveStringRedisTemplate.removeZSet(queueKey, token)
-            TrafficWaiting(true, 0, 0, 0)
+            TrafficWaiting(1, 0, 0, 0)
         } else {
             val numberInQueue = rank + 1
             val effectiveMinuteThreshold = minuteThreshold.coerceAtLeast(1)
             val estimatedWaitTimeMillis = ceil(numberInQueue.toDouble() / effectiveMinuteThreshold).toLong() * ONE_MINUTE_MILLIS
-            TrafficWaiting(false, numberInQueue, estimatedWaitTimeMillis, totalCountInQueue)
+            TrafficWaiting(0, numberInQueue, estimatedWaitTimeMillis, totalCountInQueue)
         }
     }
 

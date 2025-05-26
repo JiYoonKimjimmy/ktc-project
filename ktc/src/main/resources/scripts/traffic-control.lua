@@ -63,7 +63,7 @@ local function checkEntry(queueKey, entryCountKey, token, nowMillis, minuteThres
         redis.call('DECR', minuteBucketKey)
         redis.call('INCR', entryCountKey)
         redis.call('ZREM', queueKey, token)
-        return { 1, 0, 0, 0 } -- {canEnter, number, estimatedTime, totalCount}
+        return { 1, 0, 0, 0 }
     else
         local numberInQueue = rank + 1
         local effectiveMinuteThreshold = math.max(1, minuteThreshold)
@@ -75,20 +75,22 @@ end
 
 -- KEYS (Lua 스크립트에 전달되는 키 목록)
 -- KEYS[1] = queueKey                  (대기열 ZSET 키)
--- KEYS[2] = minuteThresholdKey        (분당 임계치 저장 키)
--- KEYS[3] = minuteBucketKey           (분당 사용량 버킷 키)
--- KEYS[4] = minuteBucketRefillTimeKey (분당 버킷 리필 시간 키)
--- KEYS[5] = secondBucketKey           (초당 사용량 버킷 키)
--- KEYS[6] = secondBucketRefillTimeKey (초당 버킷 리필 시간 키)
--- KEYS[7] = entryCountKey             (전체 진입 카운트 키)
+-- KEYS[2] = queueStatusKey            (대기열 상태 저장 키)
+-- KEYS[3] = minuteThresholdKey        (분당 임계치 저장 키)
+-- KEYS[4] = minuteBucketKey           (분당 사용량 버킷 키)
+-- KEYS[5] = minuteBucketRefillTimeKey (분당 버킷 리필 시간 키)
+-- KEYS[6] = secondBucketKey           (초당 사용량 버킷 키)
+-- KEYS[7] = secondBucketRefillTimeKey (초당 버킷 리필 시간 키)
+-- KEYS[8] = entryCountKey             (전체 진입 카운트 키)
 
 local queueKey                  = KEYS[1]
-local minuteThresholdKey        = KEYS[2]
-local minuteBucketKey           = KEYS[3]
-local minuteBucketRefillTimeKey = KEYS[4]
-local secondBucketKey           = KEYS[5]
-local secondBucketRefillTimeKey = KEYS[6]
-local entryCountKey             = KEYS[7]
+local queueStatusKey            = KEYS[2]
+local minuteThresholdKey        = KEYS[3]
+local minuteBucketKey           = KEYS[4]
+local minuteBucketRefillTimeKey = KEYS[5]
+local secondBucketKey           = KEYS[6]
+local secondBucketRefillTimeKey = KEYS[7]
+local entryCountKey             = KEYS[8]
 
 -- ARGV (Lua 스크립트에 전달되는 인자 목록)
 -- ARGV[1] = token                (현재 요청 토큰)
@@ -100,6 +102,11 @@ local token                   = ARGV[1]
 local score                   = tonumber(ARGV[2])
 local nowMillis               = tonumber(ARGV[3])
 local defaultMinuteThreshold  = ARGV[4] -- defaultThreshold는 분당 임계치의 기본값
+
+local queueStatus = redis.call('GET', queueStatusKey) or "ACTIVE"
+if queueStatus == 'BLOCKED' then
+    return { -1, 0, 0, 0 }
+end
 
 -- 1. 요청 토큰을 대기열에 추가 (이미 있다면 점수 업데이트 안함)
 addQueue(queueKey, token, score)

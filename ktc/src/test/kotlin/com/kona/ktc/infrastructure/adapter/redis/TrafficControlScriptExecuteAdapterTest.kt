@@ -2,6 +2,8 @@ package com.kona.ktc.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
@@ -9,6 +11,7 @@ import com.kona.ktc.domain.model.Traffic
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
+import org.springframework.data.redis.core.setAndAwait
 import java.time.Instant
 
 class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
@@ -22,6 +25,19 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
     given("'threshold: 1' 트래픽 Zone 제어 요청 되어") {
         val zoneId = "traffic-zone"
+
+        `when`("요청 Zone 상태 'BLOCKED' 인 경우") {
+            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.BLOCKED.name)
+            val result = trafficControlScriptExecuteAdapter.controlTraffic(Traffic(zoneId, "test-token"))
+
+            then("'result: -1, canEnter: false' 처리 결과 정상 확인한다") {
+                result.result shouldBe -1
+                result.canEnter shouldBe false
+            }
+        }
+
+        reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+
         val traffic1 = Traffic(zoneId, "test-token1")
         val traffic2 = Traffic(zoneId, "test-token2")
         val traffic3 = Traffic(zoneId, "test-token3")
