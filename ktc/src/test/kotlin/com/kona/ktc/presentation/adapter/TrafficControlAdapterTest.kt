@@ -1,6 +1,7 @@
 package com.kona.ktc.presentation.adapter
 
 import com.kona.common.infrastructure.enumerate.ClientAgent
+import com.kona.ktc.application.usecase.TrafficControlStreamUseCase
 import com.kona.ktc.application.usecase.TrafficControlUseCase
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.presentation.dto.mapper.TrafficMapper
@@ -17,7 +18,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 class TrafficControlAdapterTest : BehaviorSpec({
     val trafficMapper = TrafficMapper()
     val trafficControlUseCase = mockk<TrafficControlUseCase>()
-    val trafficControlAdapter = V1TrafficControlAdapter(trafficControlUseCase, trafficMapper)
+    val trafficControlStreamUseCase = mockk<TrafficControlStreamUseCase>()
+
+    val trafficControlAdapter = V1TrafficControlAdapter(trafficControlUseCase, trafficControlStreamUseCase, trafficMapper)
 
     val mockMvc = mockMvcBuilder(trafficControlAdapter)
 

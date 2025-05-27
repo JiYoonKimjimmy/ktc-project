@@ -1,5 +1,7 @@
 package com.kona.ktc.presentation.adapter
 
+import com.kona.common.infrastructure.enumerate.ClientAgent
+import com.kona.ktc.application.usecase.TrafficControlStreamUseCase
 import com.kona.ktc.application.usecase.TrafficControlUseCase
 import com.kona.ktc.presentation.dto.mapper.TrafficMapper
 import com.kona.ktc.presentation.dto.request.TrafficEntryRequest
@@ -7,15 +9,14 @@ import com.kona.ktc.presentation.dto.request.TrafficWaitRequest
 import com.kona.ktc.presentation.dto.response.TrafficControlResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 @RequestMapping("/api/v1/traffic")
 @RestController
 class V1TrafficControlAdapter(
     private val trafficControlUseCase: TrafficControlUseCase,
+    private val trafficControlStreamUseCase: TrafficControlStreamUseCase,
     private val trafficMapper: TrafficMapper,
 ) {
 
@@ -31,6 +32,17 @@ class V1TrafficControlAdapter(
         val traffic = trafficMapper.toDomain(request)
         val waiting = trafficControlUseCase.controlTraffic(traffic)
         return trafficMapper.toResponse(traffic, waiting).success(HttpStatus.OK)
+    }
+
+    @GetMapping("/waiting")
+    suspend fun waiting(
+        @RequestParam(required = true) zoneId: String,
+        @RequestParam(required = false) token: String?,
+        @RequestParam(required = true) clientIp: String,
+        @RequestParam(required = true) clientAgent: ClientAgent,
+    ): SseEmitter {
+        val traffic = trafficMapper.toDomain(TrafficWaitRequest(zoneId, token, clientIp, clientAgent))
+        return trafficControlStreamUseCase.controlTraffic(traffic, trafficMapper = trafficMapper)
     }
 
 }

@@ -43,8 +43,8 @@ local function checkEntry(queueKey, entryCountKey, token, nowMillis, minuteThres
     local currentMinuteBucketSize = tonumber(redis.call('GET', minuteBucketKey) or minuteThreshold)
     local canEnter = false
 
-    if currentSecondBucketSize > 0 and currentMinuteBucketSize > 0 then
-        if rank < minuteThreshold then
+    if currentMinuteBucketSize > 0 then
+        if currentSecondBucketSize > 0 and rank < minuteThreshold then
             canEnter = true
         else
             local score = tonumber(redis.call('ZSCORE', queueKey, token))

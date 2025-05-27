@@ -82,8 +82,8 @@ class TrafficControlExecuteAdapter(
         val currentSecondBucketSize = reactiveStringRedisTemplate.getValue(secondBucketKey, perSecondThreshold.toString()).toLong()
 
         var canEnter = false // 진입 가능 여부 플래그
-        if (currentMinuteBucketSize > 0 && currentSecondBucketSize > 0) {
-            if (rank < minuteThreshold) {
+        if (currentMinuteBucketSize > 0) {
+            if (currentSecondBucketSize > 0 && rank < minuteThreshold) {
                 canEnter = true
             } else {
                 val tokenScore = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()

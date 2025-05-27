@@ -29,15 +29,25 @@ class TrafficMapper {
     }
 
     fun toResponse(
-        token: Traffic,
-        waiting: TrafficWaiting,
-        pollingPeriod: Long = 5L
+        traffic: Traffic,
+        waiting: TrafficWaiting
     ): TrafficControlResponse {
         return TrafficControlResponse(
             canEnter = waiting.canEnter,
-            zoneId = token.zoneId,
-            token = token.token,
+            zoneId = traffic.zoneId,
+            token = traffic.token,
             waiting = waiting.let(::TrafficWaitingResponse)
+        )
+    }
+
+    fun toResponse(
+        traffic: Traffic
+    ): TrafficControlResponse {
+        return TrafficControlResponse(
+            canEnter = traffic.waiting?.canEnter ?: false,
+            zoneId = traffic.zoneId,
+            token = traffic.token,
+            waiting = traffic.waiting?.let(::TrafficWaitingResponse)
         )
     }
 
