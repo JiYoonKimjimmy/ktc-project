@@ -10,10 +10,10 @@ data class TrafficWaiting(
     val canEnter: Boolean
         get() = this.result == 1L
 
-    constructor(result: List<Any>) : this(
-        result = result[0] as Long,
-        number = result[1] as Long,
-        estimatedTime = result[2] as Long,
-        totalCount = result[3] as Long
+    constructor(result: List<Long>) : this(
+        result = result[0],
+        number = result[1],
+        estimatedTime = result[2],
+        totalCount = result[3]
     )
 }

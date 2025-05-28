@@ -11,8 +11,8 @@ data class SaveTrafficStatusEvent(
         message = V1TrafficStatusMessage(
             zoneId = traffic.zoneId,
             token = traffic.token,
-            clientIp = traffic.clientIp,
-            clientAgent = traffic.clientAgent?.name,
+            clientIP = traffic.clientIP,
+            clientAgent = traffic.clientAgent,
             waitingNumber = waiting.number,
             estimatedTime = waiting.estimatedTime,
             totalCount = waiting.totalCount

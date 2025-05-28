@@ -21,7 +21,7 @@ class MessagePublisherImplTest : StringSpec({
         val message = V1TrafficStatusMessage(
             zoneId = "TEST_ZONE",
             token = "token-1",
-            clientIp = "127.0.0.1",
+            clientIP = "127.0.0.1",
             clientAgent = "ANDROID",
             waitingNumber = 1,
             estimatedTime = 60000,
@@ -39,7 +39,7 @@ class MessagePublisherImplTest : StringSpec({
         val result = mockRabbitTemplate.messageConverter.fromMessage(received) as V1TrafficStatusMessage
         result.zoneId shouldBe "TEST_ZONE"
         result.token shouldBe "token-1"
-        result.clientIp shouldBe "127.0.0.1"
+        result.clientIP shouldBe "127.0.0.1"
         result.clientAgent shouldBe "ANDROID"
         result.waitingNumber shouldBe 1
         result.estimatedTime shouldBe 60000

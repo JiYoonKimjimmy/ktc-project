@@ -4,10 +4,13 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.error.ErrorCode
+import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
@@ -28,11 +31,10 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
         `when`("요청 Zone 상태 'BLOCKED' 인 경우") {
             reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.BLOCKED.name)
-            val result = trafficControlScriptExecuteAdapter.controlTraffic(Traffic(zoneId, "test-token"))
+            val exception = shouldThrow<InternalServiceException> { trafficControlScriptExecuteAdapter.controlTraffic(Traffic(zoneId, "test-token")) }
 
-            then("'result: -1, canEnter: false' 처리 결과 정상 확인한다") {
-                result.result shouldBe -1
-                result.canEnter shouldBe false
+            then("'TRAFFIC_ZONE_STATUS_IS_BLOCKED' 예외 발생 정상 확인한다") {
+                exception.errorCode shouldBe ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED
             }
         }
 
@@ -235,6 +237,126 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
                 secondsElapsed shouldBe 50
             }
         }
+    }
+
+    /**
+     *
+     */
+    given("""
+        AS-IS : secondBucket 적용 후 이슈 - secondBucket = 0 이 된 이후 대기열이 발생하지 않으면 1번 유저는 들어가지 못하는 이슈
+        TO-BE : secondBucket = 0, 대기열이 없는 상태여도 시간이 지나면 secondBucket 을 리필해야 한다. 
+        'threshold: 1' 트래픽 Zone 제어 요청 되어
+    """) {
+        val zoneId = "test-zone3"
+        defaultThreshold = "1"
+        trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
+        val traffic1 = Traffic(zoneId, "test-token1")
+        val traffic2 = Traffic(zoneId, "test-token2")
+        val traffic3 = Traffic(zoneId, "test-token3")
+
+        // 트래픽 제어 요청
+        var now = Instant.now()
+        var result1 = trafficControlScriptExecuteAdapter.controlTraffic(traffic1, now)
+        var result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
+        var result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+
+        `when`("'1건 진입 / 2건 대기' 처리되는 경우") {
+
+            then("트래픽-1 'canEnter: true' 처리 결과 정상 확인한다") {
+                result1.canEnter shouldBe true
+                val currentSecondBucketSize =
+                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "1"
+            }
+
+            then("트래픽-2 'canEnter: false, number: 1' 처리 결과 정상 확인한다") {
+                result2.canEnter shouldBe false
+                result2.number shouldBe 1
+                result2.estimatedTime shouldBe 60000
+                result2.totalCount shouldBe 1
+                val currentSecondBucketSize =
+                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "1"
+            }
+
+            then("트래픽-3 'canEnter: false, number: 2' 처리 결과 정상 확인한다") {
+                result3.canEnter shouldBe false
+                result3.number shouldBe 2
+                result3.estimatedTime shouldBe 120000
+                result3.totalCount shouldBe 2
+                val currentSecondBucketSize =
+                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "1"
+            }
+
+            then("트래픽 진입 Count 캐시 조회 결과 '1' 정상 확인한다") {
+                val entryCount =
+                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
+                entryCount shouldBe "1"
+            }
+        }
+
+        now = now.plusMillis(ONE_SECONDS_MILLIS)
+        result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
+        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+
+        `when`("1초 후 트래픽-2,3 진입") {
+            then("트래픽-2,3 'canEnter: false' 처리 결과 정상 확인한다") {
+                result2.canEnter shouldBe false
+                result3.canEnter shouldBe false
+            }
+        }
+
+        now = now.plusMillis(ONE_MINUTE_MILLIS)
+        result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
+        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+
+        `when`("1분 후 트래픽-2,3 진입") {
+            then("트래픽-2 'canEnter: true' 처리 결과 정상 확인한다") {
+                result2.canEnter shouldBe true
+            }
+
+            then("트래픽-3 'canEnter: false' 처리 결과 정상 확인한다") {
+                result3.canEnter shouldBe false
+            }
+
+            then("currentSecondBucketSize = 0이 된다.") {
+                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "0"
+            }
+        }
+
+        now = now.plusMillis(ONE_SECONDS_MILLIS)
+        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+
+        `when`("1초 후 트래픽-3 진입") {
+            then("트래픽-3 canEnter: false 처리 결과 정상 확인한다.") {
+                result3.canEnter shouldBe false
+            }
+
+            then("""
+                AS-IS : 하지만 currentSecondBucketSize = 아직도 0이다. 뒤에 대기열이 없는 이상 계속 secondBucket 은 채워지지 않는 이슈
+                TO-BE : 대기열이 있을 때만 secondBucket 을 리필하는 것이 아닌, 리필시간이 되면 바로 secondBucket 을 채운다.  
+            """) {
+                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "1"
+            }
+        }
+
+        now = now.plusMillis(ONE_MINUTE_MILLIS)
+        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+
+        `when`("'1분 후 트래픽-3 진입'") {
+            then("""
+                AS-IS : currentSecondBucketSize = 0 으로 인해 트래픽-3 'canEnter: false'
+                TO-BE : currentSecondBucketSize = 1 (대기열이 없으므로 secondBucket은 줄어들지 않는다) 트래픽-3 'canEnter: true 수정'
+            """) {
+                result3.canEnter shouldBe true
+                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
+                currentSecondBucketSize shouldBe "1"
+            }
+        }
+
     }
 
 })

@@ -22,16 +22,14 @@ end
 
 -- 3. 초당 버킷 리필 시간 확인 및 리필 처리
 local function refillSecondBucket(secondBucketKey, secondBucketRefillTimeKey, nowMillis, perSecondThreshold, applySecondBucket)
-    if applySecondBucket then
-        redis.call('SETNX', secondBucketKey, perSecondThreshold)
-        redis.call('SETNX', secondBucketRefillTimeKey, nowMillis)
+    redis.call('SETNX', secondBucketKey, perSecondThreshold)
+    redis.call('SETNX', secondBucketRefillTimeKey, nowMillis)
 
-        local secondBucketLastRefillTime = tonumber(redis.call('GET', secondBucketRefillTimeKey))
+    local secondBucketLastRefillTime = tonumber(redis.call('GET', secondBucketRefillTimeKey))
 
-        if nowMillis - secondBucketLastRefillTime >= 1000 then
-            redis.call('SET', secondBucketKey, perSecondThreshold)
-            redis.call('SET', secondBucketRefillTimeKey, nowMillis)
-        end
+    if nowMillis - secondBucketLastRefillTime >= 1000 then
+        redis.call('SET', secondBucketKey, perSecondThreshold)
+        redis.call('SET', secondBucketRefillTimeKey, nowMillis)
     end
 end
 
@@ -43,8 +41,8 @@ local function checkEntry(queueKey, entryCountKey, token, nowMillis, minuteThres
     local currentMinuteBucketSize = tonumber(redis.call('GET', minuteBucketKey) or minuteThreshold)
     local canEnter = false
 
-    if currentMinuteBucketSize > 0 then
-        if currentSecondBucketSize > 0 and rank < minuteThreshold then
+    if currentSecondBucketSize > 0 and currentMinuteBucketSize > 0 then
+        if rank < minuteThreshold then
             canEnter = true
         else
             local score = tonumber(redis.call('ZSCORE', queueKey, token))

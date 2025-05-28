@@ -9,6 +9,8 @@ import com.kona.ktc.domain.port.outbound.TrafficControlPort
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
+import com.kona.common.infrastructure.error.exception.InternalServiceException
+import com.kona.common.infrastructure.error.ErrorCode
 
 @Component
 class TrafficControlScriptExecuteAdapter(
@@ -32,6 +34,8 @@ class TrafficControlScriptExecuteAdapter(
         val args = listOf(token, score, nowMillis, defaultThreshold)
 
         val result = redisExecuteAdapter.execute(script, keys, args).map { it as Long }
+
+        if (result[0] == -1L) throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED)
 
         return TrafficWaiting(result)
     }

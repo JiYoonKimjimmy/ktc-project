@@ -192,7 +192,7 @@ return {
 |:-----------:|:---------:|:--------:|:-----------:|----------------|
 |   zoneId    | `String`  |    50    | `MANDATORY` | 트래픽 대기 Zone ID |
 |    token    | `String`  |   255    | `OPTIONAL`  | 트래픽 대기 식별 토큰   |
-|  clientIp   | `String`  |    50    | `MANDATORY` | 클라이언트 IP 정보    |
+|  clientIP   | `String`  |    50    | `MANDATORY` | 클라이언트 IP 정보    |
 | clientAgent | `String`  |    50    | `MANDATORY` | 클라이언트 호출 단말 정보 |
 
 ##### Response

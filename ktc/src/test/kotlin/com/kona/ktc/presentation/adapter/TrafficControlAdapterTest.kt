@@ -1,6 +1,5 @@
 package com.kona.ktc.presentation.adapter
 
-import com.kona.common.infrastructure.enumerate.ClientAgent
 import com.kona.ktc.application.usecase.TrafficControlStreamUseCase
 import com.kona.ktc.application.usecase.TrafficControlUseCase
 import com.kona.ktc.domain.model.TrafficWaiting
@@ -28,11 +27,11 @@ class TrafficControlAdapterTest : BehaviorSpec({
         val url = "/api/v1/traffic/wait"
         val zoneId = "test-zone"
         val token = "test-token"
-        val clientIp = "127.0.0.1"
-        val clientAgent = ClientAgent.WEB
+        val clientIP = "127.0.0.1"
+        val clientAgent = "WEB"
 
         `when`("'요청 token' 정보 포함된 경우") {
-            val request = TrafficWaitRequest(zoneId = zoneId, token = token, clientIp = clientIp, clientAgent = clientAgent)
+            val request = TrafficWaitRequest(zoneId = zoneId, token = token, clientIP = clientIP, clientAgent = clientAgent)
 
             val expectedWaiting = TrafficWaiting(result = 0, number = 1L, estimatedTime = 60L, totalCount = 1L)
             coEvery { trafficControlUseCase.controlTraffic(any()) } returns expectedWaiting
@@ -61,14 +60,14 @@ class TrafficControlAdapterTest : BehaviorSpec({
         }
 
         `when`("요청 'token' 정보 없는 경우") {
-            val request = TrafficWaitRequest(zoneId = zoneId, token = null, clientIp = clientIp, clientAgent = clientAgent)
+            val request = TrafficWaitRequest(zoneId = zoneId, token = null, clientIP = clientIP, clientAgent = clientAgent)
 
             val expectedWaiting = TrafficWaiting(result = 1, number = 1L, estimatedTime = 0L, totalCount = 0L)
             coEvery {
                 trafficControlUseCase.controlTraffic(
                     match { token ->
                         token.zoneId == zoneId &&
-                        token.clientIp == clientIp &&
+                        token.clientIP == clientIP &&
                         token.clientAgent == clientAgent &&
                         token.token.isNotBlank()
                     }

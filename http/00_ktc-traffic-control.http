@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "zoneId": "KTC_TEST_ZONE",
   "token": "{{token}}",
-  "clientIp": "127.0.0.1",
+  "clientIP": "127.0.0.1",
   "clientAgent": "WEB"
 }
 

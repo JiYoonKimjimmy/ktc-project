@@ -1,6 +1,5 @@
 package com.kona.ktc.presentation.adapter
 
-import com.kona.common.infrastructure.enumerate.ClientAgent
 import com.kona.ktc.application.usecase.TrafficControlStreamUseCase
 import com.kona.ktc.application.usecase.TrafficControlUseCase
 import com.kona.ktc.presentation.dto.mapper.TrafficMapper
@@ -38,10 +37,10 @@ class V1TrafficControlAdapter(
     suspend fun waiting(
         @RequestParam(required = true) zoneId: String,
         @RequestParam(required = false) token: String?,
-        @RequestParam(required = true) clientIp: String,
-        @RequestParam(required = true) clientAgent: ClientAgent,
+        @RequestParam(required = true) clientIP: String,
+        @RequestParam(required = true) clientAgent: String,
     ): SseEmitter {
-        val traffic = trafficMapper.toDomain(TrafficWaitRequest(zoneId, token, clientIp, clientAgent))
+        val traffic = trafficMapper.toDomain(TrafficWaitRequest(zoneId, token, clientIP, clientAgent))
         return trafficControlStreamUseCase.controlTraffic(traffic, trafficMapper = trafficMapper)
     }
 

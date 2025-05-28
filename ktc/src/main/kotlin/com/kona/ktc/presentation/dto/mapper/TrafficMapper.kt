@@ -16,7 +16,7 @@ class TrafficMapper {
         return Traffic(
             zoneId = request.zoneId,
             token = request.token ?: SnowflakeIdGenerator.generate(),
-            clientIp = request.clientIp,
+            clientIP = request.clientIP,
             clientAgent = request.clientAgent
         )
     }

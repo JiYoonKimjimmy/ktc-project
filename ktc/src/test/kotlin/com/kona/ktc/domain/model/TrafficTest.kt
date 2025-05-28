@@ -1,7 +1,5 @@
 package com.kona.ktc.domain.model
 
-import com.kona.common.infrastructure.enumerate.ClientAgent
-import com.kona.ktc.domain.model.Traffic
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -23,26 +21,26 @@ class TrafficTest : BehaviorSpec({
             }
 
             then("선택적 필드는 null로 설정된다") {
-                traffic.clientIp shouldBe null
+                traffic.clientIP shouldBe null
                 traffic.clientAgent shouldBe null
             }
         }
 
         `when`("모든 필드를 포함하여 생성하면") {
-            val clientIp = "127.0.0.1"
-            val clientAgent = ClientAgent.WEB
+            val clientIP = "127.0.0.1"
+            val clientAgent = "WEB"
 
             val traffic = Traffic(
                 zoneId = zoneId,
                 token = token,
-                clientIp = clientIp,
+                clientIP = clientIP,
                 clientAgent = clientAgent
             )
 
             then("모든 필드가 정상적으로 설정된다") {
                 traffic.zoneId shouldBe zoneId
                 traffic.token shouldBe token
-                traffic.clientIp shouldBe clientIp
+                traffic.clientIP shouldBe clientIP
                 traffic.clientAgent shouldBe clientAgent
             }
         }
@@ -51,12 +49,12 @@ class TrafficTest : BehaviorSpec({
             val traffic1 = Traffic(
                 zoneId = zoneId,
                 token = token,
-                clientAgent = ClientAgent.WEB
+                clientAgent = "WEB"
             )
             val traffic2 = Traffic(
                 zoneId = zoneId,
                 token = token,
-                clientAgent = ClientAgent.ANDROID
+                clientAgent = "ANDROID"
             )
 
             then("동등성 비교가 실패한다") {

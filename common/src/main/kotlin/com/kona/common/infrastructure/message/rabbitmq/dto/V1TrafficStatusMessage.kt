@@ -6,7 +6,7 @@ data class V1TrafficStatusMessage(
 
     val zoneId: String,
     val token: String,
-    val clientIp: String?,
+    val clientIP: String?,
     val clientAgent: String?,
     val waitingNumber: Long,
     val estimatedTime: Long,

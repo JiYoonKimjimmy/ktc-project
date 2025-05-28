@@ -3,6 +3,8 @@ package com.kona.ktc.infrastructure.adapter.redis
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.error.ErrorCode
+import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.toTokenScore
@@ -47,7 +49,7 @@ class TrafficControlExecuteAdapter(
         val minuteLastResetTimeKey = trafficControlKeys[MINUTE_BUCKET_REFILL_TIME]!!
 
         if (reactiveStringRedisTemplate.getValue(queueStatusKey, TrafficZoneStatus.ACTIVE.name) == TrafficZoneStatus.BLOCKED.name) {
-            return TrafficWaiting(-1, 0, 0, 0)
+            throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED)
         }
 
         // 1. 요청 토큰을 대기열(ZSET)에 추가 (이미 있다면 점수 업데이트 안함)
@@ -64,16 +66,14 @@ class TrafficControlExecuteAdapter(
             reactiveStringRedisTemplate.setValue(minuteLastResetTimeKey, nowMillis.toString())
         }
 
-        // 3. 초당 허용량 조회 및 초당 버킷 리필 (대기열이 있는 경우에만 버킷 리필)
+        // 3. 초당 허용량 조회 및 초당 버킷 리필
         val totalCountInQueue = reactiveStringRedisTemplate.sizeZSet(queueKey)
         val applySecondBucket = totalCountInQueue >= 2L
         val perSecondThreshold = ceil(minuteThreshold.toDouble() / 60.0).toLong().coerceAtLeast(1)
-        if (applySecondBucket) {
-            val secondBucketLastRefillTime = reactiveStringRedisTemplate.getValue(secondBucketRefillTimeKey, nowMillis.toString()).toLong()
-            if (nowMillis - secondBucketLastRefillTime >= ONE_SECONDS_MILLIS) {
-                reactiveStringRedisTemplate.setValue(secondBucketKey, perSecondThreshold.toString())
-                reactiveStringRedisTemplate.setValue(secondBucketRefillTimeKey, nowMillis.toString())
-            }
+        val secondBucketLastRefillTime = reactiveStringRedisTemplate.getValue(secondBucketRefillTimeKey, nowMillis.toString()).toLong()
+        if (nowMillis - secondBucketLastRefillTime >= ONE_SECONDS_MILLIS) {
+            reactiveStringRedisTemplate.setValue(secondBucketKey, perSecondThreshold.toString())
+            reactiveStringRedisTemplate.setValue(secondBucketRefillTimeKey, nowMillis.toString())
         }
 
         // 4. 요청 진입 가능 여부 판단
@@ -82,8 +82,8 @@ class TrafficControlExecuteAdapter(
         val currentSecondBucketSize = reactiveStringRedisTemplate.getValue(secondBucketKey, perSecondThreshold.toString()).toLong()
 
         var canEnter = false // 진입 가능 여부 플래그
-        if (currentMinuteBucketSize > 0) {
-            if (currentSecondBucketSize > 0 && rank < minuteThreshold) {
+        if (currentMinuteBucketSize > 0 && currentSecondBucketSize > 0) {
+            if (rank < minuteThreshold) {
                 canEnter = true
             } else {
                 val tokenScore = reactiveStringRedisTemplate.scoreZSet(queueKey, token).toLong()
