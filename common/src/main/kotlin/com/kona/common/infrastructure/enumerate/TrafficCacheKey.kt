@@ -37,6 +37,10 @@ enum class TrafficCacheKey(
         note = "트래픽 진입 Count Key",
         key = "ktc:{%s}:entry_count"
     ),
+    TOKEN_LAST_ENTRY_TIME(
+        note = "트래픽 Token 최근 요청 시간 Key",
+        key = "ktc:{%s}:token_last_entry_time"
+    ),
     ACTIVATION_ZONES(
         note = "트래픽 제어 활성화 Zone 목록 Key",
         key = "ktc:activation:zones"
@@ -59,6 +63,7 @@ enum class TrafficCacheKey(
                 SECOND_BUCKET               to SECOND_BUCKET.getKey(zoneId),
                 SECOND_BUCKET_REFILL_TIME   to SECOND_BUCKET_REFILL_TIME.getKey(zoneId),
                 ENTRY_COUNT                 to ENTRY_COUNT.getKey(zoneId),
+                TOKEN_LAST_ENTRY_TIME       to TOKEN_LAST_ENTRY_TIME.getKey(zoneId),
             )
         }
 

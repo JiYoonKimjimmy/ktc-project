@@ -24,6 +24,7 @@ class TrafficCacheKeyTest : StringSpec({
         result[SECOND_BUCKET_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:second_bucket_refill_time"
         result[THRESHOLD] shouldBe "ktc:{TEST_ZONE}:threshold"
         result[ENTRY_COUNT] shouldBe "ktc:{TEST_ZONE}:entry_count"
+        result[TOKEN_LAST_ENTRY_TIME] shouldBe "ktc:{TEST_ZONE}:token_last_entry_time"
     }
 
     "'TEST_ZONE' zoneId 기준 TrafficCacheKey enum 'key' 목록 생성 결과 정상 확인한다" {
@@ -42,7 +43,8 @@ class TrafficCacheKeyTest : StringSpec({
             "ktc:{TEST_ZONE}:minute_bucket_refill_time",
             "ktc:{TEST_ZONE}:second_bucket",
             "ktc:{TEST_ZONE}:second_bucket_refill_time",
-            "ktc:{TEST_ZONE}:entry_count"
+            "ktc:{TEST_ZONE}:entry_count",
+            "ktc:{TEST_ZONE}:token_last_entry_time",
         )
         result shouldContainAll expected
     }
