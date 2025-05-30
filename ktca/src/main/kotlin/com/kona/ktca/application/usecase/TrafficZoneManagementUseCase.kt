@@ -5,6 +5,7 @@ import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.port.inbound.TrafficZoneCommandPort
 import com.kona.ktca.domain.port.inbound.TrafficZoneReadPort
+import com.kona.ktca.domain.port.outbound.TrafficZoneCachingPort
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -13,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class TrafficZoneManagementUseCase(
     private val trafficZoneCommandPort: TrafficZoneCommandPort,
-    private val trafficZoneReadPort: TrafficZoneReadPort
+    private val trafficZoneReadPort: TrafficZoneReadPort,
+    private val trafficZoneCachingPort: TrafficZoneCachingPort,
 ) {
 
     @Transactional
@@ -36,6 +38,10 @@ class TrafficZoneManagementUseCase(
     @Transactional
     suspend fun deleteTrafficZone(zoneId: String) {
         trafficZoneCommandPort.delete(zoneId)
+    }
+
+    suspend fun clearTrafficZone(zoneIds: List<String>) {
+        trafficZoneCachingPort.clear(zoneIds)
     }
 
 }

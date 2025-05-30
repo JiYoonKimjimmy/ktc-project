@@ -62,4 +62,9 @@ class V1ZoneManagementController(
         ResponseEntity(V1DeleteZoneResponse(), HttpStatus.OK)
     }
 
+    override fun clearZoneCache(v1ClearZoneCacheRequest: V1ClearZoneCacheRequest): ResponseEntity<V1ClearZoneCacheResponse> = runBlocking {
+        trafficZoneManagementUseCase.clearTrafficZone(v1ClearZoneCacheRequest.zoneIds)
+        ResponseEntity(V1ClearZoneCacheResponse(), HttpStatus.OK)
+    }
+
 }

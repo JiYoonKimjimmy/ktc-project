@@ -37,7 +37,7 @@ class RedisExecuteAdapterImpl(
     }
 
     override suspend fun addValueForSet(key: String, value: String): Long = withContext(Dispatchers.IO) {
-        reactiveStringRedisTemplate.opsForSet().add(key, value).awaitSingle()
+        reactiveStringRedisTemplate.opsForSet().addAndAwait(key, value)
     }
 
     override suspend fun removeValueForSet(key: String, value: String): Long = withContext(Dispatchers.IO) {
@@ -46,6 +46,10 @@ class RedisExecuteAdapterImpl(
 
     override suspend fun getValuesForSet(key: String): List<String> = withContext(Dispatchers.IO) {
         reactiveStringRedisTemplate.opsForSet().members(key).collectList().awaitSingle()
+    }
+
+    override suspend fun deleteAll(keys: List<String>): Long = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.deleteAndAwait(*keys.toTypedArray())
     }
 
 }

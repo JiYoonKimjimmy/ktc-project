@@ -161,6 +161,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/zone/cache/clear:
+    post:
+      summary: 트래픽 제어 Zone Cache 삭제
+      tags:
+        - V1.Zone Management
+      operationId: clearZoneCache
+      description: |
+        요청 `zoneId` 기준 트래픽 제어 Zone Cache 정보 삭제 처리
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1ClearZoneCacheRequest'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ClearZoneCacheResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/zone/monitoring:
     get:
       summary: 트래픽 제어 Zone 현황 조회
@@ -522,6 +555,24 @@ components:
           $ref: '#/components/schemas/ResultResponse'
 
     V1DeleteZoneResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1ClearZoneCacheRequest:
+      type: object
+      required:
+        - zoneIds
+      properties:
+        zoneIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/zoneId'
+
+    V1ClearZoneCacheResponse:
       type: object
       required:
         - result

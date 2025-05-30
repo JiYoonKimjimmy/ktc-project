@@ -20,4 +20,6 @@ interface RedisExecuteAdapter {
 
     suspend fun getValuesForSet(key: String): List<String>
 
+    suspend fun deleteAll(keys: List<String>): Long
+
 }
