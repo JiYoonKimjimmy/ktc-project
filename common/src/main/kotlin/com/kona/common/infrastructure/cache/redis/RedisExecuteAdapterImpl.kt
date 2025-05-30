@@ -48,6 +48,10 @@ class RedisExecuteAdapterImpl(
         reactiveStringRedisTemplate.opsForSet().members(key).collectList().awaitSingle()
     }
 
+    override suspend fun hasKey(key: String): Boolean = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.hasKeyAndAwait(key)
+    }
+
     override suspend fun deleteAll(keys: List<String>): Long = withContext(Dispatchers.IO) {
         reactiveStringRedisTemplate.deleteAndAwait(*keys.toTypedArray())
     }

@@ -170,7 +170,7 @@ paths:
       description: |
         요청 `zoneId` 기준 트래픽 제어 Zone Cache 정보 삭제 처리
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -564,8 +564,6 @@ components:
 
     V1ClearZoneCacheRequest:
       type: object
-      required:
-        - zoneIds
       properties:
         zoneIds:
           type: array

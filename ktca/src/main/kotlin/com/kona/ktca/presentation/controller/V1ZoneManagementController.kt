@@ -3,10 +3,10 @@ package com.kona.ktca.presentation.controller
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.api.V1ZoneManagementApiDelegate
-import com.kona.ktca.dto.*
-import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.application.usecase.TrafficZoneManagementUseCase
 import com.kona.ktca.domain.dto.PageableDTO
+import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.dto.*
 import com.kona.ktca.presentation.model.V1ZoneModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
@@ -62,8 +62,8 @@ class V1ZoneManagementController(
         ResponseEntity(V1DeleteZoneResponse(), HttpStatus.OK)
     }
 
-    override fun clearZoneCache(v1ClearZoneCacheRequest: V1ClearZoneCacheRequest): ResponseEntity<V1ClearZoneCacheResponse> = runBlocking {
-        trafficZoneManagementUseCase.clearTrafficZone(v1ClearZoneCacheRequest.zoneIds)
+    override fun clearZoneCache(v1ClearZoneCacheRequest: V1ClearZoneCacheRequest?): ResponseEntity<V1ClearZoneCacheResponse> = runBlocking {
+        trafficZoneManagementUseCase.clearTrafficZone(v1ClearZoneCacheRequest?.zoneIds ?: emptyList())
         ResponseEntity(V1ClearZoneCacheResponse(), HttpStatus.OK)
     }
 

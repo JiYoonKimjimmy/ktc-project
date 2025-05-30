@@ -12,8 +12,9 @@ class TrafficZoneCachingAdapter(
 
     override suspend fun clear(zoneIds: List<String>) {
         val activeZoneIds = zoneIds.takeIf { it.isNotEmpty() } ?: redisExecuteAdapter.getValuesForSet(TrafficCacheKey.ACTIVATION_ZONES.key)
-        val keys = activeZoneIds.flatMap { TrafficCacheKey.getTrafficControlKeys(it).values }
-        redisExecuteAdapter.deleteAll(keys)
+        activeZoneIds
+            .associateWith { TrafficCacheKey.getTrafficControlKeys(it).values.toList() }
+            .values.forEach { redisExecuteAdapter.deleteAll(it) }
     }
 
 }
