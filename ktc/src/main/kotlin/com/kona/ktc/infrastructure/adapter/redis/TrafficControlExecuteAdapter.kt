@@ -5,6 +5,8 @@ import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTra
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
+import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
+import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.ZERO
 import com.kona.ktc.domain.model.Traffic
@@ -26,99 +28,69 @@ class TrafficControlExecuteAdapter(
 
     /**
      * [트래픽 제어 프로세스]
-     * 1. 트래픽 Zone 상태 확인
-     *    - `status == BLOCKED` 인 경우, `result: -1` 차단 응답 처리
-     * 2. 트래픽 대기 요청 Token Queue 저장
-     * 3. Bucket Refill 여부 확인
-     *    - `nowMillis - bucketRefillTime >= 1000ms(1초)` 인 경우, `bucket` 리필 & `bucketRefillTime` 업데이트
-     * 4. 트래픽 진입 가능 여부 확인
-     *    - 진입 가능 여부 : `abs(rank - (entryCount % (threshold / 10)) / threshold == 0`
-     *    4.1. 진입 가능한 경우, `result: 1` 진입 허용 응답 처리
-     *         - `bucket` 차감 처리
-     *         - `entryCount` 증가 처리
-     *         - `queue` token 삭제 처리
-     *    4.2. 진입 불가한 경우, `result: 0` 진입 불가 응답 처리
-     *         - `number`        : `rank + 1`
-     *         - `estimatedTime` : `(ceil(rank / (threshold / 10) + 1) * 6000`(ms)
-     *         - `totalCount`    : `queue size`
+     * 1. threshold 조회
+     * 2. 6초 단위 진입 slot 계산
+     *    - 현재시간(분) : nowMilli / 60000
+     *    - 현재시간(초) : (nowMilli % 60000) / 1000
+     *    - slot : 현재시간(초) / 6
+     *    - 6초당 허용 threshold : threshold / 10
+     * 3. windowKey 생성 : "$entryCountKey:$minute:$slot"
+     * 4. 대기열 Queue 토큰 추가
+     * 5. 현재 slot 진입 카운터 조회
+     * 6. 진입 허용 조건 확인: (slot 내 진입 카운터) < allowedPer6Sec && (대기 순번) < allowedPer6Sec
      */
     override suspend fun controlTraffic(traffic: Traffic, now: Instant): TrafficWaiting {
         val zoneId = traffic.zoneId
         val token = traffic.token
-        val nowMillis = now.toEpochMilli()
+        val nowMilli = now.toEpochMilli()
 
-        // 트래픽 제어 관련 Cache Key
         val trafficControlKeys = getTrafficControlKeys(zoneId)
-        val queueKey                  = trafficControlKeys[QUEUE]!!
-        val queueStatusKey            = trafficControlKeys[QUEUE_STATUS]!!
-        val thresholdKey              = trafficControlKeys[THRESHOLD]!!
-        val secondBucketKey           = trafficControlKeys[SECOND_BUCKET]!!
-        val secondBucketRefillTimeKey = trafficControlKeys[SECOND_BUCKET_REFILL_TIME]!!
-        val entryCountKey             = trafficControlKeys[ENTRY_COUNT]!!
-        val tokenLastEntryTimeKey     = trafficControlKeys[TOKEN_LAST_ENTRY_TIME]!!
+        val queueKey      = trafficControlKeys[QUEUE]!!
+        val thresholdKey  = trafficControlKeys[THRESHOLD]!!
+        val entryCountKey = trafficControlKeys[ENTRY_COUNT]!!
 
-        // 1. 트래픽 Zone 상태 확인
-        val queueStatus = reactiveStringRedisTemplate.getValue(queueStatusKey, TrafficZoneStatus.ACTIVE.name)
-        if (queueStatus == TrafficZoneStatus.BLOCKED.name) throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED)
-
-        // 2. 트래픽 대기 요청 Token Queue 저장
-        if (reactiveStringRedisTemplate.rankZSet(queueKey, token) < 0) {
-            reactiveStringRedisTemplate.addZSet(queueKey, token, nowMillis)
-        }
-
-        // 3. Bucket Refill 여부 확인
-        //    - `nowMillis - bucketRefillTime >= 1000ms(1초)` 인 경우, `bucket` 리필 & `bucketRefillTime` 업데이트
+        // 1. threshold 조회 (없으면 defaultThreshold 사용)
         val threshold = reactiveStringRedisTemplate.getValue(thresholdKey, defaultThreshold).toLong()
-        val secondThreshold = ceil(threshold / 10.0).toLong()
-        val bucketRefillTime = reactiveStringRedisTemplate.getValue(secondBucketRefillTimeKey, nowMillis.toString()).toLong()
-//        println("token: $token, secondThreshold: $secondThreshold, now: $nowMillis, bucketRefillTime: $bucketRefillTime, now - bucketRefillTime: ${nowMillis - bucketRefillTime}")
-        if (nowMillis - bucketRefillTime >= 6000) {
-            reactiveStringRedisTemplate.setValue(secondBucketKey, secondThreshold.toString())
-            reactiveStringRedisTemplate.setValue(secondBucketRefillTimeKey, nowMillis.toString())
+
+        // 2. 6초 slot 계산
+        val minute = nowMilli / ONE_MINUTE_MILLIS
+        val secondInMinute = (nowMilli % ONE_MINUTE_MILLIS) / ONE_SECONDS_MILLIS
+        val slot = secondInMinute / 6
+        val allowedPer6Sec = (threshold / 10L).coerceAtLeast(1L)
+
+        // 3. windowKey 생성
+        val windowKey = "$entryCountKey:$minute:$slot"
+        println("token: $token, minute: $minute, secondInMinute: $secondInMinute, slot: $slot, allowedPer6Sec: $allowedPer6Sec")
+
+        // 4. 대기열 Queue 토큰 추가
+        val exists = reactiveStringRedisTemplate.scoreZSet(queueKey, token)
+        if (exists == null) {
+            reactiveStringRedisTemplate.addZSet(queueKey, token, nowMilli)
         }
 
-        // 4. 트래픽 진입 가능 여부 확인
-        //    - 진입 가능 여부 : 초당 첫번째 그룹 && Bucket 진입 가능한 상태인 경우
-        //    - 진입 가능 여부 : `abs(rank - (entryCount % (threshold / 10))) / threshold == 0` and `bucket > 0`
-        //    4.1. 진입 가능한 경우, `result: 1` 진입 허용 응답 처리
-        //         - `bucket` 차감 처리
-        //         - `entryCount` 증가 처리
-        //         - `queue` token 삭제 처리
-        //    4.2. 진입 불가한 경우, `result: 0` 진입 불가 응답 처리
-        //         - `number`        : `rank + 1`
-        //         - `estimatedTime` : `(ceil(rank / (threshold / 10) + 1) * 6000`(ms)
-        //         - `totalCount`    : `queue size`
-        val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
-        val entryCount = reactiveStringRedisTemplate.getValue(entryCountKey, ZERO.toString()).toLong()
-        val bucketSize = reactiveStringRedisTemplate.getValue(secondBucketKey, secondThreshold.toString()).toLong()
-        val canEnter = abs(rank - (entryCount % ceil(threshold / 10.0))).toLong() / threshold == ZERO && bucketSize > ZERO
+        // 4. 내 순번 확인 (ZRANK 0부터 시작)
+        val queuePos = reactiveStringRedisTemplate.rankZSet(queueKey, token)
+        if (queuePos == -1L) {
+            return TrafficWaiting(-1, -1, -1, -1)
+        }
 
-        return if (canEnter) {
-            reactiveStringRedisTemplate.decrementValue(secondBucketKey)
+        // 5. 현재 slot 진입 카운터 조회
+        val currentCount = reactiveStringRedisTemplate.getValue(windowKey, ZERO.toString()).toLong()
+        val queueSize = reactiveStringRedisTemplate.sizeZSet(queueKey)
+
+        // 6. 진입 허용 조건 확인: (slot 내 진입 카운터) < allowedPer6Sec && (대기 순번) < allowedPer6Sec
+        return if (currentCount < allowedPer6Sec && queuePos < allowedPer6Sec) {
+            reactiveStringRedisTemplate.incrementValue(windowKey)
             reactiveStringRedisTemplate.incrementValue(entryCountKey)
             reactiveStringRedisTemplate.removeZSet(queueKey, token)
-//            println("token: $token, number: ${rank + 1}, threshold: $threshold, secondThreshold: $secondThreshold, estimatedTime: 0ms")
-            TrafficWaiting(1, 0, 0, 0)
+            reactiveStringRedisTemplate.expireAndAwait(windowKey, java.time.Duration.ofMinutes(1))
+            TrafficWaiting(1, 0, 0, queueSize)
         } else {
-            val number = rank + 1
-            val totalCount = reactiveStringRedisTemplate.sizeZSet(queueKey)
-            val tokenLastEntryTime = reactiveStringRedisTemplate.getHashValue(tokenLastEntryTimeKey, token, nowMillis)
-            val marginTime = nowMillis - tokenLastEntryTime
-            val estimatedTime = (ceil(number / secondThreshold.toDouble()) * SIX_SECONDS_MILLIS).toLong() - marginTime
-//            println("token: $token, number: $number, threshold: $threshold, secondThreshold: $secondThreshold, estimatedTime: ${estimatedTime}ms(${formatMillisToMinSec(estimatedTime)}), marginTime: ${marginTime}ms")
-
-            // 트래픽 대기 요청 Token 마지막 진입 요청 시간 저장
-            reactiveStringRedisTemplate.putHashValue(tokenLastEntryTimeKey, token, nowMillis)
-
-            TrafficWaiting(0, number, estimatedTime, totalCount)
+            val waitSlot = queuePos / allowedPer6Sec
+            val nextSlotStart = nowMilli - (nowMilli % 6000) + (waitSlot * 6000) + 6000
+            val waitTime = nextSlotStart - nowMilli
+            TrafficWaiting(0, queuePos + 1, waitTime, queueSize)
         }
-    }
-
-    private fun formatMillisToMinSec(ms: Long): String {
-        val totalSeconds = ms / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "${minutes}분 ${seconds}초"
     }
 
     private suspend fun ReactiveStringRedisTemplate.getValue(key: String, default: String? = null): String {
@@ -126,16 +98,8 @@ class TrafficControlExecuteAdapter(
         return opsForValue().getAndAwait(key)!!
     }
 
-    private suspend fun ReactiveStringRedisTemplate.setValue(key: String, value: String) {
-        opsForValue().setAndAwait(key, value)
-    }
-
     private suspend fun ReactiveStringRedisTemplate.incrementValue(key: String, value: Long = 1) {
         opsForValue().incrementAndAwait(key, value)
-    }
-
-    private suspend fun ReactiveStringRedisTemplate.decrementValue(key: String, value: Long = 1) {
-        opsForValue().decrementAndAwait(key, value)
     }
 
     private suspend fun ReactiveStringRedisTemplate.rankZSet(key: String, value: String): Long {
@@ -146,24 +110,16 @@ class TrafficControlExecuteAdapter(
         opsForZSet().addAndAwait(key, value, score.toDouble())
     }
 
-    private suspend fun ReactiveStringRedisTemplate.sizeZSet(key: String): Long {
-        return opsForZSet().sizeAndAwait(key)
-    }
-
-    private suspend fun ReactiveStringRedisTemplate.scoreZSet(key: String, value: String): Double {
-        return opsForZSet().scoreAndAwait(key, value)!!
+    private suspend fun ReactiveStringRedisTemplate.scoreZSet(key: String, value: String): Double? {
+        return opsForZSet().scoreAndAwait(key, value)
     }
 
     private suspend fun ReactiveStringRedisTemplate.removeZSet(key: String, value: String) {
         opsForZSet().removeAndAwait(key, value)
     }
 
-    private suspend fun ReactiveStringRedisTemplate.putHashValue(key: String, hashKey: String, hashValue: Long) {
-        opsForHash<String, String>().putAndAwait(key, hashKey, hashValue.toString())
-    }
-
-    private suspend fun ReactiveStringRedisTemplate.getHashValue(key: String, hashKey: String, default: Long = 0): Long {
-        return opsForHash<String, String>().getAndAwait(key, hashKey)?.toLong() ?: default
+    private suspend fun ReactiveStringRedisTemplate.sizeZSet(key: String): Long {
+        return opsForZSet().sizeAndAwait(key)
     }
 
 }

@@ -10,12 +10,12 @@ import java.time.Instant
 
 @Component
 class TrafficControlUseCase(
-    private val trafficControlScriptExecuteAdapter: TrafficControlPort,
+    private val trafficControlExecuteAdapter: TrafficControlPort,
     private val eventPublisher: ApplicationEventPublisher
 ) {
 
     suspend fun controlTraffic(traffic: Traffic, now: Instant = Instant.now()): TrafficWaiting {
-        return trafficControlScriptExecuteAdapter.controlTraffic(traffic, now)
+        return trafficControlExecuteAdapter.controlTraffic(traffic, now)
             .also { publishSaveTrafficStatusEvent(traffic = traffic, waiting = it) }
     }
 

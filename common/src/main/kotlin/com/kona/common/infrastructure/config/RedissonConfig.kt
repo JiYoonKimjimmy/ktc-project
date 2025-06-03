@@ -18,8 +18,8 @@ class RedissonConfig(
 ) {
 
     companion object {
-        const val CONNECTION_MIN_IDLE_SIZE = 0
-        const val CONNECTION_MAX_POOL_SIZE = 30
+        const val CONNECTION_MIN_IDLE_SIZE = 5
+        const val CONNECTION_MAX_POOL_SIZE = 128
     }
 
     private val profiles = listOf("test", "dev", "qa", "prod")
@@ -33,7 +33,6 @@ class RedissonConfig(
     lateinit var nodes: List<String>
 
     lateinit var redissonConfig: Config
-
 
     @PostConstruct
     fun initialize() {

@@ -4,15 +4,15 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
-import com.kona.ktc.testsupport.FakeApplicationEventPublisher
-import com.kona.ktc.infrastructure.adapter.redis.TrafficControlScript
 import com.kona.ktc.infrastructure.adapter.redis.TrafficControlScriptExecuteAdapter
+import com.kona.ktc.infrastructure.config.KtcApplicationConfig
+import com.kona.ktc.testsupport.FakeApplicationEventPublisher
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import java.time.Instant
 
 class TrafficControlUseCaseTest : BehaviorSpec({
-    val trafficControlScript = TrafficControlScript().also { it.init() }
+    val trafficControlScript = KtcApplicationConfig().trafficControlScript()
     val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
     val defaultThreshold = "1"
     val trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, defaultThreshold)

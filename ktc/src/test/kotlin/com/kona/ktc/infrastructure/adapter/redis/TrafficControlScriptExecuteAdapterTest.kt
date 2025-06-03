@@ -4,359 +4,204 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
-import com.kona.common.infrastructure.error.ErrorCode
-import com.kona.common.infrastructure.error.exception.InternalServiceException
-import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
-import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
-import io.kotest.assertions.throwables.shouldThrow
+import com.kona.ktc.domain.model.TrafficWaiting
+import com.kona.ktc.infrastructure.config.KtcApplicationConfig
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.longs.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
 import org.springframework.data.redis.core.setAndAwait
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 
 class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
+    val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
+    val trafficControlScript = KtcApplicationConfig().trafficControlScript()
 
-    val trafficControlScript = TrafficControlScript().also { it.init() }
-    val redisScriptAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
-    var defaultThreshold = "1"
-    var trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
-
-    given("'threshold: 1' 트래픽 Zone 제어 요청 되어") {
-        val zoneId = "traffic-zone"
-
-        `when`("요청 Zone 상태 'BLOCKED' 인 경우") {
-            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.BLOCKED.name)
-            val exception = shouldThrow<InternalServiceException> { trafficControlScriptExecuteAdapter.controlTraffic(Traffic(zoneId, "test-token")) }
-
-            then("'TRAFFIC_ZONE_STATUS_IS_BLOCKED' 예외 발생 정상 확인한다") {
-                exception.errorCode shouldBe ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED
-            }
-        }
-
-        reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
-
-        val traffic1 = Traffic(zoneId, "test-token1")
-        val traffic2 = Traffic(zoneId, "test-token2")
-        val traffic3 = Traffic(zoneId, "test-token3")
-
-        // 트래픽 제어 요청
-        var now = Instant.now()
-        var result1 = trafficControlScriptExecuteAdapter.controlTraffic(traffic1, now)
-        var result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
-        var result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
-
-        `when`("'1건 진입 / 2건 대기' 처리되는 경우") {
-
-            then("트래픽-1 'canEnter: true' 처리 결과 정상 확인한다") {
-                result1.canEnter shouldBe true
-            }
-
-            then("트래픽-2 'canEnter: false, number: 1' 처리 결과 정상 확인한다") {
-                result2.canEnter shouldBe false
-                result2.number shouldBe 1
-                result2.estimatedTime shouldBe 60000
-                result2.totalCount shouldBe 1
-            }
-
-            then("트래픽-3 'canEnter: false, number: 2' 처리 결과 정상 확인한다") {
-                result3.canEnter shouldBe false
-                result3.number shouldBe 2
-                result3.estimatedTime shouldBe 120000
-                result3.totalCount shouldBe 2
-            }
-
-            then("트래픽 진입 Count 캐시 조회 결과 '1' 정상 확인한다") {
-                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "1"
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result1 = trafficControlScriptExecuteAdapter.controlTraffic(traffic1, now.plusMillis(1))
-        result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
-
-        `when`("1분 경과 후 1건 진입 / 1건 대기 처리되는 경우") {
-            then("트래픽-1(재진입) 'canEnter: false, number: 3' 처리 결과 정상 확인한다") {
-                result1.canEnter shouldBe false
-                result1.number shouldBe 3
-                result1.estimatedTime shouldBe 180000
-                result1.totalCount shouldBe 3
-            }
-
-            then("트래픽-2 'canEnter: true' 처리 결과 정상 확인한다") {
-                result2.canEnter shouldBe true
-            }
-
-            then("트래픽-3 'canEnter: false, number: 1' 처리 결과 정상 확인한다") {
-                result3.canEnter shouldBe false
-                result3.number shouldBe 1
-                result3.estimatedTime shouldBe 60000
-                result3.totalCount shouldBe 2
-            }
-
-            then("트래픽 진입 Count 캐시 조회 결과 '2' 정상 확인한다") {
-                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "2"
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(1))
-        result1 = trafficControlScriptExecuteAdapter.controlTraffic(traffic1, now.plusMillis(2))
-
-        `when`("2분 경과 후 1건 진입 / 0건 대기 처리되는 경우") {
-
-            then("트래픽-3 'canEnter: true' 처리 결과 정상 확인한다") {
-                result3.canEnter shouldBe true
-            }
-
-            then("트래픽-1(재진입) 'canEnter: false, number: 1' 처리 결과 정상 확인한다") {
-                result1.canEnter shouldBe false
-                result1.number shouldBe 1
-                result1.estimatedTime shouldBe 60000
-                result1.totalCount shouldBe 1
-            }
-
-            then("트래픽 진입 Count 캐시 조회 결과 '3' 정상 확인한다") {
-                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "3"
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        val traffic4 = Traffic(zoneId, "test-token4")
-        var result4 = trafficControlScriptExecuteAdapter.controlTraffic(traffic4, now.plusMillis(1))
-
-        `when`("1분 경과 후 0건 진입 / 2건 대기 처리되는 경우") {
-
-            then("트래픽-4 'canEnter: false, estimatedTime: 120000, totalCount: 2' 처리 결과 정상 확인한다") {
-                result4.canEnter shouldBe false
-                result4.number shouldBe 2
-                result4.estimatedTime shouldBe 120000
-                result4.totalCount shouldBe 2
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result4 = trafficControlScriptExecuteAdapter.controlTraffic(traffic4, now.plusMillis(1))
-
-        `when`("1분 경과 후 트래픽-4 먼저 대기 요청하는 경우") {
-
-            then("트래픽-4 'canEnter: false, estimatedTime: 120000, totalCount: 2' 처리 결과 정상 확인한다") {
-                result4.canEnter shouldBe false
-                result4.number shouldBe 2
-                result4.estimatedTime shouldBe 120000
-                result4.totalCount shouldBe 2
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result4 = trafficControlScriptExecuteAdapter.controlTraffic(traffic4, now.plusMillis(1))
-
-        `when`("1분 경과 후 트래픽-4 먼저 진입 요청하는 경우") {
-
-            then("트래픽-4 'canEnter: true' 처리 결과 정상 확인한다") {
-                result4.canEnter shouldBe true
-            }
-
-            then("트래픽 진입 Count 캐시 조회 결과 '4' 정상 확인한다") {
-                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "4"
-            }
-        }
+    val logging: suspend (Traffic, TrafficWaiting) -> TrafficWaiting = { traffic, result ->
+        val number = result.number
+        val estimatedTime = result.estimatedTime
+        val totalSeconds = result.estimatedTime / 1000
+        val formatEstimatedTime = "${totalSeconds / 60}분 ${totalSeconds % 60}초"
+        val totalCount = result.totalCount
+        val canEnter = result.canEnter
+        println("token: ${traffic.token}, number: $number, totalCount: $totalCount, canEnter: $canEnter, estimatedTime: ${estimatedTime}ms ($formatEstimatedTime)")
+        result
     }
 
-    given("'threshold: 100' 트래픽 Zone 제어, 200건 요청 되어") {
-        defaultThreshold = "100"
-        trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
+    val getEntryCount: suspend (String) -> Int = { zoneId ->
+        reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))?.toInt() ?: 0
+    }
 
-        val zoneId = "test-zone2"
-        val traffics = (1..200).map { Traffic(zoneId, "test-token-$it") }.toList()
+    context("트래픽 제어 Zone 정책 '분당 1건 허용'") {
+        given("트래픽 '1 ~ 10' 까지 Zone 진입 요청하여") {
+            val zoneId = "test-zone"
+            val totalSize = 10
+            val threshold = 1
+            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
 
-        // 트래픽 제어 요청
-        var now = Instant.now()
-        val results1to100 = traffics.take(100).mapIndexed { index, traffic ->
-            trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(index.toLong() * 1))
-        }
-        val results101to200 = traffics.drop(100).mapIndexed { index, traffic ->
-            trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(101 + index.toLong() * 1))
-        }
+            // 트래픽 대기 요청 정보 생성
+            val traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
+            val nowMillis = Instant.now()
 
-        `when`("'100건 진입' 처리되는 경우") {
-
-            then("트래픽-1to100 'canEnter: true' 처리 결과 정상 확인한다") {
-                results1to100.forEach { it.canEnter shouldBe true }
+            val controlTraffic: suspend (Traffic, Instant, Long) -> TrafficWaiting = { traffic, now, extra ->
+                logging(traffic, sut.controlTraffic(traffic, now.plusMillis(extra)))
             }
 
-            then("트래픽-101, 102, 103 'canEnter: false' 처리 결과 확인한다") {
-                results101to200.forEach { it.canEnter shouldBe false }
-                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "2"
-            }
+            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
 
-            then("트래픽 진입 Count 캐시 조회 결과 '100' 정상 확인한다") {
-                val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "100"
-            }
-        }
-
-        `when`("'1분 뒤 나머지 100건' 처리되는 경우") {
-            now = now.plusMillis(ONE_MINUTE_MILLIS)
-
-            var processedCount = 100
-            var remainingTraffics = traffics.drop(processedCount)
-            var secondsElapsed = 0
-
-            then("초당 트래픽-2건씩 진입하여 100건이 처리될 때까지 결과 확인") {
-                while (remainingTraffics.isNotEmpty() && processedCount < 200) {
-                    val currentResults = remainingTraffics.take(remainingTraffics.size.coerceAtMost(10)).mapIndexed { index, traffic ->
-                        trafficControlScriptExecuteAdapter.controlTraffic(traffic, now.plusMillis(1 + index.toLong() * 1))
-                    }
-
-                    currentResults.take(2).forEach { it.canEnter shouldBe true }
-                    // TODO 테스트 확인 필요
-                    //currentResults.drop(2).forEach { it.canEnter shouldBe false }
-
-                    processedCount += 2
-                    val entryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                    entryCount shouldBe processedCount.toString()
-
-                    remainingTraffics = traffics.drop(processedCount)
-                    now = now.plusMillis(ONE_SECONDS_MILLIS)
-                    secondsElapsed++
+            `when`("1건 진입 허용 / 9건 진입 대기 처리 성공인 경우") {
+                val results = traffics.mapIndexed { index, traffic ->
+                    controlTraffic(traffic, nowMillis, index.toLong())
                 }
 
-                val finalEntryCount = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                finalEntryCount shouldBe "200"  // 100 + 100
-                secondsElapsed shouldBe 50
+                then("트래픽 '1' 진입 허용 정상 확인한다") {
+                    results.take(threshold).all { it.canEnter } shouldBe true
+                }
+
+                then("트래픽 '2 ~ 10' 진입 대기 상태 정상 확인한다") {
+                    val result = results.drop(1)
+                    result.all { !it.canEnter } shouldBe true
+                    result.forEachIndexed { index, waiting ->
+                        waiting.number shouldBe index + 1
+                        waiting.estimatedTime shouldBeLessThanOrEqual ((index + 1) * 60000L)
+                    }
+                }
             }
         }
     }
 
-    /**
-     *
-     */
-    given("""
-        AS-IS : secondBucket 적용 후 이슈 - secondBucket = 0 이 된 이후 대기열이 발생하지 않으면 1번 유저는 들어가지 못하는 이슈
-        TO-BE : secondBucket = 0, 대기열이 없는 상태여도 시간이 지나면 secondBucket 을 리필해야 한다. 
-        'threshold: 1' 트래픽 Zone 제어 요청 되어
-    """) {
-        val zoneId = "test-zone3"
-        defaultThreshold = "1"
-        trafficControlScriptExecuteAdapter = TrafficControlScriptExecuteAdapter(trafficControlScript, redisScriptAdapter, defaultThreshold)
-        val traffic1 = Traffic(zoneId, "test-token1")
-        val traffic2 = Traffic(zoneId, "test-token2")
-        val traffic3 = Traffic(zoneId, "test-token3")
+    context("트래픽 제어 Zone 정책 '분당 10건 허용'") {
+        given("트래픽 '1 ~ 20' 까지 3초 단위 Polling 진입 요청하여") {
+            val zoneId = "zone-1-to-20"
+            val totalSize = 20
+            val threshold = 10
+            val secondThreshold = threshold / 10
+            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
 
-        // 트래픽 제어 요청
-        var now = Instant.now()
-        var result1 = trafficControlScriptExecuteAdapter.controlTraffic(traffic1, now)
-        var result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
-        var result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+            // 트래픽 대기 요청 정보 생성
+            var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
+            var nowMillis = Instant.now()
 
-        `when`("'1건 진입 / 2건 대기' 처리되는 경우") {
-
-            then("트래픽-1 'canEnter: true' 처리 결과 정상 확인한다") {
-                result1.canEnter shouldBe true
-                val currentSecondBucketSize =
-                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "1"
+            val controlTraffic: suspend (Int, Traffic, Instant) -> TrafficWaiting = { index, traffic, now ->
+                sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
             }
 
-            then("트래픽-2 'canEnter: false, number: 1' 처리 결과 정상 확인한다") {
-                result2.canEnter shouldBe false
-                result2.number shouldBe 1
-                result2.estimatedTime shouldBe 60000
-                result2.totalCount shouldBe 1
-                val currentSecondBucketSize =
-                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "1"
-            }
+            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
 
-            then("트래픽-3 'canEnter: false, number: 2' 처리 결과 정상 확인한다") {
-                result3.canEnter shouldBe false
-                result3.number shouldBe 2
-                result3.estimatedTime shouldBe 120000
-                result3.totalCount shouldBe 2
-                val currentSecondBucketSize =
-                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "1"
-            }
+            var results = emptyList<TrafficWaiting>()
+            var min = 0
+            var sec = 0
+            var startIndex = 0
+            val expectedEntryCount = AtomicInteger(0)
 
-            then("트래픽 진입 Count 캐시 조회 결과 '1' 정상 확인한다") {
-                val entryCount =
-                    reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))
-                entryCount shouldBe "1"
-            }
-        }
+            while ((results.isEmpty() || results.all { it.canEnter }.not())) {
+                `when`("[${min}:${sec} 경과] 트래픽 '${startIndex + 1} ~ ${startIndex + secondThreshold}' 까지 '${secondThreshold}건' 진입 요청하여") {
+                    // 다음 그룹 트레픽 진입 요청 처리
+                    results = traffics.mapIndexed { index, traffic ->
+                        logging(traffic, controlTraffic(index, traffic, nowMillis))
+                    }
+                    val entryTokens = results.count { it.canEnter }
+                    val entryCount = getEntryCount(zoneId)
 
-        now = now.plusMillis(ONE_SECONDS_MILLIS)
-        result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
+                    if (entryTokens > 0) {
+                        then("트래픽 진입 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                            results.take(secondThreshold).all { it.canEnter } shouldBe true
+                            entryCount shouldBe expectedEntryCount.addAndGet(secondThreshold)
+                        }
+                        startIndex += secondThreshold
+                        // 트래픽 진입 성공 그룹 제외하여 트래픽 요청 목록 재생성
+                        traffics = traffics.subList(secondThreshold, traffics.size)
+                    } else {
+                        then("트래픽 대기 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                            results.take(secondThreshold).all { it.canEnter } shouldBe false
+                            entryCount shouldBe expectedEntryCount.get()
+                        }
+                    }
 
-        `when`("1초 후 트래픽-2,3 진입") {
-            then("트래픽-2,3 'canEnter: false' 처리 결과 정상 확인한다") {
-                result2.canEnter shouldBe false
-                result3.canEnter shouldBe false
+                    nowMillis = if (entryCount % threshold == 0) {
+                        // entryCount 가 threshold 도달 후, nowMillis + 1분 증가 처리
+                        min += 1
+                        sec = 0
+                        println("After $min minute...")
+                        nowMillis.plusMillis(60000)
+                    } else {
+                        // entryCount 가 threshold 도달 전, 6초 증가 처리
+                        sec += 3
+                        println("After $sec seconds...")
+                        nowMillis.plusMillis(3000)
+                    }
+                }
             }
         }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result2 = trafficControlScriptExecuteAdapter.controlTraffic(traffic2, now.plusMillis(2))
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
-
-        `when`("1분 후 트래픽-2,3 진입") {
-            then("트래픽-2 'canEnter: true' 처리 결과 정상 확인한다") {
-                result2.canEnter shouldBe true
-            }
-
-            then("트래픽-3 'canEnter: false' 처리 결과 정상 확인한다") {
-                result3.canEnter shouldBe false
-            }
-
-            then("currentSecondBucketSize = 0이 된다.") {
-                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "0"
-            }
-        }
-
-        now = now.plusMillis(ONE_SECONDS_MILLIS)
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
-
-        `when`("1초 후 트래픽-3 진입") {
-            then("트래픽-3 canEnter: false 처리 결과 정상 확인한다.") {
-                result3.canEnter shouldBe false
-            }
-
-            then("""
-                AS-IS : 하지만 currentSecondBucketSize = 아직도 0이다. 뒤에 대기열이 없는 이상 계속 secondBucket 은 채워지지 않는 이슈
-                TO-BE : 대기열이 있을 때만 secondBucket 을 리필하는 것이 아닌, 리필시간이 되면 바로 secondBucket 을 채운다.  
-            """) {
-                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "1"
-            }
-        }
-
-        now = now.plusMillis(ONE_MINUTE_MILLIS)
-        result3 = trafficControlScriptExecuteAdapter.controlTraffic(traffic3, now.plusMillis(3))
-
-        `when`("'1분 후 트래픽-3 진입'") {
-            then("""
-                AS-IS : currentSecondBucketSize = 0 으로 인해 트래픽-3 'canEnter: false'
-                TO-BE : currentSecondBucketSize = 1 (대기열이 없으므로 secondBucket은 줄어들지 않는다) 트래픽-3 'canEnter: true 수정'
-            """) {
-                result3.canEnter shouldBe true
-                val currentSecondBucketSize = reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.SECOND_BUCKET.getKey(zoneId))
-                currentSecondBucketSize shouldBe "1"
-            }
-        }
-
     }
 
+    context("트래픽 제어 Zone 정책 '분당 100건 허용'") {
+        given("트래픽 '1 ~ 200' 까지 3초 단위 Polling 진입 요청하여") {
+            val zoneId = "zone-1-to-200"
+            val totalSize = 200
+            val threshold = 100
+            val secondThreshold = threshold / 10
+            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
+
+            // 트래픽 대기 요청 정보 생성
+            var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
+            var nowMillis = Instant.now()
+
+            val controlTraffic: suspend (Int, Traffic, Instant) -> TrafficWaiting = { index, traffic, now ->
+                sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
+            }
+
+            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+
+            var results = emptyList<TrafficWaiting>()
+            var min = 0
+            var sec = 0
+            var startIndex = 0
+            val expectedEntryCount = AtomicInteger(0)
+
+            while (results.isEmpty() || results.all { it.canEnter }.not()) {
+                `when`("[${min}:${sec} 경과] 트래픽 '${startIndex + 1} ~ ${startIndex + secondThreshold}' 까지 '${secondThreshold}건' 진입 요청하여") {
+                    // 다음 그룹 트레픽 진입 요청 처리
+                    results = traffics.mapIndexed { index, traffic ->
+                        logging(traffic, controlTraffic(index, traffic, nowMillis))
+                    }
+                    val entryTokens = results.count { it.canEnter }
+                    val entryCount = getEntryCount(zoneId)
+
+                    if (entryTokens > 0) {
+                        then("트래픽 진입 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                            results.take(secondThreshold).all { it.canEnter } shouldBe true
+                            entryCount shouldBe expectedEntryCount.addAndGet(secondThreshold)
+                        }
+                        startIndex += secondThreshold
+                        // 트래픽 진입 성공 그룹 제외하여 트래픽 요청 목록 재생성
+                        traffics = traffics.subList(secondThreshold, traffics.size)
+                    } else {
+                        then("트래픽 대기 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                            results.take(secondThreshold).all { it.canEnter } shouldBe false
+                            entryCount shouldBe expectedEntryCount.get()
+                        }
+                    }
+
+                    nowMillis = if (entryCount % threshold == 0) {
+                        // entryCount 가 threshold 도달 후, nowMillis + 1분 증가 처리
+                        min += 1
+                        sec = 0
+                        println("After $min minute...")
+                        nowMillis.plusMillis(60000)
+                    } else {
+                        // entryCount 가 threshold 도달 전, 6초 증가 처리
+                        sec += 3
+                        println("After $sec seconds...")
+                        nowMillis.plusMillis(3000)
+                    }
+                }
+            }
+        }
+    }
 })

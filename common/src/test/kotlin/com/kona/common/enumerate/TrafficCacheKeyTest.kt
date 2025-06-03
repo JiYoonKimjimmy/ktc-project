@@ -39,12 +39,7 @@ class TrafficCacheKeyTest : StringSpec({
             "ktc:{TEST_ZONE}:queue",
             "ktc:{TEST_ZONE}:queue_status",
             "ktc:{TEST_ZONE}:threshold",
-            "ktc:{TEST_ZONE}:minute_bucket",
-            "ktc:{TEST_ZONE}:minute_bucket_refill_time",
-            "ktc:{TEST_ZONE}:second_bucket",
-            "ktc:{TEST_ZONE}:second_bucket_refill_time",
             "ktc:{TEST_ZONE}:entry_count",
-            "ktc:{TEST_ZONE}:token_last_entry_time",
         )
         result shouldContainAll expected
     }

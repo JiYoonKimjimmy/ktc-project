@@ -58,12 +58,7 @@ enum class TrafficCacheKey(
                 QUEUE                       to QUEUE.getKey(zoneId),
                 QUEUE_STATUS                to QUEUE_STATUS.getKey(zoneId),
                 THRESHOLD                   to THRESHOLD.getKey(zoneId),
-                MINUTE_BUCKET               to MINUTE_BUCKET.getKey(zoneId),
-                MINUTE_BUCKET_REFILL_TIME   to MINUTE_BUCKET_REFILL_TIME.getKey(zoneId),
-                SECOND_BUCKET               to SECOND_BUCKET.getKey(zoneId),
-                SECOND_BUCKET_REFILL_TIME   to SECOND_BUCKET_REFILL_TIME.getKey(zoneId),
-                ENTRY_COUNT                 to ENTRY_COUNT.getKey(zoneId),
-                TOKEN_LAST_ENTRY_TIME       to TOKEN_LAST_ENTRY_TIME.getKey(zoneId),
+                ENTRY_COUNT                 to ENTRY_COUNT.getKey(zoneId)
             )
         }
 
