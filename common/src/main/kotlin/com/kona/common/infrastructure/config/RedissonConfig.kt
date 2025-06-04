@@ -1,93 +1,61 @@
 package com.kona.common.infrastructure.config
 
-import jakarta.annotation.PostConstruct
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
 import org.redisson.config.Config
-import org.redisson.spring.data.connection.RedissonConnectionFactory
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.core.env.Environment
 import java.time.Duration
 
-@Configuration
 class RedissonConfig(
-    private val environment: Environment,
-    private val redisProperties: RedisProperties
+    private val activeProfile: String,
+    redisProperties: RedisProperties
 ) {
 
-    companion object {
-        const val CONNECTION_MIN_IDLE_SIZE = 5
-        const val CONNECTION_MAX_POOL_SIZE = 128
+    private var host: String = redisProperties.host
+    private var port: String = redisProperties.port.toString()
+    private var password: String = redisProperties.password
+    private var timeout: Duration = redisProperties.timeout
+    private var connectTimeout: Duration = redisProperties.connectTimeout
+    private var nodes: List<String> = when (this.activeProfile) {
+        "test" -> emptyList()
+        else -> redisProperties.cluster.nodes
     }
+    private var minIdle: Int = redisProperties.lettuce.pool.minIdle
+    private var maxActive: Int = redisProperties.lettuce.pool.maxActive
 
-    private val profiles = listOf("test", "dev", "qa", "prod")
-    lateinit var activeProfile: String
-
-    lateinit var host: String
-    lateinit var port: String
-    lateinit var password: String
-    lateinit var timeout: Duration
-    lateinit var connectTimeout: Duration
-    lateinit var nodes: List<String>
-
-    lateinit var redissonConfig: Config
-
-    @PostConstruct
-    fun initialize() {
-        this.activeProfile = environment.activeProfiles.find { profiles.contains(it) } ?: "test"
-        this.host = redisProperties.host
-        this.port = redisProperties.port.toString()
-        this.password = redisProperties.password
-        this.timeout = redisProperties.timeout
-        this.connectTimeout = redisProperties.connectTimeout
-        this.nodes = when (this.activeProfile) {
-            "test" -> emptyList()
-            else -> redisProperties.cluster.nodes
-        }
-        this.redissonConfig = redissonClientConfig()
-    }
-
-    @Bean
     fun redissonClient(): RedissonClient {
-        return Redisson.create(redissonConfig)
-    }
-
-    @Bean
-    fun redisConnectionFactory(): RedissonConnectionFactory {
-        return RedissonConnectionFactory(redissonConfig)
+        return Redisson.create(redissonClientConfig())
     }
 
     private fun redissonClientConfig(): Config {
         val config = when (this.activeProfile) {
-            "test" -> this::useSingleServerConfig
-            else -> this::useClusterServersConfig
+            "test" -> this::redissonSingleServerConfig
+            else -> this::redissonClusterServersConfig
         }
         return Config().apply(config)
     }
 
-    private fun useSingleServerConfig(config: Config) {
+    private fun redissonSingleServerConfig(config: Config) {
         config
             .useSingleServer()
             .setAddress("redis://$host:$port")
             .setTimeout(timeout.toMillis().toInt())
             .setConnectTimeout(connectTimeout.toMillis().toInt())
-            .setConnectionMinimumIdleSize(CONNECTION_MIN_IDLE_SIZE)
-            .setConnectionPoolSize(CONNECTION_MAX_POOL_SIZE)
+            .setConnectionMinimumIdleSize(minIdle)
+            .setConnectionPoolSize(maxActive)
     }
 
-    private fun useClusterServersConfig(config: Config) {
+    private fun redissonClusterServersConfig(config: Config) {
         config
             .useClusterServers()
             .addNodeAddress(*nodes.toRedissonAddresses())
             .setPassword(password)
             .setTimeout(timeout.toMillis().toInt())
             .setConnectTimeout(connectTimeout.toMillis().toInt())
-            .setMasterConnectionMinimumIdleSize(CONNECTION_MIN_IDLE_SIZE)
-            .setMasterConnectionPoolSize(CONNECTION_MAX_POOL_SIZE)
-            .setSlaveConnectionMinimumIdleSize(CONNECTION_MIN_IDLE_SIZE)
-            .setSlaveConnectionPoolSize(CONNECTION_MAX_POOL_SIZE)
+            .setMasterConnectionMinimumIdleSize(minIdle)
+            .setMasterConnectionPoolSize(maxActive)
+            .setSlaveConnectionMinimumIdleSize(minIdle)
+            .setSlaveConnectionPoolSize(maxActive)
     }
 
     private fun List<String>.toRedissonAddresses(): Array<String> {

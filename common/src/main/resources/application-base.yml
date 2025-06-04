@@ -24,6 +24,8 @@ spring:
           max-active: 30
           max-wait: 20s
           time-between-eviction-runs: 20s
+      cluster:
+        max-redirects: 3
   rabbitmq:
     connection-timeout: 5s
     template:
