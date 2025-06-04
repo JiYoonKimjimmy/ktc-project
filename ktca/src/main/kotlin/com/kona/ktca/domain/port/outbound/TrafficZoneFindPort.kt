@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page
 
 interface TrafficZoneFindPort {
 
-    suspend fun findTrafficZone(zoneId: String): TrafficZone
+    suspend fun findTrafficZone(zoneId: String): TrafficZone?
 
     suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone>
 

@@ -7,8 +7,10 @@ interface TrafficZoneCommandPort {
 
     suspend fun create(dto: TrafficZoneDTO): TrafficZone
 
-    suspend fun update(dto: TrafficZoneDTO): TrafficZone
+    suspend fun update(zone: TrafficZone, dto: TrafficZoneDTO): TrafficZone
 
     suspend fun delete(zoneId: String)
+
+    suspend fun validateTrafficZoneId(zoneId: String)
 
 }

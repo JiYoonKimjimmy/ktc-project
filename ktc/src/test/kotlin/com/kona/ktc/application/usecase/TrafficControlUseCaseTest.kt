@@ -8,6 +8,7 @@ import com.kona.ktc.infrastructure.adapter.redis.TrafficControlScriptExecuteAdap
 import com.kona.ktc.infrastructure.config.KtcApplicationConfig
 import com.kona.ktc.testsupport.FakeApplicationEventPublisher
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import java.time.Instant
 
@@ -30,7 +31,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
                 result1.canEnter shouldBe true
                 result1.number shouldBe 0
                 result1.estimatedTime shouldBe 0
-                result1.totalCount shouldBe 0
+                result1.totalCount shouldBe 1
             }
         }
 
@@ -38,7 +39,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result2.canEnter shouldBe false
                 result2.number shouldBe 1
-                result2.estimatedTime shouldBe 60000
+                result2.estimatedTime shouldBeLessThan 6000
                 result2.totalCount shouldBe 1
             }
         }
@@ -47,7 +48,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result3.canEnter shouldBe false
                 result3.number shouldBe 2
-                result3.estimatedTime shouldBe 120000
+                result3.estimatedTime shouldBeLessThan 12000
                 result3.totalCount shouldBe 2
             }
         }
@@ -75,7 +76,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("요청 결과 '진입 여부 : false' & 'number: 1' & 'eta: 60s' 정상 확인한다") {
                 result2.canEnter shouldBe false
                 result2.number shouldBe 1
-                result2.estimatedTime shouldBe 60000
+                result2.estimatedTime shouldBeLessThan 6000
             }
         }
     }

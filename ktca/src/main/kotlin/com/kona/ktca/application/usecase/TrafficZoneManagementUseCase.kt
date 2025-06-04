@@ -19,12 +19,10 @@ class TrafficZoneManagementUseCase(
 ) {
 
     @Transactional
-    suspend fun saveTrafficZone(dto: TrafficZoneDTO): TrafficZone {
-        return if (dto.isCreate) {
-            trafficZoneCommandPort.create(dto)
-        } else {
-            trafficZoneCommandPort.update(dto)
-        }
+    suspend fun createTrafficZone(dto: TrafficZoneDTO): TrafficZone {
+        // 요청 `zoneId` 포함되는 경우, `zoneId` 중복 검증 처리
+        dto.zoneId?.let { trafficZoneCommandPort.validateTrafficZoneId(it) }
+        return trafficZoneCommandPort.create(dto)
     }
 
     suspend fun findTrafficZone(zoneId: String): TrafficZone {
@@ -33,6 +31,12 @@ class TrafficZoneManagementUseCase(
 
     suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
         return trafficZoneReadPort.findPageTrafficZone(trafficZone, pageable)
+    }
+
+    @Transactional
+    suspend fun updateTrafficZone(zoneId: String, dto: TrafficZoneDTO): TrafficZone {
+        val zone = trafficZoneReadPort.findTrafficZone(zoneId)
+        return trafficZoneCommandPort.update(zone, dto)
     }
 
     @Transactional

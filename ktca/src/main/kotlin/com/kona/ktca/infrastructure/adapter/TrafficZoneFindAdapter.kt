@@ -16,11 +16,10 @@ class TrafficZoneFindAdapter(
     private val trafficZoneRepository: TrafficZoneRepository
 ) : TrafficZoneFindPort {
 
-    override suspend fun findTrafficZone(zoneId: String): TrafficZone {
+    override suspend fun findTrafficZone(zoneId: String): TrafficZone? {
         return trafficZoneRepository.findByZoneId(zoneId)
             .takeIf { it != null }
             ?.toDomain()
-            ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 
     override suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone> {

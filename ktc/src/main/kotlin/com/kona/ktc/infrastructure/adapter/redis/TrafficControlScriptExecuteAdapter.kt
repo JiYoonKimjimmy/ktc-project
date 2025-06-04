@@ -4,7 +4,6 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
-import com.kona.common.infrastructure.util.toTokenScore
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.domain.port.outbound.TrafficControlPort

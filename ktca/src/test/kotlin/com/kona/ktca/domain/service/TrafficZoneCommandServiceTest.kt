@@ -82,7 +82,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
         )
 
         `when`("트래픽 Zone 'zoneAlias' 정보 변경 요청인 경우") {
-            val result = trafficZoneCommandService.update(updateZoneAliasTrafficZone)
+            val result = trafficZoneCommandService.update(saved, updateZoneAliasTrafficZone)
 
             then("DB 변경 결과 정상 확인한다") {
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
@@ -99,13 +99,12 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
         )
 
         `when`("트래픽 Zone 'threshold' 정보 변경 요청인 경우") {
-            val result = trafficZoneCommandService.update(updateThresholdTrafficZone)
+            val result = trafficZoneCommandService.update(saved, updateThresholdTrafficZone)
 
             then("DB 변경 결과 정상 확인한다") {
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
                 entity!! shouldNotBe null
                 entity.id shouldBe result.zoneId
-                entity.alias shouldBe updateZoneAlias
                 entity.threshold shouldBe updateThreshold
             }
 
@@ -122,14 +121,12 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
         )
 
         `when`("트래픽 Zone 'status' 정보 변경 요청인 경우") {
-            val result = trafficZoneCommandService.update(updateStatusTrafficZone)
+            val result = trafficZoneCommandService.update(saved, updateStatusTrafficZone)
 
             then("DB 변경 결과 정상 확인한다") {
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
                 entity!! shouldNotBe null
                 entity.id shouldBe result.zoneId
-                entity.alias shouldBe updateZoneAlias
-                entity.threshold shouldBe updateThreshold
                 entity.status shouldBe updateStatus
             }
 
@@ -151,15 +148,12 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
         )
 
         `when`("트래픽 Zone 'activationTime' 정보 변경 요청인 경우") {
-            val result = trafficZoneCommandService.update(updateActivationTimeTrafficZone)
+            val result = trafficZoneCommandService.update(saved, updateActivationTimeTrafficZone)
 
             then("DB 변경 결과 정상 확인한다") {
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
                 entity!! shouldNotBe null
                 entity.id shouldBe result.zoneId
-                entity.alias shouldBe updateZoneAlias
-                entity.threshold shouldBe updateThreshold
-                entity.status shouldBe updateStatus
                 entity.activationTime shouldBe updateActivationTime
             }
         }
@@ -169,8 +163,8 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             status = DELETED
         )
 
-        `when`("트래픽 Zone 'status' 정보 변경 요청인 경우") {
-            val result = trafficZoneCommandService.update(deleteStatusTrafficZone)
+        `when`("트래픽 Zone 'status' 정보 'ACTIVE > DELETED' 변경 요청인 경우") {
+            val result = trafficZoneCommandService.update(saved, deleteStatusTrafficZone)
 
             then("DB 변경 결과 정상 확인한다") {
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
@@ -189,13 +183,14 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             }
         }
 
+        val deleteTrafficZone = trafficZoneFindAdapter.findTrafficZone(saved.zoneId)!!
         val errorUpdateStatusTrafficZone = TrafficZoneDTO(
             zoneId = saved.zoneId,
             status = ACTIVE
         )
 
-        `when`("트래픽 Zone 'status' 정보 변경 요청인 경우") {
-            val result = shouldThrow<InternalServiceException> { trafficZoneCommandService.update(errorUpdateStatusTrafficZone) }
+        `when`("트래픽 Zone 'status' 정보 'DELETED > ACTIVE' 변경 요청인 경우") {
+            val result = shouldThrow<InternalServiceException> { trafficZoneCommandService.update(deleteTrafficZone, errorUpdateStatusTrafficZone) }
 
             then("'DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED' 예외 발생 정상 확인한다") {
                 result.errorCode shouldBe ErrorCode.DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED

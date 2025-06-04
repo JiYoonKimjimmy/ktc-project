@@ -20,9 +20,21 @@ data class TrafficZone(
 ) {
 
     companion object {
-        fun generateZoneId(): String {
+
+        fun create(dto: TrafficZoneDTO): TrafficZone {
+            return TrafficZone(
+                zoneId = dto.zoneId ?: generateZoneId(),
+                zoneAlias = dto.zoneAlias!!,
+                threshold = dto.threshold!!,
+                activationTime = dto.activationTime ?: LocalDateTime.now(),
+                status = dto.status ?: TrafficZoneStatus.ACTIVE
+            )
+        }
+
+        private fun generateZoneId(): String {
             return TRAFFIC_ZONE_ID_PREFIX + SnowflakeIdGenerator.generate()
         }
+
     }
 
     suspend fun applyWaiting(function: suspend (String, Long) -> TrafficZoneWaiting): TrafficZone {

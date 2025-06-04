@@ -2,12 +2,8 @@ package com.kona.ktc.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
-import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
-import com.kona.common.infrastructure.error.ErrorCode
-import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
-import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.ZERO
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
@@ -16,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.*
 import org.springframework.stereotype.Component
 import java.time.Instant
-import kotlin.math.abs
-import kotlin.math.ceil
 
 @Component
 class TrafficControlExecuteAdapter(

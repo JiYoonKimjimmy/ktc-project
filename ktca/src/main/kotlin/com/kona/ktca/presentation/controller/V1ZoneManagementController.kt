@@ -20,17 +20,16 @@ class V1ZoneManagementController(
     private val v1ZoneModelMapper: V1ZoneModelMapper
 ) : V1ZoneManagementApiDelegate {
 
-    override fun saveZone(v1SaveZoneRequest: V1SaveZoneRequest): ResponseEntity<V1SaveZoneResponse> = runBlocking {
+    override fun createZone(v1CreateZoneRequest: V1CreateZoneRequest): ResponseEntity<V1CreateZoneResponse> = runBlocking {
         val dto = TrafficZoneDTO(
-            zoneId = v1SaveZoneRequest.zoneId,
-            zoneAlias = v1SaveZoneRequest.zoneAlias,
-            threshold = v1SaveZoneRequest.threshold?.toLong(),
-            activationTime = v1SaveZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
-            status = v1SaveZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
+            zoneId = v1CreateZoneRequest.zoneId,
+            zoneAlias = v1CreateZoneRequest.zoneAlias,
+            threshold = v1CreateZoneRequest.threshold.toLong(),
+            activationTime = v1CreateZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
+            status = v1CreateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
         )
-        val result = trafficZoneManagementUseCase.saveTrafficZone(dto)
-        val httpStatus = if (dto.isCreate) HttpStatus.CREATED else HttpStatus.OK
-        ResponseEntity(V1SaveZoneResponse(zoneId = result.zoneId),  httpStatus)
+        val result = trafficZoneManagementUseCase.createTrafficZone(dto)
+        ResponseEntity(V1CreateZoneResponse(zoneId = result.zoneId),  HttpStatus.CREATED)
     }
 
     override fun findZone(zoneId: String): ResponseEntity<V1FindZoneResponse> = runBlocking {
@@ -55,6 +54,17 @@ class V1ZoneManagementController(
             content = result.content.map { v1ZoneModelMapper.domainToModel(it) }
         )
         ResponseEntity(response, HttpStatus.OK)
+    }
+
+    override fun updateZone(zoneId: String, v1UpdateZoneRequest: V1UpdateZoneRequest): ResponseEntity<V1UpdateZoneResponse> = runBlocking {
+        val dto = TrafficZoneDTO(
+            zoneAlias = v1UpdateZoneRequest.zoneAlias,
+            threshold = v1UpdateZoneRequest.threshold?.toLong(),
+            activationTime = v1UpdateZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
+            status = v1UpdateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
+        )
+        val result = trafficZoneManagementUseCase.updateTrafficZone(zoneId, dto)
+        ResponseEntity(V1UpdateZoneResponse(zoneId = result.zoneId),  HttpStatus.OK)
     }
 
     override fun deleteZone(zoneId: String): ResponseEntity<V1DeleteZoneResponse> = runBlocking {

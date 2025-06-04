@@ -40,27 +40,27 @@ x-tagGroups:
 paths:
   /api/v1/zone:
     post:
-      summary: 트래픽 제어 Zone 단일 등록 / 수정
+      summary: 트래픽 제어 Zone 단일 등록
       tags:
         - V1.Zone Management
-      operationId: saveZone
+      operationId: createZone
       description: |
-        트래픽 제어 Zone 등록/생성<br>
-        - 요청 `zoneId` 정보 미포함인 경우, 신규 등록 처리<br>
-        - 요청 `zoneId` 정보 포함인 경우, 정보 수정 처리<br>
+        트래픽 제어 Zone 등록<br>
+        - 요청 `zoneId` 정보 미포함인 경우, `zoneId` 자체 생성하여 신규 등록 처리<br>
+        - 요청 `zoneId` 정보 포함인 경우, 요청 `zoneId` 기준 신규 등록 처리<br>
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/V1SaveZoneRequest'
+              $ref: '#/components/schemas/V1CreateZoneRequest'
       responses:
         '200':
           description: 'Ok'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/V1SaveZoneResponse'
+                $ref: '#/components/schemas/V1CreateZoneResponse'
         '400':
           description: |
             Failed
@@ -101,6 +101,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: 트래픽 제어 Zone 단일 수정
+      tags:
+        - V1.Zone Management
+      operationId: updateZone
+      description: |
+        트래픽 제어 Zone 수정
+      parameters:
+        - $ref: '#/components/parameters/path-zoneId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1UpdateZoneRequest'
+      responses:
+        '200':
+          description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1UpdateZoneResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     delete:
       summary: 트래픽 제어 Zone 단일 삭제
       tags:
@@ -502,8 +537,11 @@ components:
               $ref: '#/components/schemas/estimatedClearTime'
 
     ##### request/response schema start
-    V1SaveZoneRequest:
+    V1CreateZoneRequest:
       type: object
+      required:
+        - zoneAlias
+        - threshold
       properties:
         zoneId:
           $ref: '#/components/schemas/zoneId'
@@ -516,7 +554,7 @@ components:
         status:
           $ref: '#/components/schemas/zoneStatus'
 
-    V1SaveZoneResponse:
+    V1CreateZoneResponse:
       type: object
       required:
         - zoneId
@@ -551,6 +589,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1ZoneData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1UpdateZoneRequest:
+      type: object
+      properties:
+        zoneAlias:
+          $ref: '#/components/schemas/zoneAlias'
+        threshold:
+          $ref: '#/components/schemas/threshold'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
+        status:
+          $ref: '#/components/schemas/zoneStatus'
+
+    V1UpdateZoneResponse:
+      type: object
+      required:
+        - zoneId
+        - result
+      properties:
+        zoneId:
+          $ref: '#/components/schemas/zoneId'
         result:
           $ref: '#/components/schemas/ResultResponse'
 
