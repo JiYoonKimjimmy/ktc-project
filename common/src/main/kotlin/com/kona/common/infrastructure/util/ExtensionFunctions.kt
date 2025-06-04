@@ -22,3 +22,11 @@ fun getCorrelationId(): String {
 fun setCorrelationId(correlationId: String?) {
     MDC.put(CORRELATION_ID_LOG_FIELD, correlationId)
 }
+
+fun calProgressiveEstimatedWaitTime(numberInQueue: Long): Long {
+    return when (numberInQueue) {
+        in 20001..150000 -> DEFAULT_POLLING_PERIOD * 2
+        in 150001..Long.MAX_VALUE -> DEFAULT_POLLING_PERIOD * 3
+        else -> DEFAULT_POLLING_PERIOD
+    }
+}

@@ -5,6 +5,7 @@ import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTra
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.ZERO
+import com.kona.common.infrastructure.util.calProgressiveEstimatedWaitTime
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.domain.port.outbound.TrafficControlPort
@@ -83,7 +84,7 @@ class TrafficControlExecuteAdapter(
             val waitSlot = queuePos / allowedPer6Sec
             val nextSlotStart = nowMilli - (nowMilli % 6000) + (waitSlot * 6000) + 6000
             val waitTime = nextSlotStart - nowMilli
-            TrafficWaiting(0, queuePos + 1, waitTime, queueSize)
+            TrafficWaiting(0, queuePos + 1, waitTime, queueSize, calProgressiveEstimatedWaitTime(queuePos + 1))
         }
     }
 
