@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 @Service
 class TrafficExpireService(
-    private val trafficExpireExecutePort: TrafficExpireExecutePort,
+    private val trafficExpireScriptExecuteAdapter: TrafficExpireExecutePort,
     private val distributedLockManager: DistributedLockManager,
 ) : TrafficExpirePort {
     // logger
@@ -25,8 +25,8 @@ class TrafficExpireService(
              * 2. 분산락 획득 후, 현재 시간 - 1min 기준 트래픽 토큰 삭제 요청
              */
             val now = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm)
-             distributedLockManager.expireTrafficTokenScheduleLock(now) {
-                trafficExpireExecutePort.execute()
+            distributedLockManager.expireTrafficTokenScheduleLock(now) {
+                trafficExpireScriptExecuteAdapter.expireTraffic()
                     .also { logger.info("Expired Traffic Token count : $it") }
             }
         } catch (e: Exception) {

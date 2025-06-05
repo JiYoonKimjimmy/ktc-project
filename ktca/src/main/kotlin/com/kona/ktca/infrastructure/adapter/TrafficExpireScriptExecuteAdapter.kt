@@ -2,45 +2,32 @@ package com.kona.ktca.infrastructure.adapter
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
-import com.kona.common.infrastructure.util.toInstantEpochMilli
 import com.kona.ktca.domain.port.outbound.TrafficExpireExecutePort
-import com.kona.ktca.infrastructure.redis.TrafficExpireRedisScript
-import jakarta.annotation.PostConstruct
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class TrafficExpireScriptExecuteAdapter(
-    private val trafficExpireRedisScript: TrafficExpireRedisScript,
+    private val trafficExpireScript: RedisScript<List<*>>,
     private val redisExecuteAdapter: RedisExecuteAdapter,
 ) : TrafficExpireExecutePort {
 
-    private lateinit var script: RedisScript<List<*>>
+    override suspend fun expireTraffic(now: Instant): Long {
+        val script = trafficExpireScript
 
-    @PostConstruct
-    fun init() {
-        script = trafficExpireRedisScript.getScript()
-    }
-
-    override suspend fun execute(): Long {
         // 모든 zqueue key 목록 조회
-        return redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
-            // 각 zone 별 토큰 만료 처리
-            .sumOf { expireTraffic(it) }
-    }
+        val activeZoneIds = redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
+        val keys = activeZoneIds.flatMap {
+            val queueKey = QUEUE.getKey(it)
+            val tokenLastPollingTimeKey = TOKEN_LAST_POLLING_TIME.getKey(it)
+            listOf(queueKey, tokenLastPollingTimeKey)
+        }
+        val args = listOf(now.toEpochMilli().toString())
 
-    private suspend fun expireTraffic(zoneId: String): Long {
-        // zoneId 추출
-        val queueKey = QUEUE.getKey(zoneId)
-        val expirationTime = Instant.now().minusSeconds(180).toInstantEpochMilli()
-        val keys = listOf(queueKey)
-        val args = listOf(expirationTime)
+        val result = redisExecuteAdapter.execute(script, keys, args).first() as Long
 
-        // traffic-expire script 실행
-        val result = redisExecuteAdapter.execute(script, keys, args).first() as Long?
-
-        return result ?: 0
+        return result
     }
 
 }
