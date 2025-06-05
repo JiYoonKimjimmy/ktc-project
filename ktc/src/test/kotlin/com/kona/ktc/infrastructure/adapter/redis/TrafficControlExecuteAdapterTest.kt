@@ -34,7 +34,7 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
     }
 
     context("트래픽 제어 Zone 정책 '분당 1건 허용'") {
-        given("트래픽 '1 ~ 10' 까지 Zone 진입 요청하여") {
+        given("'token-1 ~ token-10' 까지 Zone 진입 요청하여") {
             val zoneId = "test-zone"
             val totalSize = 10
             val threshold = 1
@@ -50,16 +50,14 @@ class TrafficControlExecuteAdapterTest : BehaviorSpec({
 
             reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
 
-            `when`("1건 진입 허용 / 9건 진입 대기 처리 성공인 경우") {
-                val results = traffics.mapIndexed { index, traffic ->
-                    controlTraffic(traffic, nowMillis, index.toLong())
-                }
+            `when`("'token-1' 1건 진입 허용 성공인 경우") {
+                val results = traffics.mapIndexed { index, traffic -> controlTraffic(traffic, nowMillis, index.toLong()) }
 
-                then("트래픽 '1' 진입 허용 정상 확인한다") {
+                then("'token-1' 진입 허용 정상 확인한다") {
                     results.take(threshold).all { it.canEnter } shouldBe true
                 }
 
-                then("트래픽 '2 ~ 10' 진입 대기 상태 정상 확인한다") {
+                then("'token-2 ~ token-10' 진입 대기 상태 정상 확인한다") {
                     val result = results.drop(1)
                     result.all { !it.canEnter } shouldBe true
                     result.forEachIndexed { index, waiting ->

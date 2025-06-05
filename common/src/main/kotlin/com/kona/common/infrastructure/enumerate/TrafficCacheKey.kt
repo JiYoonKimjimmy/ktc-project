@@ -33,19 +33,22 @@ enum class TrafficCacheKey(
         note = "마지막 초당 Bucket 리필 시간 Key",
         key = "ktc:{%s}:second_bucket_refill_time"
     ),
+    SLOT_WINDOW(
+        note = "트래픽 진입 Slow Window Key",
+        key = "ktc:{%s}:slot:window"
+    ),
     ENTRY_COUNT(
         note = "트래픽 진입 Count Key",
         key = "ktc:{%s}:entry_count"
     ),
-    TOKEN_LAST_ENTRY_TIME(
-        note = "트래픽 Token 최근 요청 시간 Key",
-        key = "ktc:{%s}:token_last_entry_time"
+    TOKEN_LAST_POLLING_TIME(
+        note = "트래픽 Token 마지막 Polling 시간 Key",
+        key = "ktc:{%s}:token_last_polling_time"
     ),
     ACTIVATION_ZONES(
         note = "트래픽 제어 활성화 Zone 목록 Key",
         key = "ktc:activation:zones"
-    )
-    ;
+    );
 
     companion object {
 
@@ -55,10 +58,12 @@ enum class TrafficCacheKey(
 
         fun getTrafficControlKeys(zoneId: String): Map<TrafficCacheKey, String> {
             return mapOf(
-                QUEUE                       to QUEUE.getKey(zoneId),
-                QUEUE_STATUS                to QUEUE_STATUS.getKey(zoneId),
-                THRESHOLD                   to THRESHOLD.getKey(zoneId),
-                ENTRY_COUNT                 to ENTRY_COUNT.getKey(zoneId)
+                QUEUE                   to QUEUE.getKey(zoneId),
+                QUEUE_STATUS            to QUEUE_STATUS.getKey(zoneId),
+                THRESHOLD               to THRESHOLD.getKey(zoneId),
+                SLOT_WINDOW             to SLOT_WINDOW.getKey(zoneId),
+                ENTRY_COUNT             to ENTRY_COUNT.getKey(zoneId),
+                TOKEN_LAST_POLLING_TIME to TOKEN_LAST_POLLING_TIME.getKey(zoneId)
             )
         }
 

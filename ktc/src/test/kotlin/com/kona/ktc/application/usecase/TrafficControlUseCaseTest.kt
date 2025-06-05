@@ -31,7 +31,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
                 result1.canEnter shouldBe true
                 result1.number shouldBe 0
                 result1.estimatedTime shouldBe 0
-                result1.totalCount shouldBe 1
+                result1.totalCount shouldBe 0
             }
         }
 
