@@ -18,16 +18,15 @@ class TrafficExpireScriptExecuteAdapter(
 
         // 모든 zqueue key 목록 조회
         val activeZoneIds = redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
-        val keys = activeZoneIds.flatMap {
+
+        return activeZoneIds.sumOf {
             val queueKey = QUEUE.getKey(it)
             val tokenLastPollingTimeKey = TOKEN_LAST_POLLING_TIME.getKey(it)
-            listOf(queueKey, tokenLastPollingTimeKey)
+            val keys = listOf(queueKey, tokenLastPollingTimeKey)
+            val args = listOf(now.toEpochMilli().toString())
+
+            redisExecuteAdapter.execute(script, keys, args)[0] as Long
         }
-        val args = listOf(now.toEpochMilli().toString())
-
-        val result = redisExecuteAdapter.execute(script, keys, args).first() as Long
-
-        return result
     }
 
 }
