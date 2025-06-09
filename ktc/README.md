@@ -5,6 +5,8 @@
 - `1분` 단위 최대 허용치`(Threshold)`만큼 트래픽 제한하여 대용량 트래픽 제어
     - Threshold 예상 범위 : `70K` ~ `100K`
 - 실시간 or 실시간에 준하는 트래픽 진입 현황 정보 제공
+    - HTTP Long-Term Polling 방식
+    - HTTP SSEs or WebSockets 방식
 
 ---
 
@@ -12,83 +14,68 @@
 
 ### 트래픽 대기/진입 프로세스
 
-- 임계치 설정 기반 트래픽 대기 처리
-- 트래픽 대기 요청 시, 대기 순번 부여
-- 현재 임계치 설정 값 기준, 해당 순번 대기 예상 시간 계산
-- 트래픽 진입 요청 시, 진입 가능 여부 판단
+- 1분당 진입 허용 임계치(`threshold`) 설정 기반 트래픽 제어 처리
+  - 1분 트래픽은 6초마다 `ceil(threshold/10)` 만큼 트래픽 진입 처리
+- 트래픽 진입 대기 처리 시, 대기 순번 할당 & 대기 예상 시간 계산
+- 트래픽 대기 순번은 고유한 `token` 식별자 진입 시점 기준으로 대기 순번 할당
+- 트래픽 대기 상태 `token` 은 **반복 요청**을 통해 트래픽 진입 허용 확인
 
 > #### 예상 시나리오
 > 
-> 1. 초기 임계치 설정 : 2000
->     - 1 ~ 2000번: 즉시 입장 가능 (0분 대기)
->     - 2001 ~ 4000번: 1분 대기 후 입장
->     - 4001 ~ 6000번: 2분 대기 후 입장
-> 2. 임계치 변경 : 2000 > 1000 감소
->     - 6001 ~ 7000번: 3분 대기 후 입장
->     - 7001 ~ 8000번: 4분 대기 후 입장
->     - 8001 ~ 9000번: 5분 대기 후 입장
->     - 9001 ~ 10000번: 6분 대기 후 입장
-> 3. 임계치 변경 : 1000 > 500 감소
->     - 10001 ~ 10500번: 7분 대기 후 입장
->     - 10501 ~ 11000번: 8분 대기 후 입장
-> 4. 임계치 변경 : 500 > 1000 증가
->     - 11001 ~ 12000번: 9분 대기 후 입장
+> 1. 분당 `threshold`: 2000 (6초당 200 허용)
+>    - 1 ~ 2000번: 즉시 입장 가능 (0분 대기)
+>    - 2001 ~ 4000번: 1분 대기 후 입장 
+>    - 4001 ~ 6000번: 2분 대기 후 입장
+> 2. `threshold` 변경: 2000 > 1000 감소 (6초당 100 허용)
+>    - 6001 ~ 7000번: 3분 대기 후 입장
+>    - 7001 ~ 8000번: 4분 대기 후 입장
+>    - 8001 ~ 9000번: 5분 대기 후 입장
+>    - 9001 ~ 10000번: 6분 대기 후 입장
+> 3. `threshold` 변경 : 1000 > 500 감소 (6초당 50 허용)
+>    - 10001 ~ 10500번: 7분 대기 후 입장
+>    - 10501 ~ 11000번: 8분 대기 후 입장
+> 4. `threshold` 변경 : 500 > 1000 증가 (6초당 100 허용)
+>    - 11001 ~ 12000번: 9분 대기 후 입장
 
 ---
 
 ### 트래픽 제어 프로세스
 
-1. **트래픽 요청 토큰 Queue 저장**
-   - 트래픽 대기 요청 토큰 `score`(현재 시간 밀리초) 기준 Queue(`ZSet`) 추가
-   - 이미 동일 토큰 Queue 있는 경우, 추가하지 않음
-2. **토큰-버킷 리필 시간 확인 및 리필 처리**
-   - `현재 시간 - bucketRefillTime > 60000ms(1분)` 인 경우, `queueCursor` & `bucket` & `bucketRefillTime` 업데이트
-     - `queueCursor`: `threshold` 만큼 증가시켜 Cursor 이동
-     - `bucket`: `threshold` 값으로 토큰-버킷 리필
-     - `bucketRefillTime`: 현재 시간으로 업데이트
+1. `Zone` 상태 확인
+   - `Zone` 상태 `BLOCKED` 인 경우, 즉시 `result: -1` 반환하여 종료
+2. `threshold` 설정 조회
+3. 6초 단위 Slot 계산
+   - 현재 시간(`nowMillis`) 기준 분(`minute`) 과 6초 단위 Slot(`slot`) 정보 계산
+   - `minute = floor(nowMillis / 60000)`
+   - `slot = floor((nowMillis % 60000) / 1000) / 6`
+4. `token` 대기열 `queue` 등록
+5. 현재 `slot` 진입 Count 조회
+6. 진입 허용 조건 확인
+   - 현재 `slot` 진입 Count < `slot` 허용 트래픽 수(`threshold / 10`)
+   - 대기 순번(`rank`) < `slot` 허용 트래픽 수(`threshold / 10`)
+7. 진입 허용 여부별 정보 반환 처리
+   - 진입 허용인 경우
+     - 현재 `slot` 진입 Count 증가
+     - 대기열 `queue` & 토큰 마지막 Polling 시간 정보에서 `token` 제거
+     - 현재 `slot` 진입 Count 캐시 1분 만료 설정
+     - 결과: `{ 1, 0, 0, totalCount }` 반환 처리
+   - 진입 대기인 경우
+     - 토큰 마지막 Polling 시간 정보 업데이트
+     - 예상 대기 시간(`waitTime`) 계산
+     - 결과: `{ 0, rank+1, waitTime, totalCount }` 반환 처리
 
-3. **트래픽 진입 가능 여부 판단**
-   - 현재 토큰의 rank(Queue 내 순번), queueCursor, bucketSize를 조회
-   - 진입 가능 조건:
-     - bucketSize > 0
-     - queueCursor <= rank < queueCursor + threshold
-
-   - **진입 가능한 경우:**
-     - bucketSize를 1 감소(decrement)
-     - 즉시 진입(TrafficWaiting.entry()) 반환
-
-   - **진입 불가(대기)한 경우:**
-     - 전체 Queue 크기(queueSize) 조회
-     - 대기 순번(number), 예상 대기 시간(estimatedTime), 전체 대기 인원(totalCount) 계산
-       - number = rank - queueCursor - threshold - bucketSize + 1
-       - estimatedTime = ceil(number / threshold) * 1분
-       - totalCount = queueSize - queueCursor - threshold - bucketSize
-     - 대기 정보(TrafficWaiting.waiting) 반환
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-    participant Redis
-
-    Client->>Server: 트래픽 대기/진입 요청 (token, now)
-    Server->>Redis: ZSet에 token 존재 여부 확인
-    alt 토큰 없음
-        Server->>Redis: ZSet에 token 추가 (score)
-    end
-    Server->>Redis: bucketRefillTime, threshold, bucket, queueCursor 조회
-    alt now - bucketRefillTime > 1분 경과
-        Server->>Redis: queueCursor(+=threshold), bucket(=threshold), bucketRefillTime(=now) 갱신
-    end
-    Server->>Redis: token's rank, bucketSize 조회
-    canEnter = (bucketSize > 0) && (rank in queueCursor until (queueCursor + threshold))
-    alt canEnter: true(진입 가능)
-        Server->>Redis: bucket 차감
-        Server-->>Client: 진입 성공 응답 (canEnter=true)
-    else canEnter: false(진입 불가)
-        Server->>Redis: queueSize 조회
-        Server-->>Client: 대기 정보 응답 (canEnter=false, number, estimatedTime, totalCount)
-    end
+```text
+-- thrshold: 10 / tokens: 10
+[0ms] token1 요청 → {1, 0, 0, 0}  // 진입 허용
+[100ms] token2 요청 → {0, 1, 6000, 1}  // 대기, 2번째 순번, 6초 대기
+[200ms] token3 요청 → {0, 2, 12000, 2} // 대기, 3번째 순번, 12초 대기
+[300ms] token4 요청 → {0, 3, 18000, 3} // 대기, 4번째 순번, 18초 대기
+[400ms] token5 요청 → {0, 4, 24000, 4} // 대기, 5번째 순번, 24초 대기
+[500ms] token6 요청 → {0, 5, 30000, 5} // 대기, 6번째 순번, 30초 대기
+[600ms] token7 요청 → {0, 6, 36000, 6} // 대기, 7번째 순번, 36초 대기
+[700ms] token8 요청 → {0, 7, 42000, 7} // 대기, 8번째 순번, 42초 대기
+[800ms] token9 요청 → {0, 8, 48000, 8} // 대기, 9번째 순번, 48초 대기
+[900ms] token10 요청 → {0, 9, 54000, 9} // 대기, 10번째 순번, 54초 대기
 ```
 
 ---

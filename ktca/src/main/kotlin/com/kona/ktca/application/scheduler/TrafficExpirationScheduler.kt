@@ -3,10 +3,12 @@ package com.kona.ktca.application.scheduler
 import com.kona.ktca.domain.port.inbound.TrafficExpirePort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
+@Profile("!test")
 @Component
 class TrafficExpirationScheduler(
     private val trafficExpirePort: TrafficExpirePort,
@@ -18,7 +20,7 @@ class TrafficExpirationScheduler(
      * - 매 0초마다 스케쥴링 실행
      */
     @Async("trafficExpirationTaskExecutor")
-    @Scheduled(cron = "* * * * * *")
+    @Scheduled(cron = "0 * * * * *")
     fun handleExpireTrafficScheduler() {
         defaultCoroutineScope.launch {
             trafficExpirePort.expireTraffic()

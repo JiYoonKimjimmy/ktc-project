@@ -9,6 +9,7 @@ import com.kona.ktc.infrastructure.config.KtcApplicationConfig
 import com.kona.ktc.testsupport.FakeApplicationEventPublisher
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.longs.shouldBeLessThan
+import io.kotest.matchers.longs.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import java.time.Instant
 
@@ -39,7 +40,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result2.canEnter shouldBe false
                 result2.number shouldBe 1
-                result2.estimatedTime shouldBeLessThan 6000
+                result2.estimatedTime shouldBeLessThanOrEqual 6000
                 result2.totalCount shouldBe 1
             }
         }
@@ -48,7 +49,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result3.canEnter shouldBe false
                 result3.number shouldBe 2
-                result3.estimatedTime shouldBeLessThan 12000
+                result3.estimatedTime shouldBeLessThanOrEqual 12000
                 result3.totalCount shouldBe 2
             }
         }

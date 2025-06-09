@@ -29,18 +29,42 @@ class TrafficWaitingTest : BehaviorSpec({
             }
         }
 
-        `when`("custom pollingPeriod로 생성하면") {
-            val customPollingPeriod = 10L
+        `when`("number 정보가 20_000 이하인 경우") {
             val trafficWaiting = TrafficWaiting(
                 result = 0,
-                number = number,
+                number = 20_000,
                 estimatedTime = estimatedTime,
-                totalCount = totalCount,
-                pollingPeriod = customPollingPeriod
+                totalCount = totalCount
             )
 
-            then("custom pollingPeriod가 설정된다") {
-                trafficWaiting.pollingPeriod shouldBe customPollingPeriod
+            then("pollingPeriod: 3_000 가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe 3_000
+            }
+        }
+
+        `when`("number 정보가 20_001 ~ 150_000 인 경우") {
+            val trafficWaiting = TrafficWaiting(
+                result = 0,
+                number = 20_001,
+                estimatedTime = estimatedTime,
+                totalCount = totalCount
+            )
+
+            then("pollingPeriod: 6_000 가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe 6_000
+            }
+        }
+
+        `when`("number 정보가 150_001 이상인 경우") {
+            val trafficWaiting = TrafficWaiting(
+                result = 0,
+                number = 150_001,
+                estimatedTime = estimatedTime,
+                totalCount = totalCount
+            )
+
+            then("pollingPeriod: 6_000 가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe 9_000
             }
         }
 
