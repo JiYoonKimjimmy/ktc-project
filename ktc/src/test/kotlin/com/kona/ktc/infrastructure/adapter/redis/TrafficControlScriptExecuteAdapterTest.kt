@@ -4,6 +4,9 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
+import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
+import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
 import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
@@ -13,7 +16,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.longs.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.getAndAwait
-import org.springframework.data.redis.core.setAndAwait
+import org.springframework.data.redis.core.putAllAndAwait
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -38,6 +41,15 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
         reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))?.toInt() ?: 0
     }
 
+    val generateQueueStatus: suspend (String) -> Unit = { zoneId ->
+        val key = QUEUE_STATUS.getKey(zoneId)
+        val map = mapOf(
+            QUEUE_STATUS_KEY to TrafficZoneStatus.ACTIVE.name,
+            QUEUE_ACTIVATION_TIME_KEY to Instant.now().minusMillis(ONE_MINUTE_MILLIS).toEpochMilli().toString()
+        )
+        reactiveStringRedisTemplate.opsForHash<String, String>().putAllAndAwait(key, map)
+    }
+
     context("트래픽 제어 Zone 정책 '분당 1건 허용'") {
         given("트래픽 '1 ~ 10' 까지 Zone 진입 요청하여") {
             val zoneId = "test-zone"
@@ -53,7 +65,8 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
                 logging(traffic, sut.controlTraffic(traffic, now.plusMillis(extra)))
             }
 
-            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+            // 트래픽 zone status 정보 생성
+            generateQueueStatus(zoneId)
 
             `when`("'token-1' 1건 진입 허용 성공인 경우") {
                 val results = traffics.mapIndexed { index, traffic -> controlTraffic(traffic, nowMillis, index.toLong()) }
@@ -129,7 +142,8 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
                 sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
             }
 
-            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+            // 트래픽 zone status 정보 생성
+            generateQueueStatus(zoneId)
 
             var results = emptyList<TrafficWaiting>()
             var min = 0
@@ -194,7 +208,8 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
                 sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
             }
 
-            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+            // 트래픽 zone status 정보 생성
+            generateQueueStatus(zoneId)
 
             var results = emptyList<TrafficWaiting>()
             var min = 0
@@ -258,7 +273,8 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
                 sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
             }
 
-            reactiveStringRedisTemplate.opsForValue().setAndAwait(QUEUE_STATUS.getKey(zoneId), TrafficZoneStatus.ACTIVE.name)
+            // 트래픽 zone status 정보 생성
+            generateQueueStatus(zoneId)
 
             var results = traffics.mapIndexed { index, traffic ->
                 logging(traffic, controlTraffic(index, traffic, nowMillis))

@@ -7,9 +7,9 @@ import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.*
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
-import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ACTIVATION_TIME_KEY
+import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ID_PREFIX
-import com.kona.common.infrastructure.util.TRAFFIC_ZONE_STATUS_KEY
+import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
@@ -61,12 +61,12 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             }
 
             then("트래픽 Zone 'status: ACTIVE' Cache 저장 결과 정상 확인한다") {
-                val status = redisExecuteAdapter.getHashValue(QUEUE_STATUS.getKey(result.zoneId), TRAFFIC_ZONE_STATUS_KEY)
+                val status = redisExecuteAdapter.getHashValue(QUEUE_STATUS.getKey(result.zoneId), QUEUE_STATUS_KEY)
                 status shouldBe ACTIVE.name
             }
 
             then("트래픽 Zone 'activationTime' Cache 저장 결과 정상 확인한다") {
-                val status = redisExecuteAdapter.getHashValue(QUEUE_STATUS.getKey(result.zoneId), TRAFFIC_ZONE_ACTIVATION_TIME_KEY)
+                val status = redisExecuteAdapter.getHashValue(QUEUE_STATUS.getKey(result.zoneId), QUEUE_ACTIVATION_TIME_KEY)
                 status shouldBe newTrafficZone.activationTime?.toInstant(ZoneOffset.UTC)?.toEpochMilli()?.toString()
             }
 
@@ -146,7 +146,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             }
 
             then("트래픽 Zone 'status: BLOCKED' Cache 변경 결과 정상 확인한다") {
-                val status = redisExecuteAdapter.getHashValue(queueStatusKey, TRAFFIC_ZONE_STATUS_KEY)
+                val status = redisExecuteAdapter.getHashValue(queueStatusKey, QUEUE_STATUS_KEY)
                 status shouldBe BLOCKED.name
             }
 
@@ -173,7 +173,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             }
 
             then("트래픽 Zone 'activationTime' Cache 변경 결과 정상 확인한다") {
-                val activationTime = redisExecuteAdapter.getHashValue(queueStatusKey, TRAFFIC_ZONE_ACTIVATION_TIME_KEY)
+                val activationTime = redisExecuteAdapter.getHashValue(queueStatusKey, QUEUE_ACTIVATION_TIME_KEY)
                 activationTime shouldBe updateActivationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
             }
         }
@@ -193,7 +193,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             }
 
             then("트래픽 Zone 'status: DELETED' Cache 변경 결과 정상 확인한다") {
-                val status = redisExecuteAdapter.getHashValue(queueStatusKey, TRAFFIC_ZONE_STATUS_KEY)
+                val status = redisExecuteAdapter.getHashValue(queueStatusKey, QUEUE_STATUS_KEY)
                 status shouldBe "DELETED"
             }
 

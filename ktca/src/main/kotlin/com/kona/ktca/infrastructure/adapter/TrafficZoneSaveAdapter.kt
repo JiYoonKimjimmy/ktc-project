@@ -3,6 +3,8 @@ package com.kona.ktca.infrastructure.adapter
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.*
+import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
+import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.port.outbound.TrafficZoneSavePort
 import com.kona.ktca.infrastructure.repository.TrafficZoneRepository
@@ -34,8 +36,8 @@ class TrafficZoneSaveAdapter(
         val zoneId = trafficZone.zoneId
         val threshold = trafficZone.threshold.toString()
         val zoneStatus = mapOf(
-            "status" to trafficZone.status.name,
-            "activationTime" to trafficZone.activationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
+            QUEUE_STATUS_KEY to trafficZone.status.name,
+            QUEUE_ACTIVATION_TIME_KEY to trafficZone.activationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
         )
 
         redisExecuteAdapter.setValue(THRESHOLD.getKey(zoneId), threshold)

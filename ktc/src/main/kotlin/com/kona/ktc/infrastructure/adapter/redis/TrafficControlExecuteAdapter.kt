@@ -3,9 +3,11 @@ package com.kona.ktc.infrastructure.adapter.redis
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
 import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
 import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
+import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
 import com.kona.common.infrastructure.util.ZERO
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
@@ -49,7 +51,15 @@ class TrafficControlExecuteAdapter(
         val entryCountKey           = trafficControlKeys[ENTRY_COUNT]!!
         val tokenLastPollingTimeKey = trafficControlKeys[TOKEN_LAST_POLLING_TIME]!!
 
-        if (reactiveStringRedisTemplate.getValue(queueStatusKey) == TrafficZoneStatus.BLOCKED.name) {
+        val queueStatus = reactiveStringRedisTemplate.getHashValue(queueStatusKey, QUEUE_STATUS_KEY)
+        val activationTime = reactiveStringRedisTemplate.getHashValue(queueStatusKey, QUEUE_ACTIVATION_TIME_KEY)?.toLong()
+
+        if (queueStatus == null || (activationTime == null || nowMilli < activationTime)) {
+            // queueStatus == null 이거나 activationTime 이 현재 시간보다 큰 경우, 진입 허용 처리
+            return TrafficWaiting(1, 0, 0, 0)
+        }
+
+        if (queueStatus == TrafficZoneStatus.BLOCKED.name) {
             return TrafficWaiting(-1, 0, 0, 0)
         }
 
@@ -126,6 +136,10 @@ class TrafficControlExecuteAdapter(
 
     private suspend fun ReactiveStringRedisTemplate.sizeZSet(key: String): Long {
         return opsForZSet().sizeAndAwait(key)
+    }
+
+    private suspend fun ReactiveStringRedisTemplate.getHashValue(key: String, hashKey: String): String? {
+        return opsForHash<String, String>().getAndAwait(key, hashKey)
     }
 
 }

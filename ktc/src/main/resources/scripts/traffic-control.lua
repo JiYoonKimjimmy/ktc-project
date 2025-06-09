@@ -13,8 +13,15 @@ local ONE_MINUTES = 60000
 local ONE_SECONDS = 1000
 local SIX_SECONDS = 6 * ONE_SECONDS
 
-local queueStatus = redis.call('GET', queueStatusKey) or "ACTIVE"
-if queueStatus == 'BLOCKED' then
+local queueStatus = redis.call('HMGET', queueStatusKey, 'status', 'activationTime')
+local status = queueStatus[1]
+local activationTime = tonumber(queueStatus[2] or nowMilli)
+
+if status == nil or (activationTime == nil or nowMilli < activationTime) then
+    return { 1, 0, 0, 0 }
+end
+
+if status == 'BLOCKED' then
     return { -1, 0, 0, 0 }
 end
 
