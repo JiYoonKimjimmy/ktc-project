@@ -7,6 +7,7 @@ import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.port.inbound.TrafficZoneCommandPort
+import com.kona.ktca.domain.port.outbound.TrafficZoneCachingPort
 import com.kona.ktca.domain.port.outbound.TrafficZoneFindPort
 import com.kona.ktca.domain.port.outbound.TrafficZoneSavePort
 import org.springframework.stereotype.Service
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Service
 @Service
 class TrafficZoneCommandService(
     private val trafficZoneSavePort: TrafficZoneSavePort,
-    private val trafficZoneFindPort: TrafficZoneFindPort
+    private val trafficZoneFindPort: TrafficZoneFindPort,
+    private val trafficZoneCachingPort: TrafficZoneCachingPort
 ) : TrafficZoneCommandPort {
 
     override suspend fun create(dto: TrafficZoneDTO): TrafficZone {
@@ -33,6 +35,7 @@ class TrafficZoneCommandService(
         trafficZoneFindPort.findTrafficZone(zoneId)
             ?.delete()
             ?.let { trafficZoneSavePort.save(it) }
+            ?.let { trafficZoneCachingPort.clear(listOf(it.zoneId)) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 

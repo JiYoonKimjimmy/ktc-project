@@ -10,6 +10,7 @@ import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
+import java.time.ZoneOffset
 
 @Component
 class TrafficZoneSaveAdapter(
@@ -31,9 +32,14 @@ class TrafficZoneSaveAdapter(
 
     private suspend fun saveCache(trafficZone: TrafficZone) {
         val zoneId = trafficZone.zoneId
+        val threshold = trafficZone.threshold.toString()
+        val zoneStatus = mapOf(
+            "status" to trafficZone.status.name,
+            "activationTime" to trafficZone.activationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
+        )
 
-        redisExecuteAdapter.setValue(THRESHOLD.getKey(zoneId), trafficZone.threshold.toString())
-        redisExecuteAdapter.setValue(QUEUE_STATUS.getKey(zoneId), trafficZone.status.name)
+        redisExecuteAdapter.setValue(THRESHOLD.getKey(zoneId), threshold)
+        redisExecuteAdapter.pushHashMap(QUEUE_STATUS.getKey(zoneId), zoneStatus)
 
         when (trafficZone.status) {
             ACTIVE -> redisExecuteAdapter.addValueForSet(ACTIVATION_ZONES.key, zoneId)

@@ -12,6 +12,8 @@ const val ONE_SECONDS_MILLIS = 1000L
 const val SIX_SECONDS_MILLIS = 6000L
 
 const val TRAFFIC_ZONE_ID_PREFIX = "KZ"
+const val TRAFFIC_ZONE_STATUS_KEY = "status"
+const val TRAFFIC_ZONE_ACTIVATION_TIME_KEY = "activationTime"
 
 const val CORRELATION_ID_HEADER_FIELD = "X-KM-Correlation-Id"
 const val CORRELATION_ID_LOG_FIELD = "correlationId"

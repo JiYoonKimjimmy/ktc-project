@@ -24,4 +24,8 @@ interface RedisExecuteAdapter {
 
     suspend fun deleteAll(keys: List<String>): Long
 
+    suspend fun pushHashMap(key: String, args: Map<String, String>): Boolean
+
+    suspend fun getHashValue(key: String, hashKey: String): String?
+
 }

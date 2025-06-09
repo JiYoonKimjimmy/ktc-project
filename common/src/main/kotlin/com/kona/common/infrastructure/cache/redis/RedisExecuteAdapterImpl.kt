@@ -56,4 +56,12 @@ class RedisExecuteAdapterImpl(
         reactiveStringRedisTemplate.deleteAndAwait(*keys.toTypedArray())
     }
 
+    override suspend fun pushHashMap(key: String, args: Map<String, String>): Boolean = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForHash<String, String>().putAllAndAwait(key, args)
+    }
+
+    override suspend fun getHashValue(key: String, hashKey: String): String? = withContext(Dispatchers.IO) {
+        reactiveStringRedisTemplate.opsForHash<String, String>().getAndAwait(key, hashKey)
+    }
+
 }
