@@ -1,5 +1,6 @@
 package com.kona.ktca.domain.service
 
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
@@ -21,6 +22,10 @@ class TrafficZoneCommandService(
     }
 
     override suspend fun update(zone: TrafficZone, dto: TrafficZoneDTO): TrafficZone {
+        if (zone.status == TrafficZoneStatus.DELETED) {
+            // 이미 zone 상태 'DELETED' 인 경우, 수정 불가 처리
+            throw InternalServiceException(ErrorCode.DELETED_TRAFFIC_ZONE_CANNOT_BE_CHANGED)
+        }
         return zone.update(dto).let { trafficZoneSavePort.save(it) }
     }
 

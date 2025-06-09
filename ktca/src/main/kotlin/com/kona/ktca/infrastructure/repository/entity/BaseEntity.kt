@@ -17,7 +17,6 @@ abstract class BaseEntity {
     var created: LocalDateTime? = null
 
     @LastModifiedDate
-    @Column(insertable = false)
     var updated: LocalDateTime? = null
 
 } 

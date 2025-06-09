@@ -1,10 +1,13 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneJpaRepository
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,6 +21,8 @@ class TrafficZoneRepositoryImplTest(
 
     val trafficZoneRepository = TrafficZoneRepositoryImpl(trafficZoneJpaRepository)
 
+    lateinit var saved: TrafficZoneEntity
+
     beforeSpec {
         val entity = TrafficZoneEntity(
             id = "test-zone-id",
@@ -26,7 +31,7 @@ class TrafficZoneRepositoryImplTest(
             activationTime = LocalDateTime.now(),
             status = TrafficZoneStatus.ACTIVE,
         )
-        trafficZoneRepository.save(entity)
+        saved = trafficZoneRepository.save(entity)
     }
 
     "TrafficZoneEntity DB 저장 처리 결과 정상 확인한다" {
@@ -38,12 +43,51 @@ class TrafficZoneRepositoryImplTest(
             activationTime = LocalDateTime.now(),
             status = TrafficZoneStatus.ACTIVE,
         )
+        val expectedDate = LocalDateTime.now()
 
         // when
         val result = trafficZoneRepository.save(entity)
 
         // then
         result shouldNotBe null
+        result.created?.shouldBeGreaterThan(expectedDate)
+        result.updated?.shouldBeGreaterThan(expectedDate)
+    }
+
+    "TrafficZoneEntity DB 변경 결과 정상 확인한다" {
+        // given
+        val entity = TrafficZoneEntity(
+            id = saved.id,
+            alias = "test-zone-updated",
+            threshold = saved.threshold,
+            activationTime = saved.activationTime,
+            status = saved.status,
+        )
+
+        // when
+        val result = trafficZoneRepository.save(entity)
+
+        // then
+        result shouldNotBe null
+        result.updated!!.shouldBeGreaterThan(saved.updated!!)
+    }
+
+    "TrafficZoneEntity 'id: test-zone-id' 기준 Page DB 조회 결과 정상 확인한다" {
+        // given
+        val where = TrafficZoneDTO(zoneId = saved.id).toPredicatable()
+        val pageable = PageRequest.of(0,1)
+
+        // when
+        val result = trafficZoneRepository.findPage(where, pageable)
+
+        // then
+        result.numberOfElements shouldBe 1
+
+        val content = result.content[0]
+        content!! shouldNotBe null
+        content.id shouldBe saved.id
+        content.created?.convertPatternOf() shouldBe saved.created?.convertPatternOf()
+        content.updated!!.convertPatternOf() shouldBeGreaterThanOrEqualTo saved.updated!!.convertPatternOf()
     }
 
     "TrafficZoneEntity 'status: ACTIVE' 기준 Page DB 조회 결과 정상 확인한다" {

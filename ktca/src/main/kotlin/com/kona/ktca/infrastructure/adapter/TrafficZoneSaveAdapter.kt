@@ -23,8 +23,10 @@ class TrafficZoneSaveAdapter(
          * 1. 트래픽 Zone 정보 Cache 저장
          * 2. 트래픽 Zone 정보 DB 저장
          */
-        saveCache(trafficZone)
-        return saveEntity(trafficZone)
+        return with(trafficZone) {
+            saveCache(trafficZone = this)
+            saveEntity(trafficZone = this)
+        }
     }
 
     private suspend fun saveCache(trafficZone: TrafficZone) {

@@ -189,11 +189,11 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
             status = ACTIVE
         )
 
-        `when`("트래픽 Zone 'status' 정보 'DELETED > ACTIVE' 변경 요청인 경우") {
+        `when`("이미 'DELETED' 상태 변경되 트래픽 Zone 'status' 정보 변경 요청인 경우") {
             val result = shouldThrow<InternalServiceException> { trafficZoneCommandService.update(deleteTrafficZone, errorUpdateStatusTrafficZone) }
 
             then("'DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED' 예외 발생 정상 확인한다") {
-                result.errorCode shouldBe ErrorCode.DELETED_TRAFFIC_ZONE_STATUS_NOT_CHANGED
+                result.errorCode shouldBe ErrorCode.DELETED_TRAFFIC_ZONE_CANNOT_BE_CHANGED
             }
         }
     }

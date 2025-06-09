@@ -440,6 +440,19 @@ components:
         | DELETED | Zone 삭제 상태 |
       example: "ACTIVE"
 
+    updateZoneStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - BLOCKED
+      description: |
+        Zone 상태
+        | 구분 | 내용 |
+        |:----:|----|
+        | ACTIVE | Zone 트래픽 제어 활성화 상태 |
+        | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
+      example: "ACTIVE"
+
     threshold:
       type: integer
       description: Zone 임계값
@@ -504,10 +517,10 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
-        activationTime:
-          $ref: '#/components/schemas/activationTime'
         status:
           $ref: '#/components/schemas/zoneStatus'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
         created:
           $ref: '#/components/schemas/created'
         updated:
@@ -522,10 +535,10 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
-        activationTime:
-          $ref: '#/components/schemas/activationTime'
         status:
           $ref: '#/components/schemas/zoneStatus'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
         waiting:
           type: object
           properties:
@@ -549,10 +562,10 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
-        activationTime:
-          $ref: '#/components/schemas/activationTime'
         status:
           $ref: '#/components/schemas/zoneStatus'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
 
     V1CreateZoneResponse:
       type: object
@@ -599,10 +612,10 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
+        status:
+          $ref: '#/components/schemas/updateZoneStatus'
         activationTime:
           $ref: '#/components/schemas/activationTime'
-        status:
-          $ref: '#/components/schemas/zoneStatus'
 
     V1UpdateZoneResponse:
       type: object

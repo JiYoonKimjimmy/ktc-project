@@ -11,25 +11,13 @@ data class TrafficZoneDTO(
     val zoneId: String? = null,
     val zoneAlias: String? = null,
     val threshold: Long? = null,
-    val activationTime: LocalDateTime? = null,
     val status: TrafficZoneStatus? = null,
+    val activationTime: LocalDateTime? = null,
 ) {
-    val isCreate: Boolean by lazy { zoneId == null }
-
-    fun toDomain(): TrafficZone {
-        return TrafficZone(
-            zoneAlias = zoneAlias!!,
-            threshold = threshold!!,
-            activationTime = activationTime!!,
-            status = status!!
-        )
-    }
-
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
             zoneId?.let { whereEqualTo(it, TrafficZoneEntity::id) },
             status?.let { whereEqualTo(it, TrafficZoneEntity::status) }
         )
     }
-
 }

@@ -14,12 +14,11 @@ class V1ZoneModelMapper {
             zoneId = trafficZone.zoneId,
             zoneAlias = trafficZone.zoneAlias,
             threshold = trafficZone.threshold.toInt(),
+            status = trafficZone.status.name.let(ZoneStatus::valueOf),
             activationTime = trafficZone.activationTime.convertPatternOf(),
-            status = ZoneStatus.valueOf(trafficZone.status.name),
-            created = trafficZone.activationTime.convertPatternOf(),
-            updated = trafficZone.activationTime.convertPatternOf(),
+            created = trafficZone.created?.convertPatternOf(),
+            updated = trafficZone.updated?.convertPatternOf(),
         )
     }
-
 
 }
