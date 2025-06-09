@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface TrafficZoneJpaRepository : JpaRepository<TrafficZoneEntity, String>, KotlinJdslJpqlExecutor {
 
+    fun findByIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZoneEntity?
+
     fun findAllByStatus(status: TrafficZoneStatus): List<TrafficZoneEntity>
 
 }

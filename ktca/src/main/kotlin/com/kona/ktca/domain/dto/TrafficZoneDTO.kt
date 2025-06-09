@@ -1,7 +1,6 @@
 package com.kona.ktca.domain.dto
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
-import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.infrastructure.jdsl.JpqlPredicateGenerator.whereEqualTo
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable

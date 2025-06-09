@@ -1,8 +1,7 @@
 package com.kona.ktca.infrastructure.adapter
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
-import com.kona.common.infrastructure.error.ErrorCode
-import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.DELETED
 import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
@@ -20,6 +19,10 @@ class TrafficZoneFindAdapter(
         return trafficZoneRepository.findByZoneId(zoneId)
             .takeIf { it != null }
             ?.toDomain()
+    }
+
+    override suspend fun findActiveTrafficZone(zoneId: String): TrafficZone? {
+        return trafficZoneRepository.findByZoneIdAndStatusNot(zoneId, DELETED)?.toDomain()
     }
 
     override suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone> {

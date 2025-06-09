@@ -23,6 +23,10 @@ class TrafficZoneRepositoryImpl(
         trafficZoneJpaRepository.findById(zoneId).orElse(null)
     }
 
+    override suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZoneEntity? = withContext(Dispatchers.IO) {
+        trafficZoneJpaRepository.findByIdAndStatusNot(zoneId, status)
+    }
+
     override suspend fun findAllByStatus(status: TrafficZoneStatus): List<TrafficZoneEntity> = withContext(Dispatchers.IO) {
         trafficZoneJpaRepository.findAllByStatus(status)
     }

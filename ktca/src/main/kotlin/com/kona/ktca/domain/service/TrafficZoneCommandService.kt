@@ -37,7 +37,7 @@ class TrafficZoneCommandService(
     }
 
     override suspend fun validateTrafficZoneId(zoneId: String) {
-        val zone = trafficZoneFindPort.findTrafficZone(zoneId)
+        val zone = trafficZoneFindPort.findActiveTrafficZone(zoneId)
         if (zone != null) {
             // 이미 동일한 `zoneId` 기준 Zone 정보 있는 경우, 예외 처리
             throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_ALREADY_EXISTS)

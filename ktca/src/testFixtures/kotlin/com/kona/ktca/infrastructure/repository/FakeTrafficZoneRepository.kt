@@ -19,6 +19,12 @@ class FakeTrafficZoneRepository : TrafficZoneRepository {
         return entities[zoneId]
     }
 
+    override suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZoneEntity? {
+        return entities.values.find {
+            it.id == zoneId && it.status != status
+        }
+    }
+
     override suspend fun findAllByStatus(status: TrafficZoneStatus): List<TrafficZoneEntity> {
         return entities.values.filter { it.status == status }
     }

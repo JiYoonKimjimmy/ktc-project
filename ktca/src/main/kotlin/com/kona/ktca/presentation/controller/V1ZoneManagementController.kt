@@ -60,8 +60,8 @@ class V1ZoneManagementController(
         val dto = TrafficZoneDTO(
             zoneAlias = v1UpdateZoneRequest.zoneAlias,
             threshold = v1UpdateZoneRequest.threshold?.toLong(),
-            activationTime = v1UpdateZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
-            status = v1UpdateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
+            activationTime = v1UpdateZoneRequest.activationTime?.convertPatternOf(),
+            status = v1UpdateZoneRequest.status?.name?.let(TrafficZoneStatus::valueOf)
         )
         val result = trafficZoneManagementUseCase.updateTrafficZone(zoneId, dto)
         ResponseEntity(V1UpdateZoneResponse(zoneId = result.zoneId),  HttpStatus.OK)

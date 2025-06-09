@@ -12,6 +12,8 @@ interface TrafficZoneRepository {
 
     suspend fun findByZoneId(zoneId: String): TrafficZoneEntity?
 
+    suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZoneEntity?
+
     suspend fun findAllByStatus(status: TrafficZoneStatus): List<TrafficZoneEntity>
 
     suspend fun findPage(where: Array<Predicatable?>, pageable: Pageable): Page<TrafficZoneEntity?>

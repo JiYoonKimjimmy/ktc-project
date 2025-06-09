@@ -9,6 +9,8 @@ interface TrafficZoneFindPort {
 
     suspend fun findTrafficZone(zoneId: String): TrafficZone?
 
+    suspend fun findActiveTrafficZone(zoneId: String): TrafficZone?
+
     suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone>
 
     suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone>
