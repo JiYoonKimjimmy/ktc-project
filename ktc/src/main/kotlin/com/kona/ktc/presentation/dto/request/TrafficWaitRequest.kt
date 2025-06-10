@@ -1,6 +1,6 @@
 package com.kona.ktc.presentation.dto.request
 
-data class TrafficWaitRequest(
+data class  TrafficWaitRequest(
     val zoneId: String,
     val token: String?,
     val clientIP: String?,

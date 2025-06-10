@@ -6,6 +6,7 @@ import com.kona.common.infrastructure.error.FeatureCode
 import com.kona.common.infrastructure.error.exception.BaseException
 import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.common.infrastructure.error.exception.RestClientServiceException
+import com.kona.common.infrastructure.error.exception.ServiceUnavailableException
 import com.kona.common.infrastructure.util.EMPTY
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -17,6 +18,11 @@ import org.springframework.web.client.HttpClientErrorException
 class BaseExceptionHandler(
     private val featureCode: FeatureCode = FeatureCode.UNKNOWN
 ) {
+
+    @ExceptionHandler(ServiceUnavailableException::class)
+    protected fun handleServiceUnavailableException(e: BaseException): ResponseEntity<ErrorResponse> {
+        return ErrorResponse.toResponseEntity(FeatureCode.FAULTY, e.errorCode)
+    }
 
     @ExceptionHandler(ResourceNotFoundException::class)
     protected fun handleResourceNotFoundException(e: BaseException): ResponseEntity<ErrorResponse> {

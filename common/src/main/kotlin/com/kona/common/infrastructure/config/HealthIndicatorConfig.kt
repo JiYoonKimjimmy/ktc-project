@@ -8,7 +8,7 @@ import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 
 @PropertySource(value = ["classpath:/git.properties"])
-@Component(value = "application")
+@Component(value = "app")
 class HealthIndicatorConfig : HealthIndicator {
 
     @Value("\${git.commit.id.abbrev}")

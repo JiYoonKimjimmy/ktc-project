@@ -4,6 +4,7 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
+import com.kona.common.infrastructure.error.exception.ServiceUnavailableException
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.domain.port.outbound.TrafficControlPort
@@ -29,11 +30,13 @@ class TrafficControlScriptExecuteAdapter(
         val keys = TrafficCacheKey.getTrafficControlKeys(zoneId).map { it.value }
         val args = listOf(token, nowMillis, defaultThreshold)
 
-        val result = redisExecuteAdapter.execute(script, keys, args).map { it as Long }
+        val (result, number, estimatedTime, totalCount ) = redisExecuteAdapter.execute(script, keys, args).map { it as Long }
 
-        if (result[0] == -1L) throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED)
-
-        return TrafficWaiting(result)
+        return when (result) {
+            -1L -> throw InternalServiceException(ErrorCode.TRAFFIC_ZONE_STATUS_IS_BLOCKED)
+            -2L -> throw ServiceUnavailableException(ErrorCode.FAULTY_503_ERROR)
+            else -> TrafficWaiting(result, number, estimatedTime, totalCount)
+        }
     }
 
 }

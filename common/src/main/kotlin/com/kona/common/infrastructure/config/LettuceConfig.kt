@@ -19,6 +19,7 @@ class LettuceConfig(
     fun lettuceConnectionFactory(): LettuceConnectionFactory {
         return when (activeProfile) {
             "test" -> lettuceStandaloneConnectionFactory()
+            "prod" -> lettuceElastiCacheClusterConnectionFactory()
             else -> lettuceClusterConnectionFactory()
         }
     }
@@ -63,6 +64,43 @@ class LettuceConfig(
         val lettuceClientConfiguration = LettuceClientConfiguration.builder()
             .clientOptions(clusterClientOptions)
             .commandTimeout(redisProperties.timeout)
+            .build()
+
+        return LettuceConnectionFactory(lettuceClusterConfiguration, lettuceClientConfiguration)
+    }
+
+    /**
+     * AWS ElastiCache Serverless - cluster, no pw, apply ssl/tls
+     */
+    private fun lettuceElastiCacheClusterConnectionFactory(): LettuceConnectionFactory {
+        val nodes = redisProperties.cluster.nodes.clusterNodes()
+        val maxRedirects = redisProperties.cluster.maxRedirects
+
+        val lettuceClusterConfiguration = RedisClusterConfiguration().apply {
+            this.setClusterNodes(nodes)
+            this.maxRedirects = maxRedirects
+        }
+
+        val socketOptions = SocketOptions.builder()
+            .connectTimeout(redisProperties.connectTimeout)
+            .keepAlive(true)
+            .build()
+
+        val clusterTopologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
+            .dynamicRefreshSources(true)
+            .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofMinutes(30))
+            .build()
+
+        val clusterClientOptions = ClusterClientOptions.builder()
+            .topologyRefreshOptions(clusterTopologyRefreshOptions)
+            .socketOptions(socketOptions)
+            .build()
+
+        val lettuceClientConfiguration = LettuceClientConfiguration.builder()
+            .clientOptions(clusterClientOptions)
+            .commandTimeout(redisProperties.timeout)
+            .useSsl()
             .build()
 
         return LettuceConnectionFactory(lettuceClusterConfiguration, lettuceClientConfiguration)

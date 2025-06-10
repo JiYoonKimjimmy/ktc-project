@@ -308,15 +308,16 @@ components:
       required: false
       schema:
         type: string
-        enum: [ACTIVE, BLOCKED, DELETED]
+        enum: [ACTIVE, BLOCKED, DELETED, FORCE_503]
       example: "ACTIVE"
       description: |
         Zone 상태
         | 구분 | 내용 |
         |:----:|----|
-        | ACTIVE | Zone 트래픽 제어 활성화 상태 |
-        | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
-        | DELETED | Zone 삭제 상태 |
+        | ACTIVE    | Zone 트래픽 제어 활성화 상태 |
+        | BLOCKED   | Zone 트래픽 진입 전체 차단 상태 |
+        | DELETED   | Zone 삭제 상태 |
+        | FORCE_503 | QA용 강제 503 응답 |
 
   schemas:
     ##### common schema start
@@ -431,13 +432,15 @@ components:
         - ACTIVE
         - BLOCKED
         - DELETED
+        - FORCE_503
       description: |
         Zone 상태
         | 구분 | 내용 |
         |:----:|----|
-        | ACTIVE | Zone 트래픽 제어 활성화 상태 |
-        | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
-        | DELETED | Zone 삭제 상태 |
+        | ACTIVE    | Zone 트래픽 제어 활성화 상태 |
+        | BLOCKED   | Zone 트래픽 진입 전체 차단 상태 |
+        | DELETED   | Zone 삭제 상태 |
+        | FORCE_503 | QA용 강제 503 응답 |
       example: "ACTIVE"
 
     updateZoneStatus:
@@ -445,12 +448,14 @@ components:
       enum:
         - ACTIVE
         - BLOCKED
+        - FORCE_503
       description: |
         Zone 상태
         | 구분 | 내용 |
         |:----:|----|
         | ACTIVE | Zone 트래픽 제어 활성화 상태 |
         | BLOCKED | Zone 트래픽 진입 전체 차단 상태 |
+        | FORCE_503 | QA용 강제 503 응답 |
       example: "ACTIVE"
 
     threshold:

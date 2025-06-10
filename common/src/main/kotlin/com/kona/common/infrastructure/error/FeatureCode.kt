@@ -6,6 +6,7 @@ enum class FeatureCode(
 ) {
 
     UNKNOWN("9999", "Unknown Service"),
+    FAULTY("0000", "Service Faulty Response"),
 
     V1_TRAFFIC_CONTROL_SERVICE("1001", "Traffic Control Service"),
     V1_TRAFFIC_ZONE_MANAGEMENT_SERVICE("1002", "Traffic Zone Management Service"),

@@ -23,6 +23,8 @@ end
 
 if status == 'BLOCKED' then
     return { -1, 0, 0, 0 }
+elseif status == 'FAULTY_503' then
+    return { -2, 0, 0, 0 }
 end
 
 -- 1. threshold 조회

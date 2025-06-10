@@ -45,7 +45,7 @@ class TrafficZoneSaveAdapter(
 
         when (trafficZone.status) {
             ACTIVE -> redisExecuteAdapter.addValueForSet(ACTIVATION_ZONES.key, zoneId)
-            BLOCKED, DELETED -> redisExecuteAdapter.removeValueForSet(ACTIVATION_ZONES.key, zoneId)
+            BLOCKED, DELETED, FAULTY_503 -> redisExecuteAdapter.removeValueForSet(ACTIVATION_ZONES.key, zoneId)
         }
     }
 

@@ -17,22 +17,6 @@ enum class TrafficCacheKey(
         note = "트래픽 분당 임계치 Key",
         key = "ktc:{%s}:threshold"
     ),
-    MINUTE_BUCKET(
-        note = "분당 트래픽 Bucket Key",
-        key = "ktc:{%s}:minute_bucket"
-    ),
-    MINUTE_BUCKET_REFILL_TIME(
-        note = "마지막 분당 Bucket 리필 시간 Key",
-        key = "ktc:{%s}:minute_bucket_refill_time"
-    ),
-    SECOND_BUCKET(
-        note = "초당 트래픽 Bucket Key",
-        key = "ktc:{%s}:second_bucket"
-    ),
-    SECOND_BUCKET_REFILL_TIME(
-        note = "마지막 초당 Bucket 리필 시간 Key",
-        key = "ktc:{%s}:second_bucket_refill_time"
-    ),
     SLOT_WINDOW(
         note = "트래픽 진입 Slow Window Key",
         key = "ktc:{%s}:slot:window"

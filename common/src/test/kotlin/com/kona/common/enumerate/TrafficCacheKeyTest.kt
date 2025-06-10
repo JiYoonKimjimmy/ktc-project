@@ -16,14 +16,11 @@ class TrafficCacheKeyTest : StringSpec({
         val result = TrafficCacheKey.generate(zoneId)
 
         // then
-        result[QUEUE] shouldBe "ktc:{TEST_ZONE}:queue"
-        result[QUEUE_STATUS] shouldBe "ktc:{TEST_ZONE}:queue_status"
-        result[MINUTE_BUCKET] shouldBe "ktc:{TEST_ZONE}:minute_bucket"
-        result[MINUTE_BUCKET_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:minute_bucket_refill_time"
-        result[SECOND_BUCKET] shouldBe "ktc:{TEST_ZONE}:second_bucket"
-        result[SECOND_BUCKET_REFILL_TIME] shouldBe "ktc:{TEST_ZONE}:second_bucket_refill_time"
-        result[THRESHOLD] shouldBe "ktc:{TEST_ZONE}:threshold"
-        result[ENTRY_COUNT] shouldBe "ktc:{TEST_ZONE}:entry_count"
+        result[QUEUE]                   shouldBe "ktc:{TEST_ZONE}:queue"
+        result[QUEUE_STATUS]            shouldBe "ktc:{TEST_ZONE}:queue_status"
+        result[THRESHOLD]               shouldBe "ktc:{TEST_ZONE}:threshold"
+        result[SLOT_WINDOW]             shouldBe "ktc:{TEST_ZONE}:slot:window"
+        result[ENTRY_COUNT]             shouldBe "ktc:{TEST_ZONE}:entry_count"
         result[TOKEN_LAST_POLLING_TIME] shouldBe "ktc:{TEST_ZONE}:token_last_polling_time"
     }
 
@@ -39,9 +36,11 @@ class TrafficCacheKeyTest : StringSpec({
             "ktc:{TEST_ZONE}:queue",
             "ktc:{TEST_ZONE}:queue_status",
             "ktc:{TEST_ZONE}:threshold",
+            "ktc:{TEST_ZONE}:slot:window",
             "ktc:{TEST_ZONE}:entry_count",
+            "ktc:{TEST_ZONE}:token_last_polling_time",
         )
-        result shouldContainAll expected
+        result shouldBe expected
     }
 
 })
