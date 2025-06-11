@@ -54,8 +54,8 @@ dependencies {
     implementation("com.linecorp.kotlin-jdsl:jpql-render:$jdslVersion")
     implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:$jdslVersion")
 
-    // oracle
-    runtimeOnly("com.oracle.database.jdbc:ojdbc11")
+    // mysql
+    runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

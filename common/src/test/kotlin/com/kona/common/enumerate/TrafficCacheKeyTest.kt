@@ -3,7 +3,6 @@ package com.kona.common.enumerate
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 
 class TrafficCacheKeyTest : StringSpec({
