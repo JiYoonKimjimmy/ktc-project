@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class TrafficExpireExecuteAdapter(
+class TrafficTokenExpireExecuteAdapter(
     private val reactiveStringRedisTemplate: ReactiveStringRedisTemplate,
 ) {
     /**

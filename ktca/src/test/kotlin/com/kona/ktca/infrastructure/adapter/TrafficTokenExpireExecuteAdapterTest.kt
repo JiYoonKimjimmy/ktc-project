@@ -1,9 +1,7 @@
 package com.kona.ktca.infrastructure.adapter
 
-import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.ktca.infrastructure.config.KtcaApplicationConfig
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.data.redis.core.addAndAwait
@@ -11,13 +9,11 @@ import org.springframework.data.redis.core.setAndAwait
 import org.springframework.data.redis.core.sizeAndAwait
 import java.time.Instant
 
-class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
+class TrafficTokenExpireExecuteAdapterTest : BehaviorSpec({
 
-    val trafficExpireScript = KtcaApplicationConfig().trafficExpireScript()
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
-    val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
 
-    val trafficExpireScriptExecuteAdapter = TrafficExpireScriptExecuteAdapter(trafficExpireScript, redisExecuteAdapter)
+    val trafficTokenExpireExecuteAdapter = TrafficTokenExpireExecuteAdapter(reactiveStringRedisTemplate)
 
     given("트래픽 만료 처리 요청되어") {
         val zoneId = "test-zone"
@@ -40,8 +36,8 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
 
         now = now.plusMillis(59000)
 
-        `when`("59초 경과 후, 트래픽 마지막 polling 시간 '60초' 경과한 token 없는 경우") {
-            trafficExpireScriptExecuteAdapter.expireTraffic(now)
+        `when`("59초 경과 후, 트래픽 마지막 polling 시간 '6초' 경과한 token 없는 경우") {
+            trafficTokenExpireExecuteAdapter.expireTraffic(now)
 
             then("트래픽 대기 Queue 건수 변경 없음 정상 확인한다") {
                 reactiveStringRedisTemplate.opsForZSet().sizeAndAwait(queueKey) shouldBe 10
@@ -57,7 +53,7 @@ class TrafficExpireScriptExecuteAdapterTest : BehaviorSpec({
         now = now.plusMillis(1000)
 
         `when`("60초 경과 후, 트래픽 마지막 polling 시간 '60초' 경과한 token 2건 있는 경우") {
-            trafficExpireScriptExecuteAdapter.expireTraffic(now)
+            trafficTokenExpireExecuteAdapter.expireTraffic(now)
 
             then("트래픽 대기 Queue 건수 '2건' 감소 정상 확인한다") {
                 reactiveStringRedisTemplate.opsForZSet().sizeAndAwait(queueKey) shouldBe 8

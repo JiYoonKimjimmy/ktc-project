@@ -20,4 +20,10 @@ class V1ZoneMonitoringController(
             .let { ResponseEntity.ok(V1ZoneMonitoringResponse(it)) }
     }
 
+    override fun collectZoneMonitoring(zoneId: String?): ResponseEntity<V1ZoneMonitoringResponse> = runBlocking {
+        trafficZoneMonitoringUseCase.collectTrafficZoneMonitoring(zoneId)
+            .map { v1ZoneMonitoringModelMapper.domainToModel(it) }
+            .let { ResponseEntity.ok(V1ZoneMonitoringResponse(it)) }
+    }
+
 }

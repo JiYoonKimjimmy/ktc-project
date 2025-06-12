@@ -16,7 +16,6 @@ data class TrafficZone(
     val created: LocalDateTime? = null,
     val updated: LocalDateTime? = null,
 ) {
-    lateinit var waiting: TrafficZoneWaiting
 
     companion object {
 
@@ -34,11 +33,6 @@ data class TrafficZone(
             return TRAFFIC_ZONE_ID_PREFIX + SnowflakeIdGenerator.generate()
         }
 
-    }
-
-    suspend fun applyWaiting(function: suspend (String, Long) -> TrafficZoneWaiting): TrafficZone {
-        this.waiting = function(zoneId, threshold)
-        return this
     }
 
     fun update(dto: TrafficZoneDTO): TrafficZone {

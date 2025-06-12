@@ -54,6 +54,9 @@ dependencies {
     implementation("com.linecorp.kotlin-jdsl:jpql-render:$jdslVersion")
     implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:$jdslVersion")
 
+    // caffeine cache
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.1")
+
     // mysql
     runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
 

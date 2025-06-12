@@ -1,12 +1,9 @@
 package com.kona.ktca.domain.service
 
-import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
-import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.infrastructure.adapter.TrafficZoneFindAdapter
-import com.kona.ktca.infrastructure.adapter.TrafficZoneWaitingFindAdapter
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import io.kotest.assertions.throwables.shouldThrow
@@ -16,12 +13,9 @@ import java.time.LocalDateTime
 
 class TrafficZoneReadServiceTest : BehaviorSpec({
 
-    val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
     val trafficZoneRepository = FakeTrafficZoneRepository()
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
-    val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
-
-    val trafficZoneReadService = TrafficZoneReadService(trafficZoneFindAdapter, trafficZoneWaitingFindAdapter)
+    val trafficZoneReadService = TrafficZoneReadService(trafficZoneFindAdapter)
 
     given("트래픽 제어 Zone 단일 조회 요청되어") {
 

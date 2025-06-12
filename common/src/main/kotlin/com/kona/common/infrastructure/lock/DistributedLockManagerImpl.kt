@@ -44,9 +44,13 @@ class DistributedLockManagerImpl(
         }
     }
 
-    override suspend fun <R> expireTrafficTokenScheduleLock(now: String, block: suspend () -> R): R {
-        val key = DistributedLockType.EXPIRE_TRAFFIC_TOKEN_SCHEDULE_LOCK.getKey(now)
+    override suspend fun <R> expireTrafficTokenSchedulerLock(now: String, block: suspend () -> R): R {
+        val key = DistributedLockType.EXPIRE_TRAFFIC_TOKEN_SCHEDULER_LOCK.getKey(now)
         return lock(key = key, waitTime = 0, leaseTime = 1, timeUnit = TimeUnit.MINUTES, block = block)
     }
 
+    override suspend fun <R> collectTrafficZoneMonitoringSchedulerLock(now: String, block: suspend () -> R): R {
+        val key = DistributedLockType.TRAFFIC_ZONE_MONITORING_SCHEDULER_LOCK.getKey(now)
+        return lock(key = key, waitTime = 0, leaseTime = 5000, timeUnit = TimeUnit.SECONDS, block = block)
+    }
 }

@@ -19,18 +19,22 @@ class TrafficZoneEntity(
 
 ) : BaseEntity() {
 
-    constructor(domain: TrafficZone): this(
-        id = domain.zoneId,
-        alias = domain.zoneAlias,
-        threshold = domain.threshold,
-        activationTime = domain.activationTime,
-        status = domain.status
-    ) {
-        this.created = domain.created
-        this.updated = domain.updated
+    companion object {
+        fun of(domain: TrafficZone): TrafficZoneEntity {
+            return TrafficZoneEntity(
+                id = domain.zoneId,
+                alias = domain.zoneAlias,
+                threshold = domain.threshold,
+                status = domain.status,
+                activationTime = domain.activationTime
+            ).apply {
+                this.created = domain.created
+                this.updated = domain.updated
+            }
+        }
     }
 
-    fun toDomain(): TrafficZone {
+    override fun toDomain(): TrafficZone {
         return TrafficZone(
             zoneId = id,
             zoneAlias = alias,

@@ -49,8 +49,10 @@ class TrafficZoneSaveAdapter(
         }
     }
 
-    private suspend fun saveEntity(trafficZone: TrafficZone): TrafficZone = withContext(Dispatchers.IO) {
-        trafficZoneRepository.save(TrafficZoneEntity(trafficZone)).toDomain()
+    private suspend fun saveEntity(trafficZone: TrafficZone): TrafficZone {
+        return TrafficZoneEntity.of(domain = trafficZone)
+            .let { trafficZoneRepository.save(it) }
+            .toDomain()
     }
 
 }

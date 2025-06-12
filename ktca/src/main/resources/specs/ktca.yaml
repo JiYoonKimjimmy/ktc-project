@@ -258,6 +258,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/zone/monitoring/collect:
+    post:
+      summary: 트래픽 제어 Zone 현황 수집
+      tags:
+        - V1.Zone Monitoring
+      operationId: collectZoneMonitoring
+      description: |
+        트래픽 제어 Zone 트래픽 현황 수집
+      parameters:
+        - $ref: "#/components/parameters/query-zoneId"
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ZoneMonitoringResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   parameters:
     ##### path

@@ -70,10 +70,10 @@ class DistributedLockManagerImplTest : StringSpec({
         }
 
         // when
-        val task1 = async(Dispatchers.Default) { distributedLockManager.expireTrafficTokenScheduleLock(dateTime) { block() } }
+        val task1 = async(Dispatchers.Default) { distributedLockManager.expireTrafficTokenSchedulerLock(dateTime) { block() } }
         val task2 = async(Dispatchers.Default) {
             delay(100)
-            shouldThrow<InternalServiceException> { distributedLockManager.expireTrafficTokenScheduleLock(dateTime) { block() } }
+            shouldThrow<InternalServiceException> { distributedLockManager.expireTrafficTokenSchedulerLock(dateTime) { block() } }
         }
 
         // then

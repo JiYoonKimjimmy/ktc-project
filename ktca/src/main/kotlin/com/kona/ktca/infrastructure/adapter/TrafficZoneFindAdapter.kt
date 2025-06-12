@@ -25,7 +25,7 @@ class TrafficZoneFindAdapter(
         return trafficZoneRepository.findByZoneIdAndStatusNot(zoneId, DELETED)?.toDomain()
     }
 
-    override suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone> {
+    override suspend fun findAllActiveTrafficZone(zoneId: String?): List<TrafficZone> {
         return trafficZoneRepository.findAllByStatus(ACTIVE)
             .filter { if (zoneId != null) it.id == zoneId else true }
             .map { it.toDomain() }

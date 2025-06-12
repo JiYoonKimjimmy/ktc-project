@@ -12,13 +12,24 @@ import java.util.concurrent.Executor
 @Configuration
 class SchedulerConfig {
 
-    @Bean(name = ["trafficExpirationTaskExecutor"])
-    fun trafficExpirationTaskExecutor(): Executor {
+    @Bean(name = ["trafficTokenExpireSchedulerTaskExecutor"])
+    fun trafficTokenExpireSchedulerTaskExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
-        executor.corePoolSize = 2
-        executor.maxPoolSize = 4
+        executor.corePoolSize = 5
+        executor.maxPoolSize = 30
         executor.queueCapacity = 100
         executor.setThreadNamePrefix("traffic-expiration-")
+        executor.initialize()
+        return executor
+    }
+
+    @Bean(name = ["trafficZoneMonitorCollectSchedulerTaskExecutor"])
+    fun trafficZoneMonitorCollectSchedulerTaskExecutor(): Executor {
+        val executor = ThreadPoolTaskExecutor()
+        executor.corePoolSize = 5
+        executor.maxPoolSize = 30
+        executor.queueCapacity = 100
+        executor.setThreadNamePrefix("traffic-zone-monitoring-")
         executor.initialize()
         return executor
     }
