@@ -3,12 +3,7 @@ package com.kona.ktc.infrastructure.adapter.redis
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.Companion.getTrafficControlKeys
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
-import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
-import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
-import com.kona.common.infrastructure.util.ONE_SECONDS_MILLIS
-import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
-import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
-import com.kona.common.infrastructure.util.ZERO
+import com.kona.common.infrastructure.util.*
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.domain.port.outbound.TrafficControlPort
@@ -17,6 +12,7 @@ import org.springframework.data.redis.core.*
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.max
 
 @Component
 class TrafficControlExecuteAdapter(
@@ -24,6 +20,13 @@ class TrafficControlExecuteAdapter(
     @Value("\${ktc.traffic.control.defaultThreshold}")
     private val defaultThreshold: String
 ) : TrafficControlPort {
+
+    private suspend fun logging(msg: String? = null) {
+        val isLogging = false
+        if (isLogging) {
+            msg?.let { print(it) } ?: println()
+        }
+    }
 
     /**
      * [트래픽 제어 프로세스]
@@ -36,7 +39,10 @@ class TrafficControlExecuteAdapter(
      * 3. windowKey 생성 : "$entryCountKey:$minute:$slot"
      * 4. 대기열 Queue 토큰 추가 (score = 최초 진입 시각)
      * 5. 현재 slot 진입 Count 조회
-     * 6. 진입 허용 조건 확인: readyTime 기준
+     * 6. 진입 허용 조건 확인
+     *    - 현재 Bucket Count 충분한 경우, 무조건 진입
+     *    - 현재 slotEntryCount < allowedPer6Sec (6초당 허용 threshold)
+     *    - 현재 rank(대기 순번) < allowedPer6Sec (6초당 허용 threshold) && waitingTime(token 대기 시간) <= 현재시간(초)
      */
     override suspend fun controlTraffic(traffic: Traffic, now: Instant): TrafficWaiting {
         val zoneId = traffic.zoneId
@@ -47,7 +53,8 @@ class TrafficControlExecuteAdapter(
         val queueKey                = trafficControlKeys[QUEUE]!!
         val queueStatusKey          = trafficControlKeys[QUEUE_STATUS]!!
         val thresholdKey            = trafficControlKeys[THRESHOLD]!!
-        val slotWindowKey           = trafficControlKeys[SLOT_WINDOW]!!
+        val entryWindowKey          = trafficControlKeys[ENTRY_WINDOW]!!
+        val entrySlotKey            = trafficControlKeys[ENTRY_SLOT]!!
         val entryCountKey           = trafficControlKeys[ENTRY_COUNT]!!
         val tokenLastPollingTimeKey = trafficControlKeys[TOKEN_LAST_POLLING_TIME]!!
 
@@ -55,12 +62,14 @@ class TrafficControlExecuteAdapter(
         val activationTime = reactiveStringRedisTemplate.getHashValue(queueStatusKey, QUEUE_ACTIVATION_TIME_KEY)?.toLong()
 
         if (queueStatus == null || (activationTime == null || nowMilli < activationTime)) {
-            // queueStatus == null 이거나 activationTime 이 현재 시간보다 큰 경우, 진입 허용 처리
+            // Queue status 정보 없거나, Queue activation 시간 이전인 경우, 진입 처리
             return TrafficWaiting(1, 0, 0, 0)
-        }
-
-        if (queueStatus == TrafficZoneStatus.BLOCKED.name) {
+        } else if (queueStatus == TrafficZoneStatus.BLOCKED.name) {
+            // Queue status 'BLOCKED' 인 경우, 진입 차단 처리
             return TrafficWaiting(-1, 0, 0, 0)
+        } else if (queueStatus == TrafficZoneStatus.FAULTY_503.name) {
+            // Queue status 'FAULTY_503' 인 경우, 진입 장애 차단 처리
+            return TrafficWaiting(-2, 0, 0, 0)
         }
 
         // 1. threshold 조회 (없으면 defaultThreshold 사용)
@@ -72,8 +81,10 @@ class TrafficControlExecuteAdapter(
         val slot = secondInMinute / 6
         val allowedPer6Sec = (threshold / 10L).coerceAtLeast(1L)
 
-        // 3. windowKey 생성
-        val windowKey = "$slotWindowKey:$minute:$slot"
+        // 3. windowKey & slotCountKey 생성
+        val windowCountKey = "$entryWindowKey:$minute"
+        val slotCountKey = "$entrySlotKey:$minute:$slot"
+        val queueSize = reactiveStringRedisTemplate.sizeZSet(queueKey)
 
         // 4. 대기열 Queue 토큰 추가 (score = 최초 진입 시각)
         val score = reactiveStringRedisTemplate.scoreZSet(queueKey, token)?.toLong()
@@ -83,29 +94,70 @@ class TrafficControlExecuteAdapter(
         val entryMilli = score ?: nowMilli
 
         // 5. 현재 slot 진입 Count 조회
-        val currentCount = reactiveStringRedisTemplate.getValue(windowKey, ZERO.toString()).toLong()
+        val windowEntryCount = reactiveStringRedisTemplate.getValue(windowCountKey, ZERO.toString()).toLong()
+        val slotEntryCount = reactiveStringRedisTemplate.getValue(slotCountKey, ZERO.toString()).toLong()
 
-        // 6. 진입 허용 조건 확인: readyTime 기준
+        // 6. 진입 허용 조건 확인
         val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
         val waitSlot = rank / allowedPer6Sec
-        val readyTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
+        val waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
-        return if (currentCount < allowedPer6Sec && (rank < allowedPer6Sec || readyTime <= nowMilli)) {
-            reactiveStringRedisTemplate.incrementValue(windowKey)
+        val canEnter = if (windowEntryCount < threshold && queueSize == 0L) {
+            true
+        } else if (slotEntryCount < allowedPer6Sec && (rank < allowedPer6Sec || waitingTime <= nowMilli)) {
+            true
+        } else {
+            false
+        }
+
+        logging("token: $token")
+        logging(", canEnter: $canEnter")
+
+        return if (canEnter) {
+            reactiveStringRedisTemplate.incrementValue(windowCountKey)
+            reactiveStringRedisTemplate.incrementValue(slotCountKey)
             reactiveStringRedisTemplate.incrementValue(entryCountKey)
             reactiveStringRedisTemplate.removeZSet(queueKey, token)
             reactiveStringRedisTemplate.removeZSet(tokenLastPollingTimeKey, token)
-            // windowKey 1분 만료 설정
-            reactiveStringRedisTemplate.expireAndAwait(windowKey, Duration.ofMillis(ONE_MINUTE_MILLIS))
+            // CountKey 1분 만료 설정
+            reactiveStringRedisTemplate.expireAndAwait(windowCountKey, Duration.ofMillis(ONE_MINUTE_MILLIS))
+            reactiveStringRedisTemplate.expireAndAwait(slotCountKey, Duration.ofMillis(ONE_MINUTE_MILLIS))
             val totalCount = reactiveStringRedisTemplate.sizeZSet(queueKey)
+            logging()
             TrafficWaiting(1, 0, 0, totalCount)
         } else {
             // token request time & count 업데이트
-            reactiveStringRedisTemplate.addZSet(tokenLastPollingTimeKey, token, nowMilli)
             // 대기 예상 시간 계산
-            val waitTime = maxOf(readyTime - nowMilli, 3 * ONE_SECONDS_MILLIS)
+            logging(", rank: $rank")
+            logging(", waitSlot: $waitSlot")
+
+            val tokenLastPollingTime = reactiveStringRedisTemplate.scoreZSet(tokenLastPollingTimeKey, token)?.toLong() ?: nowMilli
+            logging(", tokenLastPollingTime: $tokenLastPollingTime")
+            logging(", entryMilli: $entryMilli")
+
+            val estimatedTime = max(calculateTokenWaitingTime(waitSlot, tokenLastPollingTime, entryMilli, nowMilli), 3 * ONE_SECONDS_MILLIS)
+            logging(", estimatedTime: ${estimatedTime}ms (${printETA(estimatedTime)})")
+            logging()
             val totalCount = reactiveStringRedisTemplate.sizeZSet(queueKey)
-            TrafficWaiting(0, rank + 1, waitTime, totalCount)
+            reactiveStringRedisTemplate.addZSet(tokenLastPollingTimeKey, token, nowMilli)
+            TrafficWaiting(0, rank + 1, estimatedTime, totalCount)
+        }
+    }
+
+    private suspend fun calculateTokenWaitingTime(waitSlot: Long, tokenLastPollingTime: Long, entryMilli: Long, nowMilli: Long): Long {
+        val estimatedTime = (waitSlot + 1) * SIX_SECONDS_MILLIS
+        val totalWaitingTime =  if (tokenLastPollingTime == entryMilli) {
+            nowMilli - entryMilli
+        } else {
+            tokenLastPollingTime - entryMilli
+        }
+        val result = estimatedTime - totalWaitingTime
+        return if (result <= 0) {
+            3 * ONE_SECONDS_MILLIS
+        } else if (estimatedTime < totalWaitingTime) {
+            estimatedTime
+        } else {
+            result
         }
     }
 
@@ -140,6 +192,11 @@ class TrafficControlExecuteAdapter(
 
     private suspend fun ReactiveStringRedisTemplate.getHashValue(key: String, hashKey: String): String? {
         return opsForHash<String, String>().getAndAwait(key, hashKey)
+    }
+
+    private suspend fun printETA(eta: Long): String {
+        val totalSeconds = eta / 1000
+        return "${totalSeconds / 60}분 ${totalSeconds % 60}초"
     }
 
 }

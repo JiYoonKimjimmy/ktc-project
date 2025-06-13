@@ -5,6 +5,7 @@ import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.*
 import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
+import com.kona.common.infrastructure.util.convertUTCEpochTime
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.port.outbound.TrafficZoneSavePort
 import com.kona.ktca.infrastructure.repository.TrafficZoneRepository
@@ -12,6 +13,7 @@ import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
+import org.threeten.bp.DateTimeUtils.toInstant
 import java.time.ZoneOffset
 
 @Component
@@ -35,9 +37,11 @@ class TrafficZoneSaveAdapter(
     private suspend fun saveCache(trafficZone: TrafficZone) {
         val zoneId = trafficZone.zoneId
         val threshold = trafficZone.threshold.toString()
+        val queueStatus = trafficZone.status.name
+        val queueActivationTime = trafficZone.activationTime.convertUTCEpochTime()
         val zoneStatus = mapOf(
-            QUEUE_STATUS_KEY to trafficZone.status.name,
-            QUEUE_ACTIVATION_TIME_KEY to trafficZone.activationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
+            QUEUE_STATUS_KEY to queueStatus,
+            QUEUE_ACTIVATION_TIME_KEY to queueActivationTime
         )
 
         redisExecuteAdapter.setValue(THRESHOLD.getKey(zoneId), threshold)

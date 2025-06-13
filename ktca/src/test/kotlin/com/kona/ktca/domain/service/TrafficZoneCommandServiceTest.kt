@@ -10,6 +10,7 @@ import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ID_PREFIX
 import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
+import com.kona.common.infrastructure.util.convertUTCEpochTime
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
@@ -67,7 +68,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
 
             then("트래픽 Zone 'activationTime' Cache 저장 결과 정상 확인한다") {
                 val status = redisExecuteAdapter.getHashValue(QUEUE_STATUS.getKey(result.zoneId), QUEUE_ACTIVATION_TIME_KEY)
-                status shouldBe newTrafficZone.activationTime?.toInstant(ZoneOffset.UTC)?.toEpochMilli()?.toString()
+                status shouldBe newTrafficZone.activationTime?.convertUTCEpochTime()
             }
 
             then("신규 등록 트래픽 Zone 'zoneId' 채번 규칙 정상 확인한다") {
@@ -174,7 +175,7 @@ class TrafficZoneCommandServiceTest : BehaviorSpec({
 
             then("트래픽 Zone 'activationTime' Cache 변경 결과 정상 확인한다") {
                 val activationTime = redisExecuteAdapter.getHashValue(queueStatusKey, QUEUE_ACTIVATION_TIME_KEY)
-                activationTime shouldBe updateActivationTime.toInstant(ZoneOffset.UTC).toEpochMilli().toString()
+                activationTime shouldBe updateActivationTime.convertUTCEpochTime()
             }
         }
 

@@ -37,7 +37,7 @@ class BaseExceptionHandler(
 
     @ExceptionHandler(HttpClientErrorException::class)
     protected fun handleHttpClientErrorException(e: HttpClientErrorException): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.message)
+        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.cause?.message)
     }
 
     @ExceptionHandler(RestClientServiceException::class)
@@ -45,7 +45,7 @@ class BaseExceptionHandler(
         return try {
             ErrorResponse.toResponseEntity(e.detailMessage!!)
         } catch (e: Exception) {
-            ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.message)
+            ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.cause?.message)
         }
     }
 
@@ -56,7 +56,7 @@ class BaseExceptionHandler(
 
     @ExceptionHandler(Exception::class)
     protected fun exceptionHandler(e: Exception): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.UNKNOWN_ERROR, e.message)
+        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.UNKNOWN_ERROR, e.cause?.message)
     }
 
 }

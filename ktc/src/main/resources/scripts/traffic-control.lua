@@ -1,29 +1,32 @@
 local queueKey = KEYS[1]
 local queueStatusKey = KEYS[2]
 local thresholdKey = KEYS[3]
-local slotWindowKey = KEYS[4]
-local entryCountKey = KEYS[5]
-local tokenLastPollingTimeKey = KEYS[6]
+local entryWindowKey = KEYS[4]
+local entrySlotKey = KEYS[5]
+local entryCountKey = KEYS[6]
+local tokenLastPollingTimeKey = KEYS[7]
 
 local token = ARGV[1]
 local nowMilli = tonumber(ARGV[2])
 local defaultThreshold = tonumber(ARGV[3])
 
-local ONE_MINUTES = 60000
-local ONE_SECONDS = 1000
-local SIX_SECONDS = 6 * ONE_SECONDS
+local ONE_MINUTE_MILLIS = 60000
+local ONE_SECONDS_MILLIS = 1000
+local SIX_SECONDS_MILLIS = 6 * ONE_SECONDS_MILLIS
 
 local queueStatus = redis.call('HMGET', queueStatusKey, 'status', 'activationTime')
 local status = queueStatus[1]
 local activationTime = tonumber(queueStatus[2] or nowMilli)
 
+-- 0. Queue status & activationTime 확인 후 진입 or 차단 처리
 if status == nil or (activationTime == nil or nowMilli < activationTime) then
+    -- Queue status 정보 없거나, Queue activation 시간 이전인 경우, 진입 처리
     return { 1, 0, 0, 0 }
-end
-
-if status == 'BLOCKED' then
+elseif status == 'BLOCKED' then
+    -- Queue status 'BLOCKED' 인 경우, 진입 차단 처리
     return { -1, 0, 0, 0 }
 elseif status == 'FAULTY_503' then
+    -- Queue status 'FAULTY_503' 인 경우, 진입 장애 차단 처리
     return { -2, 0, 0, 0 }
 end
 
@@ -32,45 +35,79 @@ redis.call('SETNX', thresholdKey, defaultThreshold)
 local threshold = tonumber(redis.call('GET', thresholdKey))
 
 -- 2. 6초 slot 계산
-local minute = math.floor(nowMilli / ONE_MINUTES)
-local secondInMinute = math.floor((nowMilli % ONE_MINUTES) / ONE_SECONDS)
+local minute = math.floor(nowMilli / ONE_MINUTE_MILLIS)
+local secondInMinute = math.floor((nowMilli % ONE_MINUTE_MILLIS) / ONE_SECONDS_MILLIS)
 local slot = math.floor(secondInMinute / 6)
 local allowedPer6Sec = math.floor(threshold / 10)
-if allowedPer6Sec <= 1 then allowedPer6Sec = 1 end
+if allowedPer6Sec < 1 then allowedPer6Sec = 1 end
 
--- 3. windowKey 생성
-local windowKey = slotWindowKey .. ":" .. minute .. ":" .. slot
+-- 3. windowKey & slotCountKey 생성
+local windowCountKey = entryWindowKey .. ":" .. minute
+local slotCountKey = entrySlotKey .. ":" .. minute .. ":" .. slot
+local queueSize = tonumber(redis.call('ZCARD', queueKey))
 
 -- 4. 대기열 Queue 토큰 추가
-if redis.call('ZSCORE', queueKey, token) == false then
+local score = redis.call('ZSCORE', queueKey, token)
+if not score then
     redis.call('ZADD', queueKey, nowMilli, token)
+    score = nowMilli
+else
+    score = tonumber(score)
 end
-
--- 최초 진입 시각 조회(= score)
-local entryMilli = tonumber(redis.call('ZSCORE', queueKey, token))
+local entryMilli = score
 
 -- 5. 현재 slot 진입 Count 조회
-local currentCount = tonumber(redis.call('GET', windowKey) or '0')
+local windowEntryCount = tonumber(redis.call('GET', windowCountKey) or '0')
+local slotEntryCount = tonumber(redis.call('GET', slotCountKey) or '0')
 
 -- 6. 진입 허용 조건 확인: readyTime = token 진입 시점 + (slot * 6초) + 6초
 local rank = tonumber(redis.call('ZRANK', queueKey, token))
 local waitSlot = math.floor(rank / allowedPer6Sec)
-local readyTime = entryMilli + (waitSlot * SIX_SECONDS) + SIX_SECONDS
+local waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
-if currentCount < allowedPer6Sec and (rank < allowedPer6Sec or readyTime <= nowMilli)  then
+local canEnter = false
+if windowEntryCount < threshold and queueSize == 0 then
+    canEnter = true
+elseif slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or waitingTime <= nowMilli) then
+    canEnter = true
+end
+
+if canEnter then
     -- token 진입 허용
-    redis.call('INCR', windowKey)
+    redis.call('INCR', windowCountKey)
+    redis.call('INCR', slotCountKey)
     redis.call('INCR', entryCountKey)
     redis.call('ZREM', queueKey, token)
     redis.call('ZREM', tokenLastPollingTimeKey, token)
-    -- windowKey 1분 만료 설정
-    redis.call('PEXPIRE', windowKey, ONE_MINUTES)
-    local totalCount = redis.call('ZCARD', queueKey)
+    redis.call('PEXPIRE', windowCountKey, ONE_MINUTE_MILLIS)
+    redis.call('PEXPIRE', slotCountKey, ONE_MINUTE_MILLIS)
+    local totalCount = tonumber(redis.call('ZCARD', queueKey))
     return { 1, 0, 0, totalCount }
 else
     -- token 진입 대기
+    local function calculateTokenWaitingTime()
+        local tokenLastPollingTime = tonumber(redis.call('ZSCORE', tokenLastPollingTimeKey, token)) or nowMilli
+        local estimatedTime = (waitSlot + 1) * SIX_SECONDS_MILLIS
+        local totalWaitingTime
+
+        if tokenLastPollingTime == entryMilli then
+            totalWaitingTime = nowMilli - entryMilli
+        else
+            totalWaitingTime = tokenLastPollingTime - entryMilli
+        end
+
+        local result = estimatedTime - totalWaitingTime
+        if result <= 0 then
+            return 3 * ONE_SECONDS_MILLIS
+        elseif estimatedTime < totalWaitingTime then
+            return estimatedTime
+        else
+            return result
+        end
+    end
+
+    local estimatedTime = math.max(calculateTokenWaitingTime(), 3 * ONE_SECONDS_MILLIS)
+    local totalCount = tonumber(redis.call('ZCARD', queueKey))
     redis.call('ZADD', tokenLastPollingTimeKey, nowMilli, token)
-    local waitTime = math.max(readyTime - nowMilli, 3 * ONE_SECONDS)
-    local totalCount = redis.call('ZCARD', queueKey)
-    return { 0, rank + 1, waitTime, totalCount }
+    return { 0, rank + 1, estimatedTime, totalCount }
 end

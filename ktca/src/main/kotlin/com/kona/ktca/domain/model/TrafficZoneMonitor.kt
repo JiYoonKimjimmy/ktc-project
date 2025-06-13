@@ -13,6 +13,8 @@ data class TrafficZoneMonitor(
     val entryCount: Long,
     val waitingCount: Long,
     val estimatedClearTime: Long,
+    val created: LocalDateTime? = null,
+    val updated: LocalDateTime? = null,
 ) {
     companion object {
         fun of(trafficZone: TrafficZone, waiting: TrafficZoneWaiting): TrafficZoneMonitor {
@@ -27,5 +29,16 @@ data class TrafficZoneMonitor(
                 estimatedClearTime = waiting.estimatedClearTime
             )
         }
+    }
+
+    fun update(zone: TrafficZone): TrafficZoneMonitor {
+        return copy(
+            zoneAlias = zone.zoneAlias,
+            threshold = zone.threshold,
+            status = zone.status,
+            activationTime = zone.activationTime,
+            created = zone.created,
+            updated = zone.updated
+        )
     }
 }

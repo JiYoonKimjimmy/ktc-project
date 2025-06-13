@@ -16,11 +16,12 @@ class TrafficCacheKeyTest : StringSpec({
 
         // then
         result[QUEUE]                   shouldBe "ktc:{TEST_ZONE}:queue"
-        result[QUEUE_STATUS]            shouldBe "ktc:{TEST_ZONE}:queue_status"
+        result[QUEUE_STATUS]            shouldBe "ktc:{TEST_ZONE}:queue-status"
         result[THRESHOLD]               shouldBe "ktc:{TEST_ZONE}:threshold"
-        result[SLOT_WINDOW]             shouldBe "ktc:{TEST_ZONE}:slot:window"
-        result[ENTRY_COUNT]             shouldBe "ktc:{TEST_ZONE}:entry_count"
-        result[TOKEN_LAST_POLLING_TIME] shouldBe "ktc:{TEST_ZONE}:token_last_polling_time"
+        result[ENTRY_WINDOW]            shouldBe "ktc:{TEST_ZONE}:entry-window"
+        result[ENTRY_SLOT]              shouldBe "ktc:{TEST_ZONE}:entry-slot"
+        result[ENTRY_COUNT]             shouldBe "ktc:{TEST_ZONE}:entry-count"
+        result[TOKEN_LAST_POLLING_TIME] shouldBe "ktc:{TEST_ZONE}:token-last-polling-time"
     }
 
     "'TEST_ZONE' zoneId 기준 TrafficCacheKey enum 'key' 목록 생성 결과 정상 확인한다" {
@@ -33,11 +34,12 @@ class TrafficCacheKeyTest : StringSpec({
         // then
         val expected = listOf(
             "ktc:{TEST_ZONE}:queue",
-            "ktc:{TEST_ZONE}:queue_status",
+            "ktc:{TEST_ZONE}:queue-status",
             "ktc:{TEST_ZONE}:threshold",
-            "ktc:{TEST_ZONE}:slot:window",
-            "ktc:{TEST_ZONE}:entry_count",
-            "ktc:{TEST_ZONE}:token_last_polling_time",
+            "ktc:{TEST_ZONE}:entry-window",
+            "ktc:{TEST_ZONE}:entry-slot",
+            "ktc:{TEST_ZONE}:entry-count",
+            "ktc:{TEST_ZONE}:token-last-polling-time",
         )
         result shouldBe expected
     }

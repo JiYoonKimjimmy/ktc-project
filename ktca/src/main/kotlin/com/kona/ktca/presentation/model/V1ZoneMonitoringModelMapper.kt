@@ -17,6 +17,8 @@ class V1ZoneMonitoringModelMapper {
             threshold = domain.threshold.toInt(),
             activationTime = domain.activationTime.convertPatternOf(),
             status = ZoneStatus.valueOf(domain.status.name),
+            created = domain.created?.convertPatternOf(),
+            updated = domain.updated?.convertPatternOf(),
             waiting = V1ZoneMonitoringDataWaiting(
                 entryCount = domain.entryCount.toInt(),
                 waitingCount = domain.waitingCount.toInt(),

@@ -573,6 +573,10 @@ components:
           $ref: '#/components/schemas/zoneStatus'
         activationTime:
           $ref: '#/components/schemas/activationTime'
+        created:
+          $ref: '#/components/schemas/created'
+        updated:
+          $ref: '#/components/schemas/updated'
         waiting:
           type: object
           properties:

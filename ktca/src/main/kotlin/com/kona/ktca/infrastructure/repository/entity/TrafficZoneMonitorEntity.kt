@@ -27,7 +27,7 @@ class TrafficZoneMonitorEntity(
     companion object {
         fun of(domain: TrafficZoneMonitor): TrafficZoneMonitorEntity {
             return TrafficZoneMonitorEntity(
-                id = domain.id ?: SnowflakeIdGenerator.generate(),
+                   id = domain.id ?: SnowflakeIdGenerator.generate(),
                 zoneId = domain.zoneId,
                 zoneAlias = domain.zoneAlias,
                 threshold = domain.threshold,

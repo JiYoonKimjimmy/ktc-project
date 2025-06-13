@@ -11,23 +11,27 @@ enum class TrafficCacheKey(
     ),
     QUEUE_STATUS(
         note = "트래픽 대기 Queue 상태 Key",
-        key = "ktc:{%s}:queue_status"
+        key = "ktc:{%s}:queue-status"
     ),
     THRESHOLD(
         note = "트래픽 분당 임계치 Key",
         key = "ktc:{%s}:threshold"
     ),
-    SLOT_WINDOW(
-        note = "트래픽 진입 Slow Window Key",
-        key = "ktc:{%s}:slot:window"
+    ENTRY_WINDOW(
+        note = "트래픽 진입 Window Key",
+        key = "ktc:{%s}:entry-window"
+    ),
+    ENTRY_SLOT(
+        note = "트래픽 진입 Slot Key",
+        key = "ktc:{%s}:entry-slot"
     ),
     ENTRY_COUNT(
         note = "트래픽 진입 Count Key",
-        key = "ktc:{%s}:entry_count"
+        key = "ktc:{%s}:entry-count"
     ),
     TOKEN_LAST_POLLING_TIME(
         note = "트래픽 Token 마지막 Polling 시간 Key",
-        key = "ktc:{%s}:token_last_polling_time"
+        key = "ktc:{%s}:token-last-polling-time"
     ),
     ACTIVATION_ZONES(
         note = "트래픽 제어 활성화 Zone 목록 Key",
@@ -42,12 +46,13 @@ enum class TrafficCacheKey(
 
         fun getTrafficControlKeys(zoneId: String): Map<TrafficCacheKey, String> {
             return mapOf(
-                QUEUE                   to QUEUE.getKey(zoneId),
-                QUEUE_STATUS            to QUEUE_STATUS.getKey(zoneId),
-                THRESHOLD               to THRESHOLD.getKey(zoneId),
-                SLOT_WINDOW             to SLOT_WINDOW.getKey(zoneId),
-                ENTRY_COUNT             to ENTRY_COUNT.getKey(zoneId),
-                TOKEN_LAST_POLLING_TIME to TOKEN_LAST_POLLING_TIME.getKey(zoneId)
+                QUEUE                    to QUEUE.getKey(zoneId),
+                QUEUE_STATUS             to QUEUE_STATUS.getKey(zoneId),
+                THRESHOLD                to THRESHOLD.getKey(zoneId),
+                ENTRY_WINDOW             to ENTRY_WINDOW.getKey(zoneId),
+                ENTRY_SLOT               to ENTRY_SLOT.getKey(zoneId),
+                ENTRY_COUNT              to ENTRY_COUNT.getKey(zoneId),
+                TOKEN_LAST_POLLING_TIME  to TOKEN_LAST_POLLING_TIME.getKey(zoneId)
             )
         }
 

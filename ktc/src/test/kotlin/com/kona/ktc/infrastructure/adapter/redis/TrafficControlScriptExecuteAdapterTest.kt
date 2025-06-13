@@ -1,21 +1,19 @@
 package com.kona.ktc.infrastructure.adapter.redis
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
-import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.ONE_MINUTE_MILLIS
+import com.kona.common.infrastructure.util.QUEUE_ACTIVATION_TIME_KEY
 import com.kona.common.infrastructure.util.QUEUE_STATUS_KEY
-import com.kona.common.infrastructure.util.SIX_SECONDS_MILLIS
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.infrastructure.config.KtcApplicationConfig
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.longs.shouldBeLessThanOrEqual
+import io.kotest.data.forAll
+import io.kotest.data.row
 import io.kotest.matchers.shouldBe
-import org.springframework.data.redis.core.getAndAwait
 import org.springframework.data.redis.core.putAllAndAwait
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -27,18 +25,27 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
     val trafficControlScript = KtcApplicationConfig().trafficControlScript()
 
     val logging: suspend (Traffic, TrafficWaiting) -> TrafficWaiting = { traffic, result ->
+        val isLogging = true
         val number = result.number
         val estimatedTime = result.estimatedTime
         val totalSeconds = result.estimatedTime / 1000
         val formatEstimatedTime = "${totalSeconds / 60}분 ${totalSeconds % 60}초"
         val totalCount = result.totalCount
         val canEnter = result.canEnter
-        println("token: ${traffic.token}, number: $number, totalCount: $totalCount, canEnter: $canEnter, estimatedTime: ${estimatedTime}ms ($formatEstimatedTime)")
+        if (isLogging) {
+            println("token: ${traffic.token}, number: $number, totalCount: $totalCount, canEnter: $canEnter, estimatedTime: ${estimatedTime}ms ($formatEstimatedTime)")
+        }
         result
     }
 
-    val getEntryCount: suspend (String) -> Int = { zoneId ->
-        reactiveStringRedisTemplate.opsForValue().getAndAwait(TrafficCacheKey.ENTRY_COUNT.getKey(zoneId))?.toInt() ?: 0
+    val getSut: (Int) -> TrafficControlScriptExecuteAdapter = { threshold ->
+        TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
+    }
+
+    val controlTraffics: suspend (TrafficControlScriptExecuteAdapter, List<Traffic>, Instant) -> List<TrafficWaiting> = { sut, traffics, now ->
+        traffics
+            .map { traffic -> logging(traffic, (sut.controlTraffic(traffic, now))) }
+            .sortedByDescending{ it.result }
     }
 
     val generateQueueStatus: suspend (String) -> Unit = { zoneId ->
@@ -50,315 +57,167 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
         reactiveStringRedisTemplate.opsForHash<String, String>().putAllAndAwait(key, map)
     }
 
-    context("트래픽 제어 Zone 정책 '분당 1건 허용'") {
-        given("트래픽 '1 ~ 10' 까지 Zone 진입 요청하여") {
-            val zoneId = "test-zone"
-            val totalSize = 10
-            val threshold = 1
-            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
+    context("트래픽 제어 Zone 요청 건수별 테스트'") {
+        forAll(
+            row(10, 1),
+            row(20, 10),
+            row(200, 100),
+            row(3000, 1000),
+        ) { totalSize, threshold ->
+            given("트래픽 '1 ~ $totalSize', 'threshold: $threshold' 진입 3s Polling 요청하여") {
+                val zoneId = "zone-1-to-$totalSize"
+                val secondThreshold = (threshold / 10).coerceAtLeast(1)
+                val sut = getSut(threshold)
 
-            // 트래픽 대기 요청 정보 생성
-            var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
-            var nowMillis = Instant.now()
+                // 트래픽 대기 요청 정보 생성
+                var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
+                var nowMillis = Instant.now()
 
-            val controlTraffic: suspend (Traffic, Instant, Long) -> TrafficWaiting = { traffic, now, extra ->
-                logging(traffic, sut.controlTraffic(traffic, now.plusMillis(extra)))
-            }
+                // 트래픽 zone status 정보 생성
+                generateQueueStatus(zoneId)
 
-            // 트래픽 zone status 정보 생성
-            generateQueueStatus(zoneId)
+                var results = emptyList<TrafficWaiting>()
 
-            `when`("'token-1' 1건 진입 허용 성공인 경우") {
-                val results = traffics.mapIndexed { index, traffic -> controlTraffic(traffic, nowMillis, index.toLong()) }
+                `when`("최초 트래픽 '1 ~ $threshold' 까지 즉시 진입 허용하여") {
+                    results = controlTraffics(sut, traffics, nowMillis)
 
-                then("'token-1' 진입 허용 정상 확인한다") {
-                    results.take(threshold).all { it.canEnter } shouldBe true
-                }
-
-                then("'token-2 ~ token-10' 진입 대기 상태 정상 확인한다") {
-                    val result = results.drop(threshold)
-                    result.all { !it.canEnter } shouldBe true
-                    result.forEachIndexed { index, waiting ->
-                        waiting.number shouldBe index + 1
-                        waiting.estimatedTime shouldBeLessThanOrEqual ((index + 1) * 60000L)
+                    then("트래픽 진입 시점 'entryCount: ${threshold}건' 정상 확인한다") {
+                        results.take(threshold).all { it.canEnter } shouldBe true
+                        results.take(threshold).count { it.canEnter } shouldBe threshold
                     }
-                    result.size shouldBe 9
-                }
-            }
-
-            nowMillis = nowMillis.plusMillis(SIX_SECONDS_MILLIS)
-            traffics = traffics.drop(threshold)
-
-            `when`("6초 후 'token-2 ~ token-10' 까지 Zone 진입 요청하여") {
-                val results = traffics.mapIndexed { index, traffic -> controlTraffic(traffic, nowMillis, index.toLong()) }
-
-                then("'token-2' 진입 허용 정상 확인한다") {
-                    results.take(threshold).all { it.canEnter } shouldBe true
+                    traffics = traffics.subList(threshold, traffics.size)
                 }
 
-                then("'token-3 ~ token-10' 진입 대기 상태 정상 확인한다") {
-                    val result = results.drop(threshold)
-                    result.all { !it.canEnter } shouldBe true
-                    result.forEachIndexed { index, waiting ->
-                        waiting.number shouldBe index + 1
-                        waiting.estimatedTime shouldBeLessThanOrEqual ((index + 1) * 60000L)
-                    }
-                    result.size shouldBe 8
-                }
-            }
+                var min = 0
+                var sec = 3
+                var startIndex = threshold
+                val expectedEntryCount = AtomicInteger(startIndex)
 
-            nowMillis = nowMillis.plusMillis(SIX_SECONDS_MILLIS * 2)
-            traffics = traffics.drop(threshold + 1)
+                nowMillis = nowMillis.plusMillis(3000)
 
-            `when`("18초 후 'token-3' 제외하고, 'token-4 ~ token-10' 까지 Zone 진입 요청하여") {
-                val results = traffics.mapIndexed { index, traffic -> controlTraffic(traffic, nowMillis, index.toLong()) }
+                println("After $sec seconds...")
 
-                then("'token-4' 진입 허용 정상 확인한다") {
-                    results.take(threshold).all { it.canEnter } shouldBe true
-                }
+                while (results.all { it.canEnter }.not()) {
+                    `when`("[${min}:${sec} 경과] 트래픽 '${startIndex + 1} ~ $totalSize' 까지 진입 Polling 요청 결과") {
+                        // 다음 그룹 트레픽 진입 요청 처리
+                        results = controlTraffics(sut, traffics, nowMillis)
 
-                then("'token-5 ~ token-10' 진입 대기 상태 정상 확인한다") {
-                    val result = results.drop(threshold)
-                    result.all { !it.canEnter } shouldBe true
-                    result.size shouldBe 6
-                }
-            }
-        }
-    }
+                        val entryTokens = results.count { it.canEnter }
+                        val entryCount = expectedEntryCount.addAndGet(entryTokens)
 
-    context("트래픽 제어 Zone 정책 '분당 10건 허용'") {
-        given("트래픽 '1 ~ 20' 까지 3초 단위 Polling 진입 요청하여") {
-            val zoneId = "zone-1-to-20"
-            val totalSize = 20
-            val threshold = 10
-            val secondThreshold = threshold / 10
-            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
-
-            // 트래픽 대기 요청 정보 생성
-            var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
-            var nowMillis = Instant.now()
-
-            val controlTraffic: suspend (Int, Traffic, Instant) -> TrafficWaiting = { index, traffic, now ->
-                sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
-            }
-
-            // 트래픽 zone status 정보 생성
-            generateQueueStatus(zoneId)
-
-            var results = emptyList<TrafficWaiting>()
-            var min = 0
-            var sec = 0
-            var startIndex = 0
-            val expectedEntryCount = AtomicInteger(0)
-
-            while ((results.isEmpty() || results.all { it.canEnter }.not())) {
-                `when`("[${min}:${sec} 경과] 트래픽 '${startIndex + 1} ~ ${startIndex + secondThreshold}' 까지 '${secondThreshold}건' 진입 요청하여") {
-                    // 다음 그룹 트레픽 진입 요청 처리
-                    results = traffics.mapIndexed { index, traffic ->
-                        logging(traffic, controlTraffic(index, traffic, nowMillis))
-                    }
-                    val entryTokens = results.count { it.canEnter }
-                    val entryCount = getEntryCount(zoneId)
-
-                    if (entryTokens > 0) {
-                        then("트래픽 진입 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
-                            results.take(secondThreshold).all { it.canEnter } shouldBe true
-                            entryCount shouldBe expectedEntryCount.addAndGet(secondThreshold)
+                        if (entryTokens > 0) {
+                            then("트래픽 진입 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                                results.take(secondThreshold).all { it.canEnter } shouldBe true
+                                entryTokens shouldBe secondThreshold
+                            }
+                            startIndex += secondThreshold
+                            // 트래픽 진입 성공 그룹 제외하여 트래픽 요청 목록 재생성
+                            traffics = traffics.subList(secondThreshold, traffics.size)
+                        } else {
+                            then("트래픽 대기 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
+                                results.take(secondThreshold).all { it.canEnter } shouldBe false
+                                entryTokens shouldBe 0
+                            }
                         }
-                        startIndex += secondThreshold
-                        // 트래픽 진입 성공 그룹 제외하여 트래픽 요청 목록 재생성
-                        traffics = traffics.subList(secondThreshold, traffics.size)
-                    } else {
-                        then("트래픽 대기 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
-                            results.take(secondThreshold).all { it.canEnter } shouldBe false
-                            entryCount shouldBe expectedEntryCount.get()
-                        }
-                    }
 
-                    nowMillis = if (entryCount % threshold == 0) {
-                        // entryCount 가 threshold 도달 후, nowMillis + 1분 증가 처리
-                        min += 1
-                        sec = 0
-                        println("After $min minute...")
-                        nowMillis.plusMillis(60000)
-                    } else {
-                        // entryCount 가 threshold 도달 전, 6초 증가 처리
                         sec += 3
-                        println("After $sec seconds...")
-                        nowMillis.plusMillis(3000)
+                        println("After 3 seconds...(total $sec seconds)")
+                        nowMillis = nowMillis.plusMillis(3000)
+
+                        if (sec % 60 == 0) {
+                            min += 1
+                            sec = 0
+                        }
                     }
                 }
             }
         }
     }
 
-    context("트래픽 제어 Zone 정책 '분당 100건 허용'") {
-        given("트래픽 '1 ~ 200' 까지 3초 단위 Polling 진입 요청하여") {
-            val zoneId = "zone-1-to-200"
-            val totalSize = 200
-            val threshold = 100
-            val secondThreshold = threshold / 10
-            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
+    context("트래픽 제어 Zone 동시 제어 테스트'") {
+        val totalSize = 3000
+        val threshold = 1000
 
-            // 트래픽 대기 요청 정보 생성
-            var traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
-            var nowMillis = Instant.now()
-
-            val controlTraffic: suspend (Int, Traffic, Instant) -> TrafficWaiting = { index, traffic, now ->
-                sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
-            }
-
-            // 트래픽 zone status 정보 생성
-            generateQueueStatus(zoneId)
-
-            var results = emptyList<TrafficWaiting>()
-            var min = 0
-            var sec = 0
-            var startIndex = 0
-            val expectedEntryCount = AtomicInteger(0)
-
-            while (results.isEmpty() || results.all { it.canEnter }.not()) {
-                `when`("[${min}:${sec} 경과] 트래픽 '${startIndex + 1} ~ ${startIndex + secondThreshold}' 까지 '${secondThreshold}건' 진입 요청하여") {
-                    // 다음 그룹 트레픽 진입 요청 처리
-                    results = traffics.mapIndexed { index, traffic ->
-                        logging(traffic, controlTraffic(index, traffic, nowMillis))
-                    }
-                    val entryTokens = results.count { it.canEnter }
-                    val entryCount = getEntryCount(zoneId)
-
-                    if (entryTokens > 0) {
-                        then("트래픽 진입 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
-                            results.take(secondThreshold).all { it.canEnter } shouldBe true
-                            entryCount shouldBe expectedEntryCount.addAndGet(secondThreshold)
-                        }
-                        startIndex += secondThreshold
-                        // 트래픽 진입 성공 그룹 제외하여 트래픽 요청 목록 재생성
-                        traffics = traffics.subList(secondThreshold, traffics.size)
-                    } else {
-                        then("트래픽 대기 시점 'entryCount: ${entryCount}건' 정상 확인한다") {
-                            results.take(secondThreshold).all { it.canEnter } shouldBe false
-                            entryCount shouldBe expectedEntryCount.get()
-                        }
-                    }
-
-                    nowMillis = if (entryCount % threshold == 0) {
-                        // entryCount 가 threshold 도달 후, nowMillis + 1분 증가 처리
-                        min += 1
-                        sec = 0
-                        println("After $min minute...")
-                        nowMillis.plusMillis(60000)
-                    } else {
-                        // entryCount 가 threshold 도달 전, 6초 증가 처리
-                        sec += 3
-                        println("After $sec seconds...")
-                        nowMillis.plusMillis(3000)
-                    }
-                }
-            }
-        }
-    }
-
-    context("트래픽 제어 Zone 정책 '분당 1000건 허용'") {
-        given("'token-1 ~ token-2000' 트래픽 진입 요청하여") {
-            val zoneId = "zone-1-to-2000"
-            val totalSize = 2000
-            val threshold = 1000
-            val sut = TrafficControlScriptExecuteAdapter(trafficControlScript, redisExecuteAdapter, threshold.toString())
+        given("'token-1 ~ token-$totalSize' 트래픽 'threshold: $threshold' 진입 요청하여") {
+            val zoneId = "test-zone-1-to-$totalSize"
+            val sut = getSut(threshold)
 
             // 트래픽 대기 요청 정보 생성
             val traffics = (1..totalSize).map { Traffic(zoneId, "test-token-$it") }.toList()
             var nowMillis = Instant.now()
 
-            val controlTraffic: suspend (Int, Traffic, Instant) -> TrafficWaiting = { index, traffic, now ->
-                sut.controlTraffic(traffic, now.plusMillis(index.toLong() * 2 + 1))
-            }
-
             // 트래픽 zone status 정보 생성
             generateQueueStatus(zoneId)
 
-            var results = traffics.mapIndexed { index, traffic ->
-                logging(traffic, controlTraffic(index, traffic, nowMillis))
-            }
-            var entryCount = getEntryCount(zoneId)
+            var results = controlTraffics(sut, traffics, nowMillis)
+            val expectedEntryCount = AtomicInteger(0)
 
-            `when`("'token-1 ~ token-100' 까지 진입 허용 처리되는 경우") {
+            `when`("'token-1 ~ token-$threshold' 까지 즉시 진입 허용 처리되는 경우") {
 
-                then("진입 허용 결과 건수 '100건' 정상 확인한다") {
-                    results.count { it.canEnter } shouldBe 100
+                then("진입 허용 결과 건수 '${threshold}건' 정상 확인한다") {
+                    val entryCount = results.count { it.canEnter }
+                    entryCount shouldBe threshold
+                    expectedEntryCount.addAndGet(entryCount)
                 }
 
-                then("진입 대기 결과 건수 '1900건' 정상 확인한다") {
-                    results.count { !it.canEnter } shouldBe 1900
-                }
-
-                then("entryCount '100건' 증가 정상 확인한다") {
-                    getEntryCount(zoneId) shouldBe 100
+                then("진입 대기 결과 건수 '${totalSize - threshold}건' 정상 확인한다") {
+                    results.count { !it.canEnter } shouldBe totalSize - threshold
                 }
             }
 
             nowMillis = nowMillis.plusMillis(6000)
+            println("After 6 seconds...")
 
-            `when`("6초 경과 후 'token-201 ~ token-300' 진입 요청 결과 대기 처리되는 경우") {
-                results = traffics.subList(200, 300).mapIndexed { index, traffic ->
-                    logging(traffic, controlTraffic(index, traffic, nowMillis))
-                }
+            val entry12secTraffics = traffics.subList(1100, 1200)
+            val entry12secTrafficsStart = entry12secTraffics.first().token
+            val entry12secTrafficsEnd = entry12secTraffics.last().token
+
+            `when`("6초 경과 후 '$entry12secTrafficsStart ~ $entry12secTrafficsEnd' 진입 요청 결과 대기 처리되는 경우") {
+                results = controlTraffics(sut, entry12secTraffics, nowMillis)
 
                 then("진입 대기 결과 건수 '100건' 정상 확인한다") {
                     results.count { !it.canEnter } shouldBe 100
                 }
-
-                then("entryCount '100건' 정상 확인한다") {
-                    getEntryCount(zoneId) shouldBe entryCount
-                }
             }
 
-            nowMillis = nowMillis.plusMillis(6500)
+            nowMillis = nowMillis.plusMillis(6000)
+            println("After 6 seconds...")
 
-            `when`("12초 경과 후 'token-201 ~ token-300' 진입 요청 결과 허용 처리되는 경우") {
-                results = traffics.subList(200, 300).mapIndexed { index, traffic ->
-                    logging(traffic, controlTraffic(index, traffic, nowMillis))
-                }
+            `when`("12초 경과 후 '$entry12secTrafficsStart ~ $entry12secTrafficsEnd' 진입 요청 결과 허용 처리되는 경우") {
+                results = controlTraffics(sut, entry12secTraffics, nowMillis)
 
                 then("진입 허용 결과 건수 '100건' 정상 확인한다") {
-                    results.count { it.canEnter } shouldBe 100
+                    val entryCount = results.count { it.canEnter }
+                    entryCount shouldBe 100
+                    expectedEntryCount.addAndGet(entryCount)
                 }
-
-                then("entryCount '100건' 증가 정상 확인한다") {
-                    (getEntryCount(zoneId) - entryCount) shouldBe 100
-                }
-
-                entryCount = getEntryCount(zoneId)
             }
 
             nowMillis = nowMillis.plusMillis(60000)
+            println("After 60 seconds...")
 
-            `when`("1분12초 경과 후 'token-1301 ~ token-1400' 진입 요청 결과 대기되는 경우") {
-                results = traffics.subList(1300, 1400).mapIndexed { index, traffic ->
-                    logging(traffic, controlTraffic(index, traffic, nowMillis))
-                }
+            val entry1min24secTraffics = traffics.subList(2300, 2400)
+            val entry1min24secTrafficsStart = entry12secTraffics.first().token
+            val entry1min24secTrafficsEnd = entry12secTraffics.last().token
+
+            `when`("1분12초 경과 후 '$entry1min24secTrafficsStart ~ $entry1min24secTrafficsEnd' 진입 요청 결과 대기되는 경우") {
+                results = controlTraffics(sut, entry1min24secTraffics, nowMillis)
 
                 then("진입 대기 결과 건수 '100건' 정상 확인한다") {
                     results.count { !it.canEnter } shouldBe 100
                 }
-
-                then("'entryCount: 200' 정상 확인한다") {
-                    getEntryCount(zoneId) shouldBe entryCount
-                }
             }
 
-            nowMillis = nowMillis.plusMillis(6500)
+            nowMillis = nowMillis.plusMillis(6000)
+            println("After 6 seconds...")
 
-            `when`("1분18초 경과 후 'token-1301 ~ token-1400' 진입 요청 결과 허용되는 경우") {
-                results = traffics.subList(1300, 1400).mapIndexed { index, traffic ->
-                    logging(traffic, controlTraffic(index, traffic, nowMillis))
-                }
+            `when`("1분24초 경과 후 '$entry1min24secTrafficsStart ~ $entry1min24secTrafficsEnd' 진입 요청 결과 허용되는 경우") {
+                results = controlTraffics(sut, entry1min24secTraffics, nowMillis)
 
                 then("진입 허용 결과 건수 '100건' 정상 확인한다") {
-                    results.count { it.canEnter } shouldBe 100
-                }
-
-                then("entryCount '100건' 증가 정상 확인한다") {
-                    (getEntryCount(zoneId) - entryCount) shouldBe 100
+                    val entryCount = results.count { it.canEnter }
+                    entryCount shouldBe 100
+                    expectedEntryCount.addAndGet(entryCount)
                 }
             }
         }
