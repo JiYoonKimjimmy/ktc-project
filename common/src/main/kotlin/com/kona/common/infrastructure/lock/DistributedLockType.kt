@@ -7,11 +7,11 @@ enum class DistributedLockType(
 
     EXPIRE_TRAFFIC_TOKEN_SCHEDULER_LOCK(
         note = "트래픽 토큰 만료 Scheduler 실행 Lock",
-        key = "ktc:{dateTime}:expire-traffic-token-scheduler-lock"
+        key = "ktc:expire-traffic-token-scheduler-lock:{dateTime}"
     ),
     TRAFFIC_ZONE_MONITORING_SCHEDULER_LOCK(
         note = "트래픽 Zone 모니터링 수집 Scheduler 실행 Lock",
-        key = "ktc:{dateTime}:traffic-zone-monitoring-scheduler-lock"
+        key = "ktc:traffic-zone-monitoring-scheduler-lock:{dateTime}"
     )
     ;
 

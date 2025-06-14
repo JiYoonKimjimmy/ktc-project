@@ -18,7 +18,7 @@ class SchedulerConfig {
         executor.corePoolSize = 5
         executor.maxPoolSize = 30
         executor.queueCapacity = 100
-        executor.setThreadNamePrefix("traffic-expiration-")
+        executor.setThreadNamePrefix("token-expiration-")
         executor.initialize()
         return executor
     }
@@ -29,7 +29,7 @@ class SchedulerConfig {
         executor.corePoolSize = 5
         executor.maxPoolSize = 30
         executor.queueCapacity = 100
-        executor.setThreadNamePrefix("traffic-zone-monitoring-")
+        executor.setThreadNamePrefix("zone-monitoring-")
         executor.initialize()
         return executor
     }

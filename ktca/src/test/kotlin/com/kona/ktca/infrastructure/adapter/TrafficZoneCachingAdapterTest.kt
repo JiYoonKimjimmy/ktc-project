@@ -23,7 +23,7 @@ class TrafficZoneCachingAdapterTest : BehaviorSpec({
         }
 
         `when`("해당 Zone Cache 정보 삭제 성공인 경우") {
-            trafficZoneCachingAdapter.clear(listOf(zoneId))
+            trafficZoneCachingAdapter.clearAll(listOf(zoneId))
 
             then("처리 결과 정상 확인한다") {
                 val result = keys.map { reactiveStringRedisTemplate.opsForValue().getAndAwait(it.value) }.all { it == null }
@@ -47,7 +47,7 @@ class TrafficZoneCachingAdapterTest : BehaviorSpec({
         }
 
         `when`("모든 Zone Cache 정보 삭제 성공인 경우") {
-            trafficZoneCachingAdapter.clear(emptyList())
+            trafficZoneCachingAdapter.clearAll(emptyList())
 
             then("처리 결과 정상 확인한다") {
                 val result = keys.map { reactiveStringRedisTemplate.opsForValue().getAndAwait(it) }.all { it == null }
