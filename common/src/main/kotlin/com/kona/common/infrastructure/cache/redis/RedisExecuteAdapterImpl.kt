@@ -1,6 +1,5 @@
 package com.kona.common.infrastructure.cache.redis
 
-import io.lettuce.core.RestoreArgs.Builder.ttl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
@@ -8,7 +7,6 @@ import org.springframework.data.redis.core.*
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 
 @Component
 class RedisExecuteAdapterImpl(
