@@ -1,8 +1,7 @@
-package com.kona.ktc.infrastructure.event
+package com.kona.ktca.application.event
 
-import com.kona.common.infrastructure.message.rabbitmq.MessageExchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
-import com.kona.common.infrastructure.message.rabbitmq.MessagePublisher
 import com.kona.common.infrastructure.util.error
+import com.kona.ktca.domain.port.inbound.TrafficZoneEntryCountExpirePort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -11,21 +10,24 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
-class SaveTrafficStatusEventListener(
+class ExpireTrafficZoneEntryCountEventListener(
     private val defaultCoroutineScope: CoroutineScope,
-    private val messagePublisher: MessagePublisher,
+    private val trafficZoneEntryCountExpirePort: TrafficZoneEntryCountExpirePort,
 ) {
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @EventListener
-    fun handleSaveTrafficStatusEvent(event: SaveTrafficStatusEvent) = defaultCoroutineScope.launch {
+    fun handleExpireTrafficZoneEntryCountEvent(
+        event: ExpireTrafficZoneEntryCountEvent
+    ) = defaultCoroutineScope.launch {
         try {
             async {
-                messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message)
+                trafficZoneEntryCountExpirePort.expireTrafficZoneEntryCount(event.zoneIds)
+                    .also { logger.info("Expired Traffic Zone entry-count Count : $it") }
             }.await()
         } catch (e: Exception) {
             logger.error(e)
         }
     }
-} 
+}

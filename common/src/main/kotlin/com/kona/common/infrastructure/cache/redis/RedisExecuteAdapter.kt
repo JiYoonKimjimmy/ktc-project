@@ -1,6 +1,7 @@
 package com.kona.common.infrastructure.cache.redis
 
 import org.springframework.data.redis.core.script.RedisScript
+import java.time.Duration
 
 interface RedisExecuteAdapter {
 
@@ -28,4 +29,5 @@ interface RedisExecuteAdapter {
 
     suspend fun getHashValue(key: String, hashKey: String): String?
 
+    suspend fun expire(key: String, duration: Duration): Boolean
 }

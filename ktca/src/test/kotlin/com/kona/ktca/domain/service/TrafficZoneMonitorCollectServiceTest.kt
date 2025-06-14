@@ -12,6 +12,7 @@ import com.kona.ktca.infrastructure.cache.TrafficZoneMonitorCacheAdapterImpl
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneMonitorRepository
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
+import com.kona.ktca.testsupport.FakeApplicationEventPublisher
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
@@ -26,11 +27,12 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
     val trafficZoneMonitorRepository = FakeTrafficZoneMonitorRepository()
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
     val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
+    val eventPublisher = FakeApplicationEventPublisher()
 
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
     val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
     val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCacheAdapterImpl()
-    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository, trafficZoneMonitorCacheAdapter)
+    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository, trafficZoneMonitorCacheAdapter, eventPublisher)
     val trafficZoneMonitorCollectService = TrafficZoneMonitorCollectService(
         trafficZoneFindPort = trafficZoneFindAdapter,
         trafficZoneWaitingFindPort = trafficZoneWaitingFindAdapter,
