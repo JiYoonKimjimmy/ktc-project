@@ -17,7 +17,7 @@ class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
         saved = (1..10).map { trafficZoneMonitorFixture.giveOne(it) }
         listOf("2025-06-11", "2025-06-12").forEach {
             val now = LocalDate.parse(it)
-            trafficZoneMonitorCacheAdapter.saveLatestTrafficZoneMonitoring(saved, now)
+            trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(saved, now)
         }
     }
 
@@ -27,10 +27,10 @@ class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
         val monitoring = (1..10).map { trafficZoneMonitorFixture.giveOne(it) }
 
         // when
-        trafficZoneMonitorCacheAdapter.saveLatestTrafficZoneMonitoring(monitoring, today)
+        trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(monitoring, today)
 
         // then
-        val result = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring(today)
+        val result = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult(today)
         result.size shouldBe 10
     }
 
@@ -40,12 +40,12 @@ class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
         val yesterday = LocalDate.parse("2025-06-11")
 
         // when
-        trafficZoneMonitorCacheAdapter.deleteTrafficZoneMonitoring(today)
+        trafficZoneMonitorCacheAdapter.deleteMonitoringLatestResult(today)
 
         // then
-        val todayResult = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring(today)
+        val todayResult = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult(today)
         todayResult.size shouldBe 0
-        val yesterdayResult = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring(yesterday)
+        val yesterdayResult = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult(yesterday)
         yesterdayResult.size shouldBe 10
     }
 
@@ -54,10 +54,10 @@ class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
         val yesterday = LocalDate.parse("2025-06-11")
 
         // when
-        trafficZoneMonitorCacheAdapter.clearTrafficZoneMonitoring()
+        trafficZoneMonitorCacheAdapter.clearMonitoringLatestResult()
 
         // then
-        val result = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring(yesterday)
+        val result = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult(yesterday)
         result.size shouldBe 0
     }
 
@@ -67,10 +67,10 @@ class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
         val isZero = true
 
         // when
-        val result = trafficZoneMonitorCacheAdapter.updateTrafficZoneWaitingCount(zoneId, isZero)
+        val result = trafficZoneMonitorCacheAdapter.incrementMonitoringStopCounter(zoneId, isZero)
 
         // then
-        result shouldBe trafficZoneMonitorCacheAdapter.findTrafficZoneWaitingCount(zoneId)
+        result shouldBe trafficZoneMonitorCacheAdapter.findMonitoringStopCounter(zoneId)
     }
 
 })

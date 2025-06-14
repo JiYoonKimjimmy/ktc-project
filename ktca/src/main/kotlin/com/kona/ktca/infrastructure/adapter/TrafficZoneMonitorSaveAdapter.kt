@@ -1,5 +1,6 @@
 package com.kona.ktca.infrastructure.adapter
 
+import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorSavePort
 import com.kona.ktca.infrastructure.cache.TrafficZoneMonitorCacheAdapter
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component
 @Component
 class TrafficZoneMonitorSaveAdapter(
     private val trafficZoneMonitorRepository: TrafficZoneMonitorRepository,
-    private val trafficZoneMonitorCacheAdapter: TrafficZoneMonitorCacheAdapter
+    private val trafficZoneMonitorCacheAdapter: TrafficZoneMonitorCacheAdapter,
+    private val redisExecuteAdapter: RedisExecuteAdapter
 ) : TrafficZoneMonitorSavePort {
 
     override suspend fun saveAll(monitoring: List<TrafficZoneMonitor>): List<TrafficZoneMonitor> = withContext(Dispatchers.IO) {
@@ -21,7 +23,7 @@ class TrafficZoneMonitorSaveAdapter(
          * - saveOnlyCache: 모니터링 조회 결과 `waitingCount: 0` 결과 5회 이상인 경우, Cache 만 저장
          * - saveDBAndCache: 모니터링 조회 결과 `waitingCount: 0` 결과 5회 이하인 경우, DB 저장 후 Cache 저장
          */
-        val (saveOnlyCache, saveDBAndCache) = monitoring.partition { it.updateTrafficZoneWaitingCount() > 5 }
+        val (saveOnlyCache, saveDBAndCache) = monitoring.partition { it.checkMonitoringStopCounter() }
 
         // Zone 모니터링 결과 DB 저장
         val saved = saveDBAndCache.saveEntities()
@@ -30,8 +32,9 @@ class TrafficZoneMonitorSaveAdapter(
         (saved + saveOnlyCache).saveCaches()
     }
 
-    private suspend fun TrafficZoneMonitor.updateTrafficZoneWaitingCount(): Int {
-        return trafficZoneMonitorCacheAdapter.updateTrafficZoneWaitingCount(zoneId = zoneId, isZero = (waitingCount == 0L))
+    private suspend fun TrafficZoneMonitor.checkMonitoringStopCounter(): Boolean {
+        val counter = trafficZoneMonitorCacheAdapter.incrementMonitoringStopCounter(zoneId = zoneId, isZero = (waitingCount == 0L))
+        return counter > 5
     }
 
     private suspend fun List<TrafficZoneMonitor>.saveEntities(): List<TrafficZoneMonitor> {
@@ -46,7 +49,7 @@ class TrafficZoneMonitorSaveAdapter(
 
     private suspend fun List<TrafficZoneMonitor>.saveCaches(): List<TrafficZoneMonitor> {
         return if (this.isNotEmpty()) {
-            trafficZoneMonitorCacheAdapter.saveLatestTrafficZoneMonitoring(monitoring = this)
+            trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(monitoring = this)
         } else {
             emptyList()
         }
