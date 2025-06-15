@@ -42,7 +42,7 @@ class TrafficZoneMonitorFindAdapter(
     }
 
     private suspend fun findLatestTrafficZoneMonitoring(): List<TrafficZoneMonitor> {
-        return trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+        return trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
     }
 
 }

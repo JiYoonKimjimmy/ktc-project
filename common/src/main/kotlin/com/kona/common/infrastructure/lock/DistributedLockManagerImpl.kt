@@ -39,7 +39,7 @@ class DistributedLockManagerImpl(
                     lock.unlock().also { logger.info("Redisson '$key' unlocked.") }
                 }
             } catch (e: IllegalMonitorStateException) {
-                logger.error("Redisson '$key' Lock already unLock.")
+                logger.error("Redisson '$key' Lock already unLock.", e)
             }
         }
     }

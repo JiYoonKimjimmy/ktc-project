@@ -45,7 +45,7 @@ class TrafficZoneManagementUseCase(
     }
 
     suspend fun clearTrafficZone(zoneIds: List<String>) {
-        trafficZoneCachingPort.clear(zoneIds)
+        trafficZoneCachingPort.clearAll(zoneIds)
     }
 
 }

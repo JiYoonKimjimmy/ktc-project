@@ -35,7 +35,7 @@ class TrafficZoneCommandService(
         trafficZoneFindPort.findTrafficZone(zoneId)
             ?.delete()
             ?.let { trafficZoneSavePort.save(it) }
-            ?.let { trafficZoneCachingPort.clear(listOf(it.zoneId)) }
+            ?.let { trafficZoneCachingPort.clearAll(listOf(it.zoneId)) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 

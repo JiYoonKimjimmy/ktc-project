@@ -12,6 +12,7 @@ import com.kona.ktca.infrastructure.cache.TrafficZoneMonitorCacheAdapterImpl
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneMonitorRepository
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
+import com.kona.ktca.testsupport.FakeApplicationEventPublisher
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
@@ -26,11 +27,12 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
     val trafficZoneMonitorRepository = FakeTrafficZoneMonitorRepository()
     val reactiveStringRedisTemplate = EmbeddedRedis.reactiveStringRedisTemplate
     val redisExecuteAdapter = RedisExecuteAdapterImpl(reactiveStringRedisTemplate)
+    val eventPublisher = FakeApplicationEventPublisher()
 
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
     val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
     val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCacheAdapterImpl()
-    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository, trafficZoneMonitorCacheAdapter)
+    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository, trafficZoneMonitorCacheAdapter, eventPublisher)
     val trafficZoneMonitorCollectService = TrafficZoneMonitorCollectService(
         trafficZoneFindPort = trafficZoneFindAdapter,
         trafficZoneWaitingFindPort = trafficZoneWaitingFindAdapter,
@@ -53,7 +55,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
             }
 
             then("Zone 모니터링 Cache 조회 결과 '0건' 정상 확인한다") {
-                val caches = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+                val caches = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
                 caches.size shouldBe 0
             }
         }
@@ -104,7 +106,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
             }
 
             then("Zone 모니터링 Cache 조회 결과 '2건' 정상 확인한다") {
-                val caches = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+                val caches = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
                 caches.size shouldBe 2
             }
         }
@@ -140,7 +142,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
             }
 
             then("'test-zone-2' Zone 모니터링 Cache 조회 결과 '1건' 정상 확인한다") {
-                val caches = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+                val caches = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
                 caches.filter { it.zoneId == zoneId2 }.size shouldBe 1
             }
         }
@@ -162,7 +164,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
             }
 
             then("마지막 Zone 모니터링 결과 Cache 조회하여 '1건' 정상 확인한다") {
-                val caches = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+                val caches = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
                 caches.size shouldBeGreaterThanOrEqual 1
             }
         }
@@ -178,7 +180,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
             }
 
             then("마지막 Zone 모니터링 결과 Cache 조회하여 '1건' 정상 확인한다") {
-                val caches = trafficZoneMonitorCacheAdapter.findLatestTrafficZoneMonitoring()
+                val caches = trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
                 caches.size shouldBeGreaterThanOrEqual 1
             }
         }

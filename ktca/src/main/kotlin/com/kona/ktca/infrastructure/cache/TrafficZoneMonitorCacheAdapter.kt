@@ -5,16 +5,16 @@ import java.time.LocalDate
 
 interface TrafficZoneMonitorCacheAdapter {
 
-    suspend fun saveLatestTrafficZoneMonitoring(monitoring: List<TrafficZoneMonitor>, now: LocalDate = LocalDate.now()): List<TrafficZoneMonitor>
+    suspend fun saveMonitoringLatestResult(monitoring: List<TrafficZoneMonitor>, now: LocalDate = LocalDate.now()): List<TrafficZoneMonitor>
 
-    suspend fun findLatestTrafficZoneMonitoring(now: LocalDate = LocalDate.now()): List<TrafficZoneMonitor>
+    suspend fun findAllMonitoringLatestResult(now: LocalDate = LocalDate.now()): List<TrafficZoneMonitor>
 
-    suspend fun deleteTrafficZoneMonitoring(now: LocalDate = LocalDate.now())
+    suspend fun deleteMonitoringLatestResult(now: LocalDate = LocalDate.now())
 
-    suspend fun clearTrafficZoneMonitoring()
+    suspend fun clearMonitoringLatestResult()
 
-    suspend fun updateTrafficZoneWaitingCount(zoneId: String, isZero: Boolean): Int
+    suspend fun incrementMonitoringStopCounter(zoneId: String, isZero: Boolean): Int
 
-    suspend fun findTrafficZoneWaitingCount(zoneId: String): Int
+    suspend fun findMonitoringStopCounter(zoneId: String): Int
 
 }
