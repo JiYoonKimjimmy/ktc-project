@@ -61,15 +61,18 @@ class TrafficControlExecuteAdapter(
         val queueStatus = reactiveStringRedisTemplate.getHashValue(queueStatusKey, QUEUE_STATUS_KEY)
         val activationTime = reactiveStringRedisTemplate.getHashValue(queueStatusKey, QUEUE_ACTIVATION_TIME_KEY)?.toLong()
 
-        if (queueStatus == null || (activationTime == null || nowMilli < activationTime)) {
-            // Queue status 정보 없거나, Queue activation 시간 이전인 경우, 진입 처리
-            return TrafficWaiting(1, 0, 0, 0)
+        if (queueStatus == null) {
+            // Queue status 정보 없는 경우, 차단('TRAFFIC_ZONE_NOT_FOUND') 처리
+            return TrafficWaiting(-100, 0, 0, 0)
         } else if (queueStatus == TrafficZoneStatus.BLOCKED.name) {
-            // Queue status 'BLOCKED' 인 경우, 진입 차단 처리
-            return TrafficWaiting(-1, 0, 0, 0)
+            // Queue status 'BLOCKED' 인 경우, 차단('TRAFFIC_ZONE_BLOCKED') 처리
+            return TrafficWaiting(-102, 0, 0, 0)
         } else if (queueStatus == TrafficZoneStatus.FAULTY_503.name) {
-            // Queue status 'FAULTY_503' 인 경우, 진입 장애 차단 처리
-            return TrafficWaiting(-2, 0, 0, 0)
+            // Queue status 'FAULTY_503' 인 경우, 진입 장애 차단('FAULTY_503_ERROR') 처리
+            return TrafficWaiting(-503, 0, 0, 0)
+        } else if (activationTime != null && nowMilli < activationTime) {
+            // Queue activation 시간이 현재보다 이전인 경우, 진입 처리
+            return TrafficWaiting(1, 0, 0, 0)
         }
 
         // 1. threshold 조회 (없으면 defaultThreshold 사용)

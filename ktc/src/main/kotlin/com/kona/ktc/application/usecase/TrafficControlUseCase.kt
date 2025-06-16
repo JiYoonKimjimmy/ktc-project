@@ -16,6 +16,7 @@ class TrafficControlUseCase(
 
     suspend fun controlTraffic(traffic: Traffic, now: Instant = Instant.now()): TrafficWaiting {
         return trafficControlScriptExecuteAdapter.controlTraffic(traffic, now)
+            .validateTrafficWaitingResult()
             .also { publishSaveTrafficStatusEvent(traffic = traffic, waiting = it) }
     }
 

@@ -19,15 +19,18 @@ local status = queueStatus[1]
 local activationTime = tonumber(queueStatus[2] or nowMilli)
 
 -- 0. Queue status & activationTime 확인 후 진입 or 차단 처리
-if status == nil or (activationTime == nil or nowMilli < activationTime) then
-    -- Queue status 정보 없거나, Queue activation 시간 이전인 경우, 진입 처리
-    return { 1, 0, 0, 0 }
+if not status or status == '' then
+    -- Queue status 정보 없는 경우, 차단('TRAFFIC_ZONE_NOT_FOUND') 처리
+    return { -100, 0, 0, 0 }
 elseif status == 'BLOCKED' then
-    -- Queue status 'BLOCKED' 인 경우, 진입 차단 처리
-    return { -1, 0, 0, 0 }
+    -- Queue status 'BLOCKED' 인 경우, 차단('TRAFFIC_ZONE_BLOCKED') 처리
+    return { -102, 0, 0, 0 }
 elseif status == 'FAULTY_503' then
-    -- Queue status 'FAULTY_503' 인 경우, 진입 장애 차단 처리
-    return { -2, 0, 0, 0 }
+    -- Queue status 'FAULTY_503' 인 경우, 진입 장애 차단('FAULTY_503_ERROR') 처리
+    return { -503, 0, 0, 0 }
+elseif activationTime ~= nil and nowMilli < activationTime then
+    -- Queue activation 시간이 현재보다 이전인 경우, 진입 처리
+    return { 1, 0, 0, 0 }
 end
 
 -- 1. threshold 조회

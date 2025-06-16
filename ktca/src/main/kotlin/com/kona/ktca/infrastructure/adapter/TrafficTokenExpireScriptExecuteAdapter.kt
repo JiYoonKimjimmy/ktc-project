@@ -3,6 +3,7 @@ package com.kona.ktca.infrastructure.adapter
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapter
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.ktca.domain.port.outbound.TrafficTokenExpireExecutePort
+import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -12,6 +13,8 @@ class TrafficTokenExpireScriptExecuteAdapter(
     private val trafficExpireScript: RedisScript<List<*>>,
     private val redisExecuteAdapter: RedisExecuteAdapter,
 ) : TrafficTokenExpireExecutePort {
+    // logger
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     override suspend fun expireTrafficToken(now: Instant): Long {
         val script = trafficExpireScript
@@ -23,7 +26,10 @@ class TrafficTokenExpireScriptExecuteAdapter(
             val queueKey = QUEUE.getKey(it)
             val tokenLastPollingTimeKey = TOKEN_LAST_POLLING_TIME.getKey(it)
             val keys = listOf(queueKey, tokenLastPollingTimeKey)
-            val args = listOf(now.toEpochMilli().toString())
+            val nowMilli = now.toEpochMilli().toString()
+            val args = listOf(nowMilli)
+
+            logger.info("[ExpireTrafficToken] zoneId: $it, nowMilli: $nowMilli")
 
             redisExecuteAdapter.execute(script, keys, args)[0] as Long
         }
