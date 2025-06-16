@@ -11,6 +11,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
+@CrossOrigin(
+    origins = ["*"],
+    allowedHeaders = ["*"],
+    methods = [RequestMethod.GET, RequestMethod.POST]
+)
 @RequestMapping("/api/v1/traffic")
 @RestController
 class V1TrafficControlAdapter(
@@ -21,14 +26,14 @@ class V1TrafficControlAdapter(
 
     @PostMapping("/wait")
     suspend fun wait(@RequestBody request: TrafficWaitRequest): ResponseEntity<TrafficControlResponse> {
-        val traffic = trafficMapper.toDomain(request)
+        val traffic = trafficMapper.toDomain(request.validate())
         val waiting = trafficControlUseCase.controlTraffic(traffic)
         return trafficMapper.toResponse(traffic, waiting).success(HttpStatus.OK)
     }
 
     @PostMapping("/entry")
     suspend fun entry(@RequestBody request: TrafficEntryRequest): ResponseEntity<TrafficControlResponse> {
-        val traffic = trafficMapper.toDomain(request)
+        val traffic = trafficMapper.toDomain(request.validate())
         val waiting = trafficControlUseCase.controlTraffic(traffic)
         return trafficMapper.toResponse(traffic, waiting).success(HttpStatus.OK)
     }

@@ -13,7 +13,7 @@ enum class ErrorCode(
     TRAFFIC_ZONE_STATUS_IS_BLOCKED(HttpStatus.INTERNAL_SERVER_ERROR, "102", "Traffic zone status is blocked"),
     TRAFFIC_ZONE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "103", "Traffic zone already exists"),
 
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900", "Internal server error"),
+    REQUIRED_REQUEST_PARAMETER_MISSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900", "Required request parameter is missing"),
     EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "901", "External API service error"),
     ARGUMENT_NOT_VALID_ERROR(HttpStatus.BAD_REQUEST, "902", "Argument not valid"),
     REDISSON_LOCK_ATTEMPT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "903", "Redisson lock attempt error"),
