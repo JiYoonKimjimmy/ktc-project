@@ -20,5 +20,5 @@ enum class ErrorCode(
 
     UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "999", "Unknown error"),
 
-    FAULTY_503_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "503", "ktc unavailable"),
+    FAULTY_503_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "503", "KTC Service unavailable"),
 }
