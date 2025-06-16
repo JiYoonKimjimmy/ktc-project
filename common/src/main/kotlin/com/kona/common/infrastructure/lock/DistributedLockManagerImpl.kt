@@ -51,6 +51,6 @@ class DistributedLockManagerImpl(
 
     override suspend fun <R> collectTrafficZoneMonitoringSchedulerLock(now: String, block: suspend () -> R): R {
         val key = DistributedLockType.TRAFFIC_ZONE_MONITORING_SCHEDULER_LOCK.getKey(now)
-        return lock(key = key, waitTime = 0, leaseTime = 5000, timeUnit = TimeUnit.SECONDS, block = block)
+        return lock(key = key, waitTime = 0, leaseTime = 5, timeUnit = TimeUnit.SECONDS, block = block)
     }
 }
