@@ -11,11 +11,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
-@CrossOrigin(
-    origins = ["*"],
-    allowedHeaders = ["*"],
-    methods = [RequestMethod.GET, RequestMethod.POST]
-)
 @RequestMapping("/api/v1/traffic")
 @RestController
 class V1TrafficControlAdapter(
