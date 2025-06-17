@@ -32,11 +32,13 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
     val trafficZoneFindAdapter = TrafficZoneFindAdapter(trafficZoneRepository)
     val trafficZoneWaitingFindAdapter = TrafficZoneWaitingFindAdapter(redisExecuteAdapter)
     val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCacheAdapterImpl()
-    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository, trafficZoneMonitorCacheAdapter, eventPublisher)
+    val trafficZoneMonitorSaveAdapter = TrafficZoneMonitorSaveAdapter(trafficZoneMonitorRepository)
     val trafficZoneMonitorCollectService = TrafficZoneMonitorCollectService(
         trafficZoneFindPort = trafficZoneFindAdapter,
         trafficZoneWaitingFindPort = trafficZoneWaitingFindAdapter,
-        trafficZoneMonitorSavePort = trafficZoneMonitorSaveAdapter
+        trafficZoneMonitorSavePort = trafficZoneMonitorSaveAdapter,
+        trafficZoneMonitorCacheAdapter = trafficZoneMonitorCacheAdapter,
+        eventPublisher = eventPublisher
     )
 
     given("전체 트래픽 제어 Zone 모니터링 수집 요청되어") {

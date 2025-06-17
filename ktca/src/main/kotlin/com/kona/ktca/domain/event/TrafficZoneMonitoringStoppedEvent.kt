@@ -1,5 +1,5 @@
 package com.kona.ktca.domain.event
 
-data class ExpireTrafficZoneEntryCountEvent(
+data class TrafficZoneMonitoringStoppedEvent(
     val zoneIds: List<String>
 )

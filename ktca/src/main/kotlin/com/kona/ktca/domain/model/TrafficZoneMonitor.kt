@@ -41,4 +41,9 @@ data class TrafficZoneMonitor(
             updated = zone.updated
         )
     }
+
+    fun isZeroWaitingCount(): Boolean {
+        return waitingCount == 0L
+    }
+
 }

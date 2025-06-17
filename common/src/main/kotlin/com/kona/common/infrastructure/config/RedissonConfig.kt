@@ -40,7 +40,6 @@ class RedissonConfig(
         config
             .useSingleServer()
             .setAddress("redis://$host:$port")
-            .setPassword(password)
             .setTimeout(timeout.toMillis().toInt())
             .setConnectTimeout(connectTimeout.toMillis().toInt())
             .setConnectionMinimumIdleSize(minIdle)
