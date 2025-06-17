@@ -3,7 +3,7 @@ package com.kona.ktc.application.usecase
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 import com.kona.ktc.domain.port.outbound.TrafficControlPort
-import com.kona.ktc.infrastructure.event.SaveTrafficStatusEvent
+import com.kona.ktc.domain.event.TrafficControlCompletedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -17,11 +17,11 @@ class TrafficControlUseCase(
     suspend fun controlTraffic(traffic: Traffic, now: Instant = Instant.now()): TrafficWaiting {
         return trafficControlScriptExecuteAdapter.controlTraffic(traffic, now)
             .validateTrafficWaitingResult()
-            .also { publishSaveTrafficStatusEvent(traffic = traffic, waiting = it) }
+            .also { publishTrafficControlCompletedEvent(traffic = traffic, waiting = it) }
     }
 
-    private suspend fun publishSaveTrafficStatusEvent(traffic: Traffic, waiting: TrafficWaiting) {
-        eventPublisher.publishEvent(SaveTrafficStatusEvent(traffic, waiting))
+    private suspend fun publishTrafficControlCompletedEvent(traffic: Traffic, waiting: TrafficWaiting) {
+        eventPublisher.publishEvent(TrafficControlCompletedEvent(traffic, waiting))
     }
 
 }

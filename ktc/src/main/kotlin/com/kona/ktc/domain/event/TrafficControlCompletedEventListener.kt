@@ -1,4 +1,4 @@
-package com.kona.ktc.infrastructure.event
+package com.kona.ktc.domain.event
 
 import com.kona.common.infrastructure.message.rabbitmq.MessageExchange.V1_SAVE_TRAFFIC_STATUS_EXCHANGE
 import com.kona.common.infrastructure.message.rabbitmq.MessagePublisher
@@ -11,7 +11,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
-class SaveTrafficStatusEventListener(
+class TrafficControlCompletedEventListener(
     private val defaultCoroutineScope: CoroutineScope,
     private val messagePublisher: MessagePublisher,
 ) {
@@ -19,7 +19,7 @@ class SaveTrafficStatusEventListener(
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @EventListener
-    fun handleSaveTrafficStatusEvent(event: SaveTrafficStatusEvent) = defaultCoroutineScope.launch {
+    fun handleTrafficControlCompletedEvent(event: TrafficControlCompletedEvent) = defaultCoroutineScope.launch {
         try {
             async {
                 messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message)

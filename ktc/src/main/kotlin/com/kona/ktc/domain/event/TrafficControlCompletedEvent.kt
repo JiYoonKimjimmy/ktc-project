@@ -1,14 +1,14 @@
-package com.kona.ktc.infrastructure.event
+package com.kona.ktc.domain.event
 
-import com.kona.common.infrastructure.message.rabbitmq.dto.V1TrafficStatusMessage
+import com.kona.common.infrastructure.message.rabbitmq.dto.TrafficStatusMessage
 import com.kona.ktc.domain.model.Traffic
 import com.kona.ktc.domain.model.TrafficWaiting
 
-data class SaveTrafficStatusEvent(
-    val message: V1TrafficStatusMessage
+data class TrafficControlCompletedEvent(
+    val message: TrafficStatusMessage
 ) {
     constructor(traffic: Traffic, waiting: TrafficWaiting) : this(
-        message = V1TrafficStatusMessage(
+        message = TrafficStatusMessage(
             zoneId = traffic.zoneId,
             token = traffic.token,
             clientIP = traffic.clientIP,

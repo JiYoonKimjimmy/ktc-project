@@ -2,7 +2,7 @@ package com.kona.common.infrastructure.message.rabbitmq.dto
 
 import com.kona.common.infrastructure.message.rabbitmq.BaseMessage
 
-data class V1TrafficStatusMessage(
+data class TrafficStatusMessage(
 
     val zoneId: String,
     val token: String,

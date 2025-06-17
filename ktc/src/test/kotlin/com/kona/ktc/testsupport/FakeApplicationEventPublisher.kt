@@ -4,7 +4,7 @@ import com.kona.common.infrastructure.message.rabbitmq.MessageExchange.V1_SAVE_T
 import com.kona.common.infrastructure.message.rabbitmq.MessagePublisherImpl
 import com.kona.common.testsupport.coroutine.TestCoroutineScope
 import com.kona.common.testsupport.rabbit.MockRabbitMQ
-import com.kona.ktc.infrastructure.event.SaveTrafficStatusEvent
+import com.kona.ktc.domain.event.TrafficControlCompletedEvent
 import kotlinx.coroutines.launch
 import org.springframework.context.ApplicationEventPublisher
 
@@ -16,7 +16,7 @@ class FakeApplicationEventPublisher : ApplicationEventPublisher {
     override fun publishEvent(event: Any) {
         defaultCoroutineScope.launch {
             when (event) {
-                is SaveTrafficStatusEvent -> messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message)
+                is TrafficControlCompletedEvent -> messagePublisher.publishDirectMessage(exchange = V1_SAVE_TRAFFIC_STATUS_EXCHANGE, message = event.message)
             }
         }
     }
