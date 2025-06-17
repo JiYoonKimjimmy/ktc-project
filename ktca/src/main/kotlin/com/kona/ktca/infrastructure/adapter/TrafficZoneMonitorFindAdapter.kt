@@ -25,11 +25,7 @@ class TrafficZoneMonitorFindAdapter(
         val zonesMap = zones.associateBy { it.zoneId }
         val monitorsMap = findLatestTrafficZoneMonitoring().associateBy { it.zoneId }
         return zones.mapNotNull {
-            if (monitorsMap[it.zoneId] != null && zonesMap[it.zoneId] != null) {
-                monitorsMap[it.zoneId]!!.update(zonesMap[it.zoneId]!!)
-            } else {
-                null
-            }
+            monitorsMap[it.zoneId]?.updateTrafficZone(zone = zonesMap[it.zoneId])
         }
     }
 
@@ -43,6 +39,14 @@ class TrafficZoneMonitorFindAdapter(
 
     private suspend fun findLatestTrafficZoneMonitoring(): List<TrafficZoneMonitor> {
         return trafficZoneMonitorCacheAdapter.findAllMonitoringLatestResult()
+    }
+
+    private suspend fun TrafficZoneMonitor.updateTrafficZone(zone: TrafficZone?): TrafficZoneMonitor? {
+        return if (zone != null) {
+            this.update(zone)
+        } else {
+            null
+        }
     }
 
 }

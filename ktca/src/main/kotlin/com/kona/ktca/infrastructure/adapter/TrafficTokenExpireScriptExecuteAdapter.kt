@@ -21,15 +21,14 @@ class TrafficTokenExpireScriptExecuteAdapter(
 
         // 모든 zqueue key 목록 조회
         val activeZoneIds = redisExecuteAdapter.getValuesForSet(ACTIVATION_ZONES.key)
+        val nowMilli = now.toEpochMilli().toString()
+        logger.info("Execute expire-traffic script. [Zone count: ${activeZoneIds.size}, nowMilli: $nowMilli]")
 
         return activeZoneIds.sumOf {
             val queueKey = QUEUE.getKey(it)
             val tokenLastPollingTimeKey = TOKEN_LAST_POLLING_TIME.getKey(it)
             val keys = listOf(queueKey, tokenLastPollingTimeKey)
-            val nowMilli = now.toEpochMilli().toString()
             val args = listOf(nowMilli)
-
-            logger.info("[ExpireTrafficToken] zoneId: $it, nowMilli: $nowMilli")
 
             redisExecuteAdapter.execute(script, keys, args)[0] as Long
         }

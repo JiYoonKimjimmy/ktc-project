@@ -1,5 +1,6 @@
 package com.kona.ktca.application.scheduler
 
+import com.kona.common.infrastructure.scheduler.AbstractApplicationScheduler
 import com.kona.common.infrastructure.lock.DistributedLockManager
 import com.kona.ktca.domain.port.inbound.TrafficTokenExpirePort
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +17,7 @@ class TrafficTokenExpireScheduler(
     private val trafficTokenExpirePort: TrafficTokenExpirePort,
     private val distributedLockManager: DistributedLockManager,
     private val defaultCoroutineScope: CoroutineScope
-) {
+) : AbstractApplicationScheduler() {
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -34,10 +35,10 @@ class TrafficTokenExpireScheduler(
                  * 1. 트래픽 토큰 만료 task 실행 분산락 요청
                  * 2. 분산락 획득 후, 현재 시간 - 1min 기준 트래픽 토큰 삭제 요청
                  */
-                distributedLockManager.expireTrafficTokenSchedulerLock {
-                    trafficTokenExpirePort.expireTraffic()
-                        .also { logger.info("Expired Traffic Token count : $it") }
-                }
+                executeScheduler(
+                    lock = { distributedLockManager.expireTrafficTokenSchedulerLock { it() } },
+                    block = { trafficTokenExpirePort.expireTraffic().also { logger.info("Expired Traffic Token count : $it") } }
+                )
             } catch (e: Exception) {
                 logger.error("Failed to expire traffic tokens", e)
             }

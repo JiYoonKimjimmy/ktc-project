@@ -1,6 +1,6 @@
 package com.kona.ktca.infrastructure.adapter
 
-import com.kona.ktca.application.event.ExpireTrafficZoneEntryCountEvent
+import com.kona.ktca.domain.event.ExpireTrafficZoneEntryCountEvent
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorSavePort
 import com.kona.ktca.infrastructure.cache.TrafficZoneMonitorCacheAdapter

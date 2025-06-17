@@ -1,4 +1,4 @@
-package com.kona.ktca.application.event
+package com.kona.ktca.domain.event
 
 import com.kona.common.infrastructure.util.error
 import com.kona.ktca.domain.port.inbound.TrafficZoneEntryCountExpirePort
@@ -6,8 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class ExpireTrafficZoneEntryCountEventListener(
@@ -17,7 +17,7 @@ class ExpireTrafficZoneEntryCountEventListener(
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    @EventListener
+    @TransactionalEventListener
     fun handleExpireTrafficZoneEntryCountEvent(
         event: ExpireTrafficZoneEntryCountEvent
     ) = defaultCoroutineScope.launch {

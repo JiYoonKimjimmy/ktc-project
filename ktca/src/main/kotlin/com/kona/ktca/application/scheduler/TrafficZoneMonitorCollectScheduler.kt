@@ -1,6 +1,7 @@
 package com.kona.ktca.application.scheduler
 
 import com.kona.common.infrastructure.lock.DistributedLockManager
+import com.kona.common.infrastructure.scheduler.AbstractApplicationScheduler
 import com.kona.ktca.domain.port.inbound.TrafficZoneMonitorCollectPort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -16,7 +17,7 @@ class TrafficZoneMonitorCollectScheduler(
     private val trafficZoneMonitorCollectPort: TrafficZoneMonitorCollectPort,
     private val distributedLockManager: DistributedLockManager,
     private val defaultCoroutineScope: CoroutineScope
-) {
+) : AbstractApplicationScheduler() {
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -34,10 +35,10 @@ class TrafficZoneMonitorCollectScheduler(
                  * 1. 트래픽 Zone 모니터링 수집 task 실행 분산락 요청
                  * 2. 분산락 획득 후, 트래픽 Zone 대기 현황 수집 처리
                  */
-                distributedLockManager.collectTrafficZoneMonitoringSchedulerLock {
-                    trafficZoneMonitorCollectPort.collect()
-                        .also { logger.info("Collected Traffic Zone Monitoring count : ${it.size}") }
-                }
+                executeScheduler(
+                    lock = { distributedLockManager.collectTrafficZoneMonitoringSchedulerLock { it() } },
+                    block = { trafficZoneMonitorCollectPort.collect().also { logger.info("Collected Traffic Zone Monitoring count : ${it.size}") } }
+                )
             } catch (e: Exception) {
                 logger.error("Traffic Zone Monitoring Scheduler Failed.", e)
             }
