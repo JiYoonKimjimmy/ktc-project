@@ -64,12 +64,12 @@ local entryMilli = score
 -- 5. 진입 허용 조건 확인: readyTime = token 진입 시점 + (slot * 6초) + 6초
 local rank = tonumber(redis.call('ZRANK', queueKey, token))
 local waitSlot = math.floor(rank / allowedPer6Sec)
-local waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
+local entryAvailableTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
 local canEnter = false
 if windowEntryCount < threshold and queueSize == 0 then
     canEnter = true
-elseif slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or waitingTime <= nowMilli) then
+elseif slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or entryAvailableTime <= nowMilli) then
     canEnter = true
 end
 

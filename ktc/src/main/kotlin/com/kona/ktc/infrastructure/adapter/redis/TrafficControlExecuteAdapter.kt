@@ -100,11 +100,11 @@ class TrafficControlExecuteAdapter(
         // 5. 진입 허용 조건 확인
         val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
         val waitSlot = rank / allowedPer6Sec
-        val waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
+        val entryAvailableTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
         val canEnter = if (windowEntryCount < threshold && queueSize == 0L) {
             true
-        } else if (slotEntryCount < allowedPer6Sec && (rank < allowedPer6Sec || waitingTime <= nowMilli)) {
+        } else if (slotEntryCount < allowedPer6Sec && (rank < allowedPer6Sec || entryAvailableTime <= nowMilli)) {
             true
         } else {
             false

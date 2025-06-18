@@ -95,7 +95,7 @@
 5. 진입 허용 조건 판단 및 처리
    - 진입 허용 조건
      - `widowEntryCount < threshold`
-     - `slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or waitingTime <= nowMilli)`
+     - `slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or entryAvailableTime <= nowMilli)`
         - `allowedPer6Sec = ceil(threshold / 10)`
    - 진입 허용 처리
      - `windowEntryCount` 증가
@@ -112,6 +112,11 @@
 > 
 >  - `estimatedTime = rank / allowedPer6Sec * 6000`
 >  - `totalWaitingTime = tokenLastPollingTime(or nowMilli) - entryMilli(score)`
+
+
+> **진입 가능 시간 계산식** : `entryMilli + estimatedTime + 6000`
+> 
+> - 최초 진입 시간(`entryMilli`) 부터 최초 대기 예상 시간(`estimatedTime`) 보다 6초이상 기다린 경우, 트래픽 진입 처리
 
 ---
 
