@@ -36,10 +36,9 @@ class TrafficControlExecuteAdapter(
      *    - 현재시간(초) : (nowMilli % 60000) / 1000
      *    - slot : 현재시간(초) / 6
      *    - allowedPer6Sec(6초당 허용 threshold) : threshold / 10
-     * 3. windowKey 생성 : "$entryCountKey:$minute:$slot"
+     * 3. window & slot count 캐시 조회
      * 4. 대기열 Queue 토큰 추가 (score = 최초 진입 시각)
-     * 5. 현재 slot 진입 Count 조회
-     * 6. 진입 허용 조건 확인
+     * 5. 진입 허용 조건 확인
      *    - 현재 Bucket Count 충분한 경우, 무조건 진입
      *    - 현재 slotEntryCount < allowedPer6Sec (6초당 허용 threshold)
      *    - 현재 rank(대기 순번) < allowedPer6Sec (6초당 허용 threshold) && waitingTime(token 대기 시간) <= 현재시간(초)
@@ -87,6 +86,8 @@ class TrafficControlExecuteAdapter(
         // 3. windowKey & slotCountKey 생성
         val windowCountKey = "$entryWindowKey:$minute"
         val slotCountKey = "$entrySlotKey:$minute:$slot"
+        val windowEntryCount = reactiveStringRedisTemplate.getValue(windowCountKey, ZERO.toString()).toLong()
+        val slotEntryCount = reactiveStringRedisTemplate.getValue(slotCountKey, ZERO.toString()).toLong()
         val queueSize = reactiveStringRedisTemplate.sizeZSet(queueKey)
 
         // 4. 대기열 Queue 토큰 추가 (score = 최초 진입 시각)
@@ -96,11 +97,7 @@ class TrafficControlExecuteAdapter(
         }
         val entryMilli = score ?: nowMilli
 
-        // 5. 현재 slot 진입 Count 조회
-        val windowEntryCount = reactiveStringRedisTemplate.getValue(windowCountKey, ZERO.toString()).toLong()
-        val slotEntryCount = reactiveStringRedisTemplate.getValue(slotCountKey, ZERO.toString()).toLong()
-
-        // 6. 진입 허용 조건 확인
+        // 5. 진입 허용 조건 확인
         val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
         val waitSlot = rank / allowedPer6Sec
         val waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS

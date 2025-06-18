@@ -44,9 +44,11 @@ local slot = math.floor(secondInMinute / 6)
 local allowedPer6Sec = math.floor(threshold / 10)
 if allowedPer6Sec < 1 then allowedPer6Sec = 1 end
 
--- 3. windowKey & slotCountKey 생성
+-- 3. window & slotCount count 조회
 local windowCountKey = entryWindowKey .. ":" .. minute
 local slotCountKey = entrySlotKey .. ":" .. minute .. ":" .. slot
+local windowEntryCount = tonumber(redis.call('GET', windowCountKey) or '0')
+local slotEntryCount = tonumber(redis.call('GET', slotCountKey) or '0')
 local queueSize = tonumber(redis.call('ZCARD', queueKey))
 
 -- 4. 대기열 Queue 토큰 추가
@@ -59,11 +61,7 @@ else
 end
 local entryMilli = score
 
--- 5. 현재 slot 진입 Count 조회
-local windowEntryCount = tonumber(redis.call('GET', windowCountKey) or '0')
-local slotEntryCount = tonumber(redis.call('GET', slotCountKey) or '0')
-
--- 6. 진입 허용 조건 확인: readyTime = token 진입 시점 + (slot * 6초) + 6초
+-- 5. 진입 허용 조건 확인: readyTime = token 진입 시점 + (slot * 6초) + 6초
 local rank = tonumber(redis.call('ZRANK', queueKey, token))
 local waitSlot = math.floor(rank / allowedPer6Sec)
 local waitingTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
