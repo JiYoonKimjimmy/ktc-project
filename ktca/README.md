@@ -109,7 +109,7 @@
     - 모니터링/통계 데이터 조회
   - `MONITOR`
     - 모니터링/통계 데이터 조회
-- **`memberStatus`: 운영 관리자 상태**
+- **`status`: 운영 관리자 상태**
   - `ACTIVE`: 활성화 상태
   - `INACTIVE`: 비활성화 상태
   - `DELETED`:  삭제 상태
