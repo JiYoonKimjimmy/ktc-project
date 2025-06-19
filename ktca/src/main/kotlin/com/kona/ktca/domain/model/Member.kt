@@ -34,4 +34,17 @@ data class Member(
         }
     }
 
+    fun update(dto: MemberDTO): Member {
+        return copy(
+            loginId = dto.loginId ?: loginId,
+            password = dto.password ?: password,
+            name = dto.name ?: name,
+            email = dto.email ?: email,
+            team = dto.team ?: team,
+            role = dto.role ?: role,
+            status = dto.status ?: status,
+            lastLoginAt = dto.lastLoginAt ?: lastLoginAt
+        )
+    }
+
 }

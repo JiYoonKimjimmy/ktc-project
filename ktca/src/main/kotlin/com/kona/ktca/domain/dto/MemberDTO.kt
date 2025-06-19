@@ -18,6 +18,10 @@ data class MemberDTO(
     val status: MemberStatus? = null,
     val lastLoginAt: LocalDateTime? = null,
 ) {
+    val isNeedLoginIdDuplicateCheck: Boolean by lazy {
+        loginId != null
+    }
+
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
             memberId?.let { whereEqualTo(it, MemberEntity::id) },

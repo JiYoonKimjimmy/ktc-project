@@ -10,8 +10,8 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Entity
 @Table(name = "MEMBER")
+@Entity
 class MemberEntity(
 
     @Id
@@ -41,6 +41,7 @@ class MemberEntity(
     companion object {
         fun of(domain: Member): MemberEntity {
             return MemberEntity(
+                id = domain.memberId,
                 loginId = domain.loginId,
                 password = domain.password,
                 name = domain.name,

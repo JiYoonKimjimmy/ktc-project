@@ -7,4 +7,6 @@ interface MemberSavePort {
 
     suspend fun create(dto: MemberDTO): Member
 
+    suspend fun update(dto: MemberDTO): Member
+
 }
