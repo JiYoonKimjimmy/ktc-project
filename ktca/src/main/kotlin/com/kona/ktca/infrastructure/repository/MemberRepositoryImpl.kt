@@ -23,4 +23,8 @@ class MemberRepositoryImpl(
         memberJpaRepository.findByLoginId(loginId)
     }
 
+    override suspend fun existsByLoginId(loginId: String): Boolean = withContext(Dispatchers.IO) {
+        memberJpaRepository.existsByLoginId(loginId)
+    }
+
 }

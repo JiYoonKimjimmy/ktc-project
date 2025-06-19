@@ -41,4 +41,16 @@ class MemberRepositoryImplTest(
         expected.updated?.shouldBeLessThanOrEqualTo(LocalDateTime.now())
     }
 
+    "Member entity 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
+        // given
+        val entity = memberEntityFixture.giveOne("test")
+        memberRepository.save(entity)
+
+        // when
+        val result = memberRepository.existsByLoginId(entity.loginId)
+
+        // then
+        result shouldBe true
+    }
+
 })

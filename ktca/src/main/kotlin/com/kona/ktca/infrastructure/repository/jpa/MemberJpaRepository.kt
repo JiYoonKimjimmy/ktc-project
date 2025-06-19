@@ -8,4 +8,6 @@ interface MemberJpaRepository : JpaRepository<MemberEntity, Long>, KotlinJdslJpq
 
     fun findByLoginId(loginId: String): MemberEntity?
 
+    fun existsByLoginId(loginId: String): Boolean
+
 }

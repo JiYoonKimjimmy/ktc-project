@@ -10,4 +10,6 @@ interface MemberRepository {
 
     suspend fun findByLoginId(loginId: String): MemberEntity?
 
+    suspend fun existsByLoginId(loginId: String): Boolean
+
 }
