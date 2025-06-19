@@ -1,6 +1,8 @@
 package com.kona.ktca.infrastructure.repository
 
+import com.kona.ktca.domain.dto.MemberDTO
 import com.kona.ktca.infrastructure.repository.entity.MemberEntity
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
@@ -26,6 +28,19 @@ class FakeMemberRepository : MemberRepository {
 
     override suspend fun findByLoginId(loginId: String): MemberEntity? {
         return entities.values.find { it.loginId == loginId }
+    }
+
+    override suspend fun findByPredicate(dto: MemberDTO): MemberEntity? {
+        return entities.values.find { entity ->
+            (dto.memberId == null || entity.id == dto.memberId) &&
+            (dto.loginId == null || entity.loginId == dto.loginId) &&
+            (dto.name == null || entity.name == dto.name) &&
+            (dto.email == null || entity.email == dto.email) &&
+            (dto.team == null || entity.team == dto.team) &&
+            (dto.role == null || entity.role == dto.role) &&
+            (dto.status == null || entity.status == dto.status) &&
+            (dto.lastLoginAt == null || entity.lastLoginAt == dto.lastLoginAt)
+        }
     }
 
     override suspend fun existsByLoginId(loginId: String): Boolean {

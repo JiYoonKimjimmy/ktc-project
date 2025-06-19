@@ -1,5 +1,7 @@
 package com.kona.ktca.infrastructure.repository
 
+import com.kona.common.infrastructure.util.SnowflakeIdGenerator
+import com.kona.ktca.domain.dto.MemberDTO
 import com.kona.ktca.infrastructure.repository.entity.MemberEntityFixture
 import com.kona.ktca.infrastructure.repository.jpa.MemberJpaRepository
 import io.kotest.core.spec.style.StringSpec
@@ -20,13 +22,13 @@ class MemberRepositoryImplTest(
 
     "Member entity 신규 생성하여 정상 확인한다" {
         // given
-        val entity = memberEntityFixture.giveOne("test")
+        val entity = memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate())
 
         // when
         val result = memberRepository.save(entity)
 
         // then
-        val expected = memberRepository.findByLoginId(entity.loginId)
+        val expected = memberRepository.findByLoginId(loginId = entity.loginId)
         expected!! shouldNotBe null
         expected.id shouldBe result.id
         expected.loginId shouldBe entity.loginId
@@ -43,7 +45,7 @@ class MemberRepositoryImplTest(
 
     "Member entity 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
         // given
-        val entity = memberEntityFixture.giveOne("test")
+        val entity = memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate())
         memberRepository.save(entity)
 
         // when
@@ -51,6 +53,22 @@ class MemberRepositoryImplTest(
 
         // then
         result shouldBe true
+    }
+
+    "Member entity 'loginId' and 'name' 기준 조회하여 정상 확인한다" {
+        // given
+        val entity = memberRepository.save(memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate()))
+        val dto = MemberDTO(
+            loginId = entity.loginId,
+            name = entity.name
+        )
+
+        // when
+        val result = memberRepository.findByPredicate(dto)
+
+        // then
+        result!! shouldNotBe null
+        result.id shouldBe entity.id
     }
 
 })

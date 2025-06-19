@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty1
 
 object JpqlPredicateGenerator {
 
-    fun <T : Any, E: Any> whereEqualTo(field: T, column: KProperty1<E, T>): Predicatable {
+    fun <T : Any, E: Any> whereEqualTo(field: T, column: KProperty1<E, T?>): Predicatable {
         return Predicates.equal(Paths.path(column), Expressions.value(field))
     }
 

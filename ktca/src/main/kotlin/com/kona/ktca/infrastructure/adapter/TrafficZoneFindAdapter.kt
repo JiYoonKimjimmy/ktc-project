@@ -31,8 +31,8 @@ class TrafficZoneFindAdapter(
             .map { it.toDomain() }
     }
 
-    override suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
-        return trafficZoneRepository.findPage(trafficZone.toPredicatable(), pageable.toPageRequest())
+    override suspend fun findPageTrafficZone(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
+        return trafficZoneRepository.findPage(dto.toPredicatable(), pageable.toPageRequest())
             .map { it?.toDomain() }
     }
 
