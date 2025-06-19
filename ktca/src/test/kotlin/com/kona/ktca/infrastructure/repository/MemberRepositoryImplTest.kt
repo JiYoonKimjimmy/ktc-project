@@ -1,8 +1,7 @@
 package com.kona.ktca.infrastructure.repository
 
-import com.kona.common.infrastructure.util.SnowflakeIdGenerator
 import com.kona.ktca.domain.dto.MemberDTO
-import com.kona.ktca.infrastructure.repository.entity.MemberEntityFixture
+import com.kona.ktca.domain.model.MemberFixture
 import com.kona.ktca.infrastructure.repository.jpa.MemberJpaRepository
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
@@ -18,11 +17,11 @@ class MemberRepositoryImplTest(
 ) : StringSpec({
 
     val memberRepository = MemberRepositoryImpl(memberJpaRepository)
-    val memberEntityFixture = MemberEntityFixture()
+    val memberFixture = MemberFixture()
 
     "Member entity 신규 생성하여 정상 확인한다" {
         // given
-        val entity = memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate())
+        val entity = memberFixture.giveOne()
 
         // when
         val result = memberRepository.save(entity)
@@ -30,7 +29,7 @@ class MemberRepositoryImplTest(
         // then
         val expected = memberRepository.findByLoginId(loginId = entity.loginId)
         expected!! shouldNotBe null
-        expected.id shouldBe result.id
+        expected.memberId shouldBe result.memberId
         expected.loginId shouldBe entity.loginId
         expected.password shouldBe entity.password
         expected.name shouldBe entity.name
@@ -45,7 +44,7 @@ class MemberRepositoryImplTest(
 
     "Member entity 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
         // given
-        val entity = memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate())
+        val entity = memberFixture.giveOne()
         memberRepository.save(entity)
 
         // when
@@ -57,7 +56,7 @@ class MemberRepositoryImplTest(
 
     "Member entity 'loginId' and 'name' 기준 조회하여 정상 확인한다" {
         // given
-        val entity = memberRepository.save(memberEntityFixture.giveOne(loginId = SnowflakeIdGenerator.generate()))
+        val entity = memberRepository.save(memberFixture.giveOne())
         val dto = MemberDTO(
             loginId = entity.loginId,
             name = entity.name
@@ -68,7 +67,7 @@ class MemberRepositoryImplTest(
 
         // then
         result!! shouldNotBe null
-        result.id shouldBe entity.id
+        result.memberId shouldBe entity.memberId
     }
 
 })
