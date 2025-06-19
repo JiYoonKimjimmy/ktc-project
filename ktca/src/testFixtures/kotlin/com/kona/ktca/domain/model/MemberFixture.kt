@@ -7,13 +7,16 @@ import java.time.LocalDateTime
 
 class MemberFixture {
 
-    fun giveOne(loginId: String = SnowflakeIdGenerator.generate()): Member {
+    fun giveOne(
+        loginId: String = SnowflakeIdGenerator.generate(),
+        team: String = "${loginId}-team"
+    ): Member {
         return Member(
             loginId = loginId,
             password = "${loginId}-password",
             name = "${loginId}-name",
             email = "${loginId}-email",
-            team = "${loginId}-team",
+            team = team,
             role = MemberRole.USER,
             status = MemberStatus.ACTIVE,
             lastLoginAt = LocalDateTime.now()

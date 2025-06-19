@@ -1,6 +1,8 @@
 package com.kona.ktca.infrastructure.repository
 
+import com.kona.common.infrastructure.util.SnowflakeIdGenerator
 import com.kona.ktca.domain.dto.MemberDTO
+import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.model.MemberFixture
 import com.kona.ktca.infrastructure.repository.jpa.MemberJpaRepository
 import io.kotest.core.spec.style.StringSpec
@@ -19,30 +21,83 @@ class MemberRepositoryImplTest(
     val memberRepository = MemberRepositoryImpl(memberJpaRepository)
     val memberFixture = MemberFixture()
 
-    "Member entity 신규 생성하여 정상 확인한다" {
+    "Member 신규 생성 결과 정상 확인한다" {
         // given
-        val entity = memberFixture.giveOne()
+        val member = memberFixture.giveOne()
 
         // when
-        val result = memberRepository.save(entity)
+        val result = memberRepository.save(member)
 
         // then
-        val expected = memberRepository.findByLoginId(loginId = entity.loginId)
+        val expected = memberRepository.findByLoginId(loginId = member.loginId)
         expected!! shouldNotBe null
         expected.memberId shouldBe result.memberId
-        expected.loginId shouldBe entity.loginId
-        expected.password shouldBe entity.password
-        expected.name shouldBe entity.name
-        expected.email shouldBe entity.email
-        expected.team shouldBe entity.team
-        expected.role shouldBe entity.role
-        expected.status shouldBe entity.status
-        expected.lastLoginAt.truncatedTo(ChronoUnit.MILLIS) shouldBe entity.lastLoginAt.truncatedTo(ChronoUnit.MILLIS)
+        expected.loginId shouldBe member.loginId
+        expected.password shouldBe member.password
+        expected.name shouldBe member.name
+        expected.email shouldBe member.email
+        expected.team shouldBe member.team
+        expected.role shouldBe member.role
+        expected.status shouldBe member.status
+        expected.lastLoginAt.truncatedTo(ChronoUnit.MILLIS) shouldBe member.lastLoginAt.truncatedTo(ChronoUnit.MILLIS)
         expected.created?.shouldBeLessThanOrEqualTo(LocalDateTime.now())
         expected.updated?.shouldBeLessThanOrEqualTo(LocalDateTime.now())
     }
 
-    "Member entity 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
+    "Member 'loginId' and 'name' 기준 단건 조회 결과 정상 확인한다" {
+        // given
+        val member = memberRepository.save(memberFixture.giveOne())
+        val dto = MemberDTO(
+            loginId = member.loginId,
+            name = member.name
+        )
+
+        // when
+        val result = memberRepository.findByPredicate(dto)
+
+        // then
+        result!! shouldNotBe null
+        result.memberId shouldBe member.memberId
+    }
+    
+    "Member 'team' 기준 Page 조회 결과 '2건' 정상 확인한다" {
+        // given
+        val team = "team-${SnowflakeIdGenerator.generate()}"
+        val dto = MemberDTO(team = team)
+        val pageable = PageableDTO(number = 0, size = 10)
+
+        memberRepository.save(memberFixture.giveOne(team = team))
+        memberRepository.save(memberFixture.giveOne(team = team))
+
+        // when
+        val result = memberRepository.findPageByPredicate(dto, pageable)
+
+        // then
+        result.totalElements shouldBe 2
+        result.numberOfElements shouldBe 2
+        result.content.size shouldBe 2
+    }
+
+    "Member 'team' 기준 Page 조회 마지막 결과 '1건' 정상 확인한다" {
+        // given
+        val team = "team-${SnowflakeIdGenerator.generate()}"
+        val dto = MemberDTO(team = team)
+        val pageable = PageableDTO(number = 1, size = 1)
+
+        memberRepository.save(memberFixture.giveOne(team = team))
+        val expected = memberRepository.save(memberFixture.giveOne(team = team))
+
+        // when
+        val result = memberRepository.findPageByPredicate(dto, pageable)
+
+        // then
+        result.totalElements shouldBe 2
+        result.numberOfElements shouldBe 1
+        result.content.size shouldBe 1
+        result.content.first().memberId shouldBe expected.memberId
+    }
+
+    "Member 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
         // given
         val entity = memberFixture.giveOne()
         memberRepository.save(entity)
@@ -52,22 +107,6 @@ class MemberRepositoryImplTest(
 
         // then
         result shouldBe true
-    }
-
-    "Member entity 'loginId' and 'name' 기준 조회하여 정상 확인한다" {
-        // given
-        val entity = memberRepository.save(memberFixture.giveOne())
-        val dto = MemberDTO(
-            loginId = entity.loginId,
-            name = entity.name
-        )
-
-        // when
-        val result = memberRepository.findByPredicate(dto)
-
-        // then
-        result!! shouldNotBe null
-        result.memberId shouldBe entity.memberId
     }
 
 })

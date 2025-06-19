@@ -2,11 +2,14 @@ package com.kona.ktca.domain.service
 
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
+import com.kona.common.infrastructure.util.SnowflakeIdGenerator
 import com.kona.ktca.domain.dto.MemberDTO
+import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.model.MemberFixture
 import com.kona.ktca.infrastructure.repository.FakeMemberRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 
 class MemberFindServiceTest : BehaviorSpec({
@@ -43,6 +46,48 @@ class MemberFindServiceTest : BehaviorSpec({
                 result.role shouldBe saved.role
                 result.status shouldBe saved.status
                 result.lastLoginAt shouldBe saved.lastLoginAt
+            }
+        }
+    }
+
+    given("'team' 기준 관리자 정보 목록 조회 요청하여") {
+        val notExistTeamDTO = MemberDTO(team = "not-exist-team")
+        val pageable = PageableDTO(number = 0, size = 10)
+
+        `when`("일치한 정보 없는 경우") {
+            val result = memberFindService.findMembers(notExistTeamDTO, pageable)
+
+            then("조회 결과 '0건' 정상 확인한다") {
+                result.totalElements shouldBeGreaterThanOrEqual 0
+                result.numberOfElements shouldBe 0
+                result.content.size shouldBe 0
+            }
+        }
+
+        val team = "team-${SnowflakeIdGenerator.generate()}"
+        val dto = MemberDTO(team = team)
+        memberRepository.save(memberFixture.giveOne(team = team))
+        memberRepository.save(memberFixture.giveOne(team = team))
+
+        `when`("일치한 정보 총 '2건' 있는 경우") {
+            val result = memberFindService.findMembers(dto, pageable)
+
+            then("조회 결과 '2건' 정상 확인한다") {
+                result.totalElements shouldBeGreaterThanOrEqual 2
+                result.numberOfElements shouldBe 2
+                result.content.size shouldBe 2
+            }
+        }
+
+        val lastPageable = PageableDTO(number = 1, size = 1)
+
+        `when`("일치한 정보 중 마지막 Page number 조회 요청인 있는 경우") {
+            val result = memberFindService.findMembers(dto, lastPageable)
+
+            then("조회 결과 '1건' 정상 확인한다") {
+                result.totalElements shouldBeGreaterThanOrEqual 2
+                result.numberOfElements shouldBe 1
+                result.content.size shouldBe 1
             }
         }
     }

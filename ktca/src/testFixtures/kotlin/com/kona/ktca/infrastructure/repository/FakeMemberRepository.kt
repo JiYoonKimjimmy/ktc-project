@@ -1,9 +1,12 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.ktca.domain.dto.MemberDTO
+import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.model.Member
 import com.kona.ktca.domain.port.outbound.MemberRepository
 import com.kona.ktca.infrastructure.repository.entity.MemberEntity
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
@@ -33,16 +36,36 @@ class FakeMemberRepository : MemberRepository {
     }
 
     override suspend fun findByPredicate(dto: MemberDTO): Member? {
-        return entities.values.find { entity ->
-            (dto.memberId == null || entity.id == dto.memberId) &&
-            (dto.loginId == null || entity.loginId == dto.loginId) &&
-            (dto.name == null || entity.name == dto.name) &&
-            (dto.email == null || entity.email == dto.email) &&
-            (dto.team == null || entity.team == dto.team) &&
-            (dto.role == null || entity.role == dto.role) &&
-            (dto.status == null || entity.status == dto.status) &&
-            (dto.lastLoginAt == null || entity.lastLoginAt == dto.lastLoginAt)
-        }?.toDomain()
+        return entities.values.find { checkPredicate(dto, it) }?.toDomain()
+    }
+
+    override suspend fun findPageByPredicate(dto: MemberDTO, pageable: PageableDTO): Page<Member> {
+        val filteredList = entities.values
+            .filter { checkPredicate(dto, it) }
+            .toList()
+
+        val totalElements = filteredList.size.toLong()
+        val start = pageable.number * pageable.size
+        val end = minOf(start + pageable.size, totalElements.toInt())
+
+        val content = if (start < totalElements) {
+            filteredList.subList(start, end).map { it.toDomain() }
+        } else {
+            emptyList()
+        }
+
+        return PageImpl(content, pageable.toPageRequest(), totalElements)
+    }
+
+    private fun checkPredicate(dto: MemberDTO, entity: MemberEntity): Boolean {
+        return (dto.memberId?.let { it == entity.id } ?: true)
+                && (dto.loginId?.let { it == entity.loginId } ?: true)
+                && (dto.name?.let { it == entity.name } ?: true)
+                && (dto.email?.let { it == entity.email } ?: true)
+                && (dto.team?.let { it == entity.team } ?: true)
+                && (dto.role?.let { it == entity.role } ?: true)
+                && (dto.status?.let { it == entity.status } ?: true)
+                && (dto.lastLoginAt?.let { it == entity.lastLoginAt } ?: true)
     }
 
     override suspend fun existsByLoginId(loginId: String): Boolean {

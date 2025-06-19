@@ -3,6 +3,10 @@ package com.kona.ktca.infrastructure.repository.entity
 import com.kona.common.infrastructure.enumerate.MemberRole
 import com.kona.common.infrastructure.enumerate.MemberStatus
 import com.kona.ktca.domain.model.Member
+import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
+import com.linecorp.kotlinjdsl.querymodel.jpql.JpqlQueryable
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -46,6 +50,15 @@ class MemberEntity(
                 status = domain.status,
                 lastLoginAt = domain.lastLoginAt
             )
+        }
+
+        fun jpqlQuery(where: Array<Predicatable?>): Jpql.() -> JpqlQueryable<SelectQuery<MemberEntity>> {
+            val query: Jpql.() -> JpqlQueryable<SelectQuery<MemberEntity>> = {
+                select(entity(MemberEntity::class))
+                    .from(entity(MemberEntity::class))
+                    .whereAnd(*where)
+            }
+            return query
         }
     }
 

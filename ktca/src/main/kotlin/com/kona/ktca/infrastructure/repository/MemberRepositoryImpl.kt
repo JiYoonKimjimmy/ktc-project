@@ -1,15 +1,15 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.ktca.domain.dto.MemberDTO
+import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.model.Member
 import com.kona.ktca.domain.port.outbound.MemberRepository
 import com.kona.ktca.infrastructure.repository.entity.MemberEntity
 import com.kona.ktca.infrastructure.repository.jpa.MemberJpaRepository
-import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
-import com.linecorp.kotlinjdsl.querymodel.jpql.JpqlQueryable
-import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -30,12 +30,14 @@ class MemberRepositoryImpl(
     }
 
     override suspend fun findByPredicate(dto: MemberDTO): Member? = withContext(Dispatchers.IO) {
-        val query: Jpql.() -> JpqlQueryable<SelectQuery<MemberEntity>> = {
-            select(entity(MemberEntity::class))
-                .from(entity(MemberEntity::class))
-                .whereAnd(*dto.toPredicatable())
-        }
+        val query = MemberEntity.jpqlQuery(dto.toPredicatable())
         memberJpaRepository.findAll(0, 1, query).first()?.toDomain()
+    }
+
+    override suspend fun findPageByPredicate(dto: MemberDTO, pageable: PageableDTO): Page<Member> = withContext(Dispatchers.IO) {
+        val query = MemberEntity.jpqlQuery(dto.toPredicatable())
+        val result = memberJpaRepository.findPage(pageable.toPageRequest(), query)
+        PageImpl(result.content.mapNotNull { it?.toDomain() }, result.pageable, result.totalElements)
     }
 
     override suspend fun existsByLoginId(loginId: String): Boolean = withContext(Dispatchers.IO) {
