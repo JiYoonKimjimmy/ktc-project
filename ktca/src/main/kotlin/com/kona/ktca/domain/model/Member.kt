@@ -3,6 +3,7 @@ package com.kona.ktca.domain.model
 import com.kona.common.infrastructure.enumerate.MemberRole
 import com.kona.common.infrastructure.enumerate.MemberStatus
 import com.kona.ktca.domain.dto.MemberDTO
+import java.time.LocalDateTime
 
 data class Member(
     val memberId: Long? = null,
@@ -12,7 +13,10 @@ data class Member(
     val email: String,
     val team: String,
     val role: MemberRole,
-    val status: MemberStatus
+    val status: MemberStatus,
+    val lastLoginAt: LocalDateTime,
+    val created: LocalDateTime? = null,
+    val updated: LocalDateTime? = null
 ) {
 
     companion object {
@@ -24,7 +28,8 @@ data class Member(
                 email = dto.email!!,
                 team = dto.team!!,
                 role = dto.role ?: MemberRole.USER,
-                status = dto.status ?: MemberStatus.ACTIVE
+                status = dto.status ?: MemberStatus.ACTIVE,
+                lastLoginAt = dto.lastLoginAt ?: LocalDateTime.now()
             )
         }
     }
