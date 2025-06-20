@@ -31,7 +31,10 @@ class MemberRepositoryImpl(
 
     override suspend fun findByPredicate(dto: MemberDTO): Member? = withContext(Dispatchers.IO) {
         val query = MemberEntity.jpqlQuery(dto.toPredicatable())
-        memberJpaRepository.findAll(0, 1, query).first()?.toDomain()
+        memberJpaRepository.findAll(0, 1, query)
+            .takeIf { it.isNotEmpty() }
+            ?.first()
+            ?.toDomain()
     }
 
     override suspend fun findPageByPredicate(dto: MemberDTO, pageable: PageableDTO): Page<Member> = withContext(Dispatchers.IO) {
