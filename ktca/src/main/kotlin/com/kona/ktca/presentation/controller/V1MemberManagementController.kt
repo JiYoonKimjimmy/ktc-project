@@ -67,8 +67,8 @@ class V1MemberManagementController(
             name = name,
             email = email,
             team = team,
-            role = MemberRole.valueOf(role!!),
-            status = MemberStatus.valueOf(status!!)
+            role = role?.let { MemberRole.valueOf(it) },
+            status = status?.let { MemberStatus.valueOf(it) }
         )
         val pageable = PageableDTO(number = page ?: 0, size = size ?: 20)
         val result = memberFindPort.findMembers(dto, pageable)

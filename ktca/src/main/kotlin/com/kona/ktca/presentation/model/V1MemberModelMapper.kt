@@ -14,6 +14,7 @@ class V1MemberModelMapper {
         return V1MemberData(
             memberId = member.memberId?.toInt(),
             loginId = member.loginId,
+            password = member.password,
             name = member.name,
             email = member.email,
             team = member.team,
