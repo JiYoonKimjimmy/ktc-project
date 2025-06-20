@@ -17,6 +17,7 @@ data class MemberDTO(
     val role: MemberRole? = null,
     val status: MemberStatus? = null,
     val lastLoginAt: LocalDateTime? = null,
+    val requestMemberId: Long? = null,
 ) {
     val isNeedLoginIdDuplicateCheck: Boolean by lazy {
         loginId != null

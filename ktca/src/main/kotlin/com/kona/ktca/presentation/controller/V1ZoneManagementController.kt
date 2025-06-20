@@ -12,9 +12,10 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 
-@Controller
+@RestController
 class V1ZoneManagementController(
     private val trafficZoneManagementUseCase: TrafficZoneManagementUseCase,
     private val v1ZoneModelMapper: V1ZoneModelMapper

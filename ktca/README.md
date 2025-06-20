@@ -100,14 +100,14 @@
 - **`email`: 운영 관리자 업무 이메일**
 - **`team`: 운영 관리자 소속 팀 구분**
 - **`role`: 운영 관리자 역할**
-  - `SUPER_ADMIN`
+  - `ADMINISTRATOR`
     - 계정 설정 관리
     - Zone 설정 관리
     - 모니터링/통계 데이터 조회
-  - `ADMIN`
+  - `MANAGER`
     - Zone 설정 관리
     - 모니터링/통계 데이터 조회
-  - `USER`
+  - `VIEWER`
     - 모니터링/통계 데이터 조회
 - **`status`: 운영 관리자 상태**
   - `ACTIVE`: 활성화 상태

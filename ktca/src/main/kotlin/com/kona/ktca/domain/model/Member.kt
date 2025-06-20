@@ -27,7 +27,7 @@ data class Member(
                 name = dto.name!!,
                 email = dto.email!!,
                 team = dto.team!!,
-                role = dto.role ?: MemberRole.USER,
+                role = dto.role ?: MemberRole.VIEWER,
                 status = dto.status ?: MemberStatus.ACTIVE,
                 lastLoginAt = dto.lastLoginAt ?: LocalDateTime.now()
             )

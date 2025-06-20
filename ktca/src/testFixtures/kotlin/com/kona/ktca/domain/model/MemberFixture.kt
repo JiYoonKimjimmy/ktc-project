@@ -17,7 +17,7 @@ class MemberFixture {
             name = "${loginId}-name",
             email = "${loginId}-email",
             team = team,
-            role = MemberRole.USER,
+            role = MemberRole.VIEWER,
             status = MemberStatus.ACTIVE,
             lastLoginAt = LocalDateTime.now()
         )

@@ -30,12 +30,14 @@ servers:
 tags:
   - name: V1.Zone Management
   - name: V1.Zone Monitoring
+  - name: V1.Member Management
 
 x-tagGroups:
   - name: KTC-API
     tags:
       - V1.Zone Management
       - V1.Zone Monitoring
+      - V1.Member Management
 
 paths:
   /api/v1/zone:
@@ -287,6 +289,139 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/member:
+    post:
+      summary: 관리자 정보 단일 등록
+      tags:
+        - V1.Member Management
+      operationId: createMember
+      description: |
+        관리자 정보 단일 등록
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1CreateMemberRequest'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1CreateMemberResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: 관리자 정보 단일 조회
+      tags:
+        - V1.Member Management
+      operationId: findMember
+      description: |
+        관리자 정보 단일 조회
+      parameters:
+        - $ref: '#/components/parameters/query-memberId'
+        - $ref: '#/components/parameters/query-loginId'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1FindMemberResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/member/list:
+    get:
+      summary: 관리자 정보 목록 조회
+      tags:
+        - V1.Member Management
+      operationId: findMemberList
+      description: |
+        트래픽 제어 Zone 정보 목록 조회
+      parameters:
+        - $ref: '#/components/parameters/query-page'
+        - $ref: '#/components/parameters/query-size'
+        - $ref: '#/components/parameters/query-memberId'
+        - $ref: '#/components/parameters/query-loginId'
+        - $ref: '#/components/parameters/query-memberName'
+        - $ref: '#/components/parameters/query-email'
+        - $ref: '#/components/parameters/query-team'
+        - $ref: '#/components/parameters/query-memberRole'
+        - $ref: '#/components/parameters/query-zoneStatus'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1FindAllMemberResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/member/{memberId}:
+    put:
+      summary: 관리자 정보 단일 수정
+      tags:
+        - V1.Member Management
+      operationId: updateMember
+      description: |
+        관리자 정보 단일 수정
+      parameters:
+        - $ref: '#/components/parameters/path-memberId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1UpdateMemberRequest'
+      responses:
+        '200':
+          description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1UpdateMemberResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   parameters:
     ##### path
@@ -300,6 +435,15 @@ components:
         description: |
           트래픽 제어 Zone 고유 식별 ID<br>
           `KCTA` 자체 생성 > `KZ + yyyyMMddHHmmss + random 4자리`
+
+    path-memberId:
+      in: path
+      name: memberId
+      required: true
+      schema:
+        type: string
+        example: 12345
+        description: 관리자 ID
 
     ##### query
     query-page:
@@ -347,6 +491,69 @@ components:
         | BLOCKED   | Zone 트래픽 진입 전체 차단 상태 |
         | DELETED   | Zone 삭제 상태 |
         | FAULTY_503 | QA용 강제 503 응답 |
+
+    query-memberId:
+      in: query
+      name: memberId
+      required: false
+      schema:
+        type: integer
+        example: "12345"
+        description: 관리자 ID
+
+    query-loginId:
+      in: query
+      name: loginId
+      required: false
+      schema:
+        type: string
+        example: "admin"
+        description: 로그인 ID
+
+    query-memberName:
+      in: query
+      name: name
+      required: false
+      schema:
+        type: string
+        example: "관리자명"
+        description: 이름
+
+    query-email:
+      in: query
+      name: email
+      required: false
+      schema:
+        type: string
+        example: "hello@example.com"
+        description: 이메일 정보
+
+    query-team:
+      in: query
+      name: team
+      required: false
+      schema:
+        type: string
+        example: "소속 팀 명"
+        description: 소속 팀
+
+    query-memberRole:
+      in: query
+      name: role
+      required: false
+      schema:
+        type: string
+        example: "VIEWER"
+        description: 역할
+
+    query-memberStatus:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        example: "ACTIVE"
+        description: 상태
 
   schemas:
     ##### common schema start
@@ -511,6 +718,72 @@ components:
       type: integer
       description: Zone 대기 해소 예상 시간
       example: 60000
+
+    memberId:
+      type: integer
+      description: Member ID
+      example: 12345
+
+    loginId:
+      type: string
+      description: 로그인 ID
+      example: "admin"
+
+    memberName:
+      type: string
+      description: 이름
+      example: "관리자명"
+
+    password:
+      type: string
+      description: 비밀번호
+      example: "password"
+
+    email:
+      type: string
+      description: 이메일 정보
+      example: "hello@example.com"
+
+    team:
+      type: string
+      description: 소속 팀
+      example: "소속 팀 명"
+
+    memberRole:
+      type: string
+      enum:
+        - ADMINISTRATOR
+        - MANAGER
+        - VIEWER
+      description: |
+        역할
+        | 구분 | 내용 |
+        |:----:|----|
+        | ADMINISTRATOR | 최고 관리자 |
+        | MANAGER | 중간 관리자 |
+        | VIEWER | 일반(조회) 관리자 |
+      example: "VIEWER"
+
+    memberStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - DELETED
+      description: |
+        역할
+        | 구분 | 내용 |
+        |:----:|----|
+        | ACTIVE | 활성화 상태 |
+        | INACTIVE | 비활성화 상태 |
+        | DELETED | 삭제 상태 |
+      example: "ACTIVE"
+
+    lastLoginAt:
+      type: string
+      description: 마지막 로그인 일시
+      example: "20250619205030"
+
 
     ##### api dto start
     ResultResponse:
@@ -700,5 +973,126 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1ZoneMonitoringData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1MemberData:
+      type: object
+      properties:
+        memberId:
+          $ref: '#/components/schemas/memberId'
+        loginId:
+          $ref: '#/components/schemas/loginId'
+        password:
+          $ref: '#/components/schemas/password'
+        name:
+          $ref: '#/components/schemas/memberName'
+        email:
+          $ref: '#/components/schemas/email'
+        team:
+          $ref: '#/components/schemas/team'
+        role:
+          $ref: '#/components/schemas/memberRole'
+        status:
+          $ref: '#/components/schemas/memberStatus'
+        lastLoginAt:
+          $ref: '#/components/schemas/lastLoginAt'
+        created:
+          $ref: '#/components/schemas/created'
+        updated:
+          $ref: '#/components/schemas/updated'
+
+    V1CreateMemberRequest:
+      type: object
+      required:
+        - loginId
+        - password
+        - name
+        - email
+        - team
+        - role
+        - requestMemberId
+      properties:
+        loginId:
+          $ref: '#/components/schemas/loginId'
+        password:
+          $ref: '#/components/schemas/password'
+        name:
+          $ref: '#/components/schemas/memberName'
+        email:
+          $ref: '#/components/schemas/email'
+        team:
+          $ref: '#/components/schemas/team'
+        role:
+          $ref: '#/components/schemas/memberRole'
+        requestMemberId:
+          $ref: '#/components/schemas/memberId'
+
+    V1CreateMemberResponse:
+      type: object
+      required:
+        - memberId
+        - result
+      properties:
+        memberId:
+          $ref: '#/components/schemas/memberId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindMemberResponse:
+      type: object
+      required:
+        - data
+        - result
+      properties:
+        data:
+          $ref: '#/components/schemas/V1MemberData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindAllMemberResponse:
+      type: object
+      required:
+        - pageable
+        - content
+        - result
+      properties:
+        pageable:
+          $ref: '#/components/schemas/pageable'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1MemberData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1UpdateMemberRequest:
+      type: object
+      properties:
+        loginId:
+          $ref: '#/components/schemas/loginId'
+        password:
+          $ref: '#/components/schemas/password'
+        name:
+          $ref: '#/components/schemas/memberName'
+        email:
+          $ref: '#/components/schemas/email'
+        team:
+          $ref: '#/components/schemas/team'
+        role:
+          $ref: '#/components/schemas/memberRole'
+        status:
+          $ref: '#/components/schemas/memberStatus'
+        requestMemberId:
+          $ref: '#/components/schemas/memberId'
+
+    V1UpdateMemberResponse:
+      type: object
+      required:
+        - memberId
+        - result
+      properties:
+        memberId:
+          $ref: '#/components/schemas/memberId'
         result:
           $ref: '#/components/schemas/ResultResponse'
