@@ -1,13 +1,15 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.ktca.domain.dto.PageableDTO
+import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.model.TrafficZone
+import com.kona.ktca.domain.port.outbound.TrafficZoneRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneJpaRepository
-import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -15,28 +17,30 @@ class TrafficZoneRepositoryImpl(
     private val trafficZoneJpaRepository: TrafficZoneJpaRepository
 ) : TrafficZoneRepository {
 
-    override suspend fun save(entity: TrafficZoneEntity): TrafficZoneEntity = withContext(Dispatchers.IO) {
-        trafficZoneJpaRepository.save(entity)
+    override suspend fun save(zone: TrafficZone): TrafficZone = withContext(Dispatchers.IO) {
+        trafficZoneJpaRepository.save(TrafficZoneEntity.of(zone)).toDomain()
     }
 
-    override suspend fun findByZoneId(zoneId: String): TrafficZoneEntity? = withContext(Dispatchers.IO) {
-        trafficZoneJpaRepository.findById(zoneId).orElse(null)
+    override suspend fun findByZoneId(zoneId: String): TrafficZone? = withContext(Dispatchers.IO) {
+        trafficZoneJpaRepository.findById(zoneId).orElse(null)?.toDomain()
     }
 
-    override suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZoneEntity? = withContext(Dispatchers.IO) {
-        trafficZoneJpaRepository.findByIdAndStatusNot(zoneId, status)
+    override suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZone? = withContext(Dispatchers.IO) {
+        trafficZoneJpaRepository.findByIdAndStatusNot(zoneId, status)?.toDomain()
     }
 
-    override suspend fun findAllByStatus(status: TrafficZoneStatus): List<TrafficZoneEntity> = withContext(Dispatchers.IO) {
-        trafficZoneJpaRepository.findAllByStatus(status)
+    override suspend fun findAllByPredicate(dto: TrafficZoneDTO): List<TrafficZone> {
+        val query = TrafficZoneEntity.jpqlQuery(dto.toPredicatable())
+        return trafficZoneJpaRepository.findAll { query() }.mapNotNull { it?.toDomain() }
     }
 
-    override suspend fun findPage(where: Array<Predicatable?>, pageable: Pageable): Page<TrafficZoneEntity?> {
-        return trafficZoneJpaRepository.findPage(pageable) {
+    override suspend fun findPage(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
+        return trafficZoneJpaRepository.findPage(pageable.toPageRequest()) {
             select(entity(TrafficZoneEntity::class))
                 .from(entity(TrafficZoneEntity::class))
-                .whereAnd(*where)
-        }
+                .whereAnd(*dto.toPredicatable())
+            }
+            .map { it?.toDomain() }
     }
 
 }

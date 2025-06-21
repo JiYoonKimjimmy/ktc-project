@@ -20,7 +20,7 @@ class MemberFindService(
             ?: throw ResourceNotFoundException(ErrorCode.MEMBER_NOT_FOUND)
     }
 
-    override suspend fun findMembers(dto: MemberDTO, pageable: PageableDTO): Page<Member> {
+    override suspend fun findPageMember(dto: MemberDTO, pageable: PageableDTO): Page<Member> {
         return memberRepository.findPageByPredicate(dto, pageable)
     }
 

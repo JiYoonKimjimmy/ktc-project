@@ -5,10 +5,12 @@ import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
 import org.springframework.data.domain.Page
 
-interface TrafficZoneReadPort {
+interface TrafficZoneFindPort {
 
     suspend fun findTrafficZone(zoneId: String): TrafficZone
 
-    suspend fun findPageTrafficZone(trafficZone: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone>
+    suspend fun findPageTrafficZone(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone>
+
+    suspend fun validateTrafficZoneId(zoneId: String)
 
 }

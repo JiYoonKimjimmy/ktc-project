@@ -3,6 +3,7 @@ package com.kona.ktca.application.scheduler
 import com.kona.common.infrastructure.scheduler.AbstractApplicationScheduler
 import com.kona.common.infrastructure.lock.DistributedLockManager
 import com.kona.ktca.domain.port.inbound.TrafficTokenExpirePort
+import com.kona.ktca.domain.port.outbound.TrafficTokenExpireExecutePort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -37,7 +38,8 @@ class TrafficTokenExpireScheduler(
                  */
                 executeScheduler(
                     lock = { distributedLockManager.expireTrafficTokenSchedulerLock { it() } },
-                    block = { trafficTokenExpirePort.expireTraffic().also { logger.info("Expired Traffic Token count : $it") } }
+                    block = { trafficTokenExpirePort.expireTraffic() },
+                    logging = { logger.info("Expired Traffic Token count : $it") }
                 )
             } catch (e: Exception) {
                 logger.error("Failed to expire traffic tokens", e)

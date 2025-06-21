@@ -9,6 +9,6 @@ interface MemberFindPort {
 
     suspend fun findMember(dto: MemberDTO): Member
 
-    suspend fun findMembers(dto: MemberDTO, pageable: PageableDTO): Page<Member>
+    suspend fun findPageMember(dto: MemberDTO, pageable: PageableDTO): Page<Member>
 
 }

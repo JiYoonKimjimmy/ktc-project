@@ -1,23 +1,25 @@
 package com.kona.ktca.domain.service
 
+import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
+import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.event.TrafficZoneMonitoringStoppedEvent
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import com.kona.ktca.domain.port.inbound.TrafficZoneMonitorCollectPort
-import com.kona.ktca.domain.port.outbound.TrafficZoneFindPort
-import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorSavePort
-import com.kona.ktca.domain.port.outbound.TrafficZoneWaitingFindPort
-import com.kona.ktca.infrastructure.cache.TrafficZoneMonitorCacheAdapter
+import com.kona.ktca.domain.port.outbound.TrafficZoneCachingPort
+import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorCachingPort
+import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorRepository
+import com.kona.ktca.domain.port.outbound.TrafficZoneRepository
 import jakarta.transaction.Transactional
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 
 @Service
 class TrafficZoneMonitorCollectService(
-    private val trafficZoneFindPort: TrafficZoneFindPort,
-    private val trafficZoneWaitingFindPort: TrafficZoneWaitingFindPort,
-    private val trafficZoneMonitorSavePort: TrafficZoneMonitorSavePort,
-    private val trafficZoneMonitorCacheAdapter: TrafficZoneMonitorCacheAdapter,
+    private val trafficZoneRepository: TrafficZoneRepository,
+    private val trafficZoneCachingPort: TrafficZoneCachingPort,
+    private val trafficZoneMonitorRepository: TrafficZoneMonitorRepository,
+    private val trafficZoneMonitorCachingPort: TrafficZoneMonitorCachingPort,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrafficZoneMonitorCollectPort {
 
@@ -51,22 +53,22 @@ class TrafficZoneMonitorCollectService(
     }
 
     private suspend fun findAllTrafficZone(zoneId: String?): List<TrafficZone> {
-        return trafficZoneFindPort.findAllActiveTrafficZone(zoneId)
+        return trafficZoneRepository.findAllByPredicate(dto = TrafficZoneDTO(zoneId = zoneId, status = ACTIVE))
     }
 
     private suspend fun TrafficZone.convertTrafficZoneMonitor(): TrafficZoneMonitor {
-        val waiting = trafficZoneWaitingFindPort.findTrafficZoneWaiting(zoneId = this.zoneId, threshold = this.threshold)
-        return TrafficZoneMonitor.of(trafficZone = this, waiting = waiting)
+        trafficZoneCachingPort.findTrafficZoneWaiting(zone = this)
+        return TrafficZoneMonitor.of(zone = this)
     }
 
     private suspend fun TrafficZoneMonitor.checkMonitoringStopCounter(): Boolean {
-        val counter = trafficZoneMonitorCacheAdapter.incrementMonitoringStopCounter(zoneId = this.zoneId, isZero = this.isZeroWaitingCount())
+        val counter = trafficZoneMonitorCachingPort.incrementMonitoringStopCounter(zoneId = this.zoneId, isZero = this.isZeroWaitingCount())
         return counter <= 5
     }
 
     private suspend fun List<TrafficZoneMonitor>.saveEntities(): List<TrafficZoneMonitor> {
         return if (isNotEmpty()) {
-            trafficZoneMonitorSavePort.saveAll(monitoring = this)
+            trafficZoneMonitorRepository.saveAll(monitoring = this)
         } else {
             emptyList()
         }
@@ -74,7 +76,7 @@ class TrafficZoneMonitorCollectService(
 
     private suspend fun List<TrafficZoneMonitor>.saveCaches(): List<TrafficZoneMonitor> {
         return if (isNotEmpty()) {
-            trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(monitoring = this)
+            trafficZoneMonitorCachingPort.saveMonitoringLatestResult(monitoring = this)
         } else {
             emptyList()
         }

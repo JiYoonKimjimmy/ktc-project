@@ -1,9 +1,9 @@
-package com.kona.ktca.infrastructure.cache
+package com.kona.ktca.domain.port.outbound
 
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import java.time.LocalDate
 
-interface TrafficZoneMonitorCacheAdapter {
+interface TrafficZoneMonitorCachingPort {
 
     suspend fun saveMonitoringLatestResult(monitoring: List<TrafficZoneMonitor>, now: LocalDate = LocalDate.now()): List<TrafficZoneMonitor>
 

@@ -55,7 +55,7 @@ class MemberFindServiceTest : BehaviorSpec({
         val pageable = PageableDTO(number = 0, size = 10)
 
         `when`("일치한 정보 없는 경우") {
-            val result = memberFindService.findMembers(notExistTeamDTO, pageable)
+            val result = memberFindService.findPageMember(notExistTeamDTO, pageable)
 
             then("조회 결과 '0건' 정상 확인한다") {
                 result.totalElements shouldBeGreaterThanOrEqual 0
@@ -70,7 +70,7 @@ class MemberFindServiceTest : BehaviorSpec({
         memberRepository.save(memberFixture.giveOne(team = team))
 
         `when`("일치한 정보 총 '2건' 있는 경우") {
-            val result = memberFindService.findMembers(dto, pageable)
+            val result = memberFindService.findPageMember(dto, pageable)
 
             then("조회 결과 '2건' 정상 확인한다") {
                 result.totalElements shouldBeGreaterThanOrEqual 2
@@ -82,7 +82,7 @@ class MemberFindServiceTest : BehaviorSpec({
         val lastPageable = PageableDTO(number = 1, size = 1)
 
         `when`("일치한 정보 중 마지막 Page number 조회 요청인 있는 경우") {
-            val result = memberFindService.findMembers(dto, lastPageable)
+            val result = memberFindService.findPageMember(dto, lastPageable)
 
             then("조회 결과 '1건' 정상 확인한다") {
                 result.totalElements shouldBeGreaterThanOrEqual 2

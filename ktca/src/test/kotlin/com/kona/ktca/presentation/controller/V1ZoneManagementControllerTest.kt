@@ -3,9 +3,9 @@ package com.kona.ktca.presentation.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
-import com.kona.ktca.domain.model.TrafficZone
-import com.kona.ktca.domain.port.outbound.TrafficZoneFindPort
-import com.kona.ktca.domain.port.outbound.TrafficZoneSavePort
+import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.port.inbound.TrafficZoneFindPort
+import com.kona.ktca.domain.port.inbound.TrafficZoneSavePort
 import com.kona.ktca.dto.UpdateZoneStatus
 import com.kona.ktca.dto.V1CreateZoneRequest
 import com.kona.ktca.dto.V1UpdateZoneRequest
@@ -24,7 +24,7 @@ class V1ZoneManagementControllerTest(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
     private val trafficZoneSavePort: TrafficZoneSavePort,
-    private val trafficZoneFindPort: TrafficZoneFindPort
+    private val trafficZoneFindPort: TrafficZoneFindPort,
 ) : BehaviorSpec({
 
     given("트래픽 Zone 정보 등록 API 요청하여") {
@@ -83,14 +83,14 @@ class V1ZoneManagementControllerTest(
         }
 
         `when`("이미 등록된 'zoneId' 기준 신규 정보 등록 요청인 경우") {
-            val activeTrafficZone = TrafficZone(
+            val activeTrafficZone = TrafficZoneDTO(
                 zoneId = "test-zone-id",
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
                 status = TrafficZoneStatus.ACTIVE,
                 activationTime = LocalDateTime.now()
             )
-            trafficZoneSavePort.save(activeTrafficZone)
+            trafficZoneSavePort.create(activeTrafficZone)
 
             val zoneId = activeTrafficZone.zoneId
             val request = V1CreateZoneRequest(
@@ -142,14 +142,14 @@ class V1ZoneManagementControllerTest(
             }
         }
 
-        val activeTrafficZone = TrafficZone(
+        val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
-        trafficZoneSavePort.save(activeTrafficZone)
+        trafficZoneSavePort.create(activeTrafficZone)
 
         `when`("존재하는 'zoneId' 기준 요청인 경우") {
             val result = mockMvc
@@ -191,14 +191,14 @@ class V1ZoneManagementControllerTest(
     given("트래픽 Zone 정보 단일 수정 API 요청하여") {
         val url = "/api/v1/zone"
 
-        val activeTrafficZone = TrafficZone(
+        val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
-        trafficZoneSavePort.save(activeTrafficZone)
+        trafficZoneSavePort.create(activeTrafficZone)
 
         `when`("'threshold : 1000' 정보 변경 요청인 경우") {
             val request = V1UpdateZoneRequest(
@@ -246,14 +246,14 @@ class V1ZoneManagementControllerTest(
             }
         }
 
-        val deleteTrafficZone = TrafficZone(
+        val deleteTrafficZone = TrafficZoneDTO(
             zoneId = "delete-test-zone-id",
             zoneAlias = "delete-test-zone-alias",
             threshold = 1,
             status = TrafficZoneStatus.DELETED,
             activationTime = LocalDateTime.now()
         )
-        trafficZoneSavePort.save(deleteTrafficZone)
+        trafficZoneSavePort.create(deleteTrafficZone)
 
         `when`("이미 'DELETED' 상태 Zone 정보 변경 요청인 경우") {
             val request = V1UpdateZoneRequest(
@@ -297,14 +297,14 @@ class V1ZoneManagementControllerTest(
             }
         }
 
-        val activeTrafficZone = TrafficZone(
+        val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
-        trafficZoneSavePort.save(activeTrafficZone)
+        trafficZoneSavePort.create(activeTrafficZone)
 
         `when`("존재하는 'zoneId' 기준 요청인 경우") {
             val result = mockMvc
@@ -319,8 +319,8 @@ class V1ZoneManagementControllerTest(
             }
 
             then("요청 'zoneId' 기준 DB 정보 조회하여 'DELETED' 상태 변경 정상 확인한다") {
-                val entity = trafficZoneFindPort.findTrafficZone(activeTrafficZone.zoneId)
-                entity?.status shouldBe TrafficZoneStatus.DELETED
+                val entity = trafficZoneFindPort.findTrafficZone(zoneId = activeTrafficZone.zoneId!!)
+                entity.status shouldBe TrafficZoneStatus.DELETED
             }
         }
     }

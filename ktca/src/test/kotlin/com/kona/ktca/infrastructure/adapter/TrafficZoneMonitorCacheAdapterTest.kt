@@ -1,4 +1,4 @@
-package com.kona.ktca.infrastructure.cache
+package com.kona.ktca.infrastructure.adapter
 
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import com.kona.ktca.domain.model.TrafficZoneMonitorFixture
@@ -6,9 +6,9 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.time.LocalDate
 
-class TrafficZoneMonitorCacheAdapterImplTest : StringSpec({
+class TrafficZoneMonitorCacheAdapterTest : StringSpec({
 
-    val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCacheAdapterImpl()
+    val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCachingAdapter()
 
     val trafficZoneMonitorFixture = TrafficZoneMonitorFixture()
 

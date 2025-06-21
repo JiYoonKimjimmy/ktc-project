@@ -1,9 +1,10 @@
-package com.kona.ktca.infrastructure.cache
+package com.kona.ktca.infrastructure.adapter
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.domain.model.TrafficZoneMonitor
+import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorCachingPort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
@@ -11,7 +12,7 @@ import java.time.Duration
 import java.time.LocalDate
 
 @Component
-class TrafficZoneMonitorCacheAdapterImpl : TrafficZoneMonitorCacheAdapter {
+class TrafficZoneMonitorCachingAdapter : TrafficZoneMonitorCachingPort {
 
     private val monitoringLatestResultCache: Cache<String, List<TrafficZoneMonitor>> = Caffeine.newBuilder()
         .maximumSize(1000)

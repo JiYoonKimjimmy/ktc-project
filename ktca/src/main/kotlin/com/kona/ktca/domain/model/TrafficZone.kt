@@ -8,7 +8,7 @@ import com.kona.ktca.domain.dto.TrafficZoneDTO
 import java.time.LocalDateTime
 
 data class TrafficZone(
-    val zoneId: String = generateZoneId(),
+    val zoneId: String,
     val zoneAlias: String,
     val threshold: Long,
     val status: TrafficZoneStatus,
@@ -17,8 +17,9 @@ data class TrafficZone(
     val updated: LocalDateTime? = null,
 ) {
 
-    companion object {
+    lateinit var waiting: TrafficZoneWaiting
 
+    companion object {
         fun create(dto: TrafficZoneDTO): TrafficZone {
             return TrafficZone(
                 zoneId = dto.zoneId ?: generateZoneId(),
@@ -32,7 +33,11 @@ data class TrafficZone(
         private fun generateZoneId(): String {
             return TRAFFIC_ZONE_ID_PREFIX + SnowflakeIdGenerator.generate()
         }
+    }
 
+    fun applyWaiting(waiting: TrafficZoneWaiting): TrafficZone {
+        this.waiting = waiting
+        return this
     }
 
     fun update(dto: TrafficZoneDTO): TrafficZone {

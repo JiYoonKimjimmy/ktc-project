@@ -17,16 +17,16 @@ data class TrafficZoneMonitor(
     val updated: LocalDateTime? = null,
 ) {
     companion object {
-        fun of(trafficZone: TrafficZone, waiting: TrafficZoneWaiting): TrafficZoneMonitor {
+        fun of(zone: TrafficZone): TrafficZoneMonitor {
             return TrafficZoneMonitor(
-                zoneId = trafficZone.zoneId,
-                zoneAlias = trafficZone.zoneAlias,
-                threshold = trafficZone.threshold,
-                status = trafficZone.status,
-                activationTime = trafficZone.activationTime,
-                entryCount = waiting.entryCount,
-                waitingCount = waiting.waitingCount,
-                estimatedClearTime = waiting.estimatedClearTime
+                zoneId = zone.zoneId,
+                zoneAlias = zone.zoneAlias,
+                threshold = zone.threshold,
+                status = zone.status,
+                activationTime = zone.activationTime,
+                entryCount = zone.waiting.entryCount,
+                waitingCount = zone.waiting.waitingCount,
+                estimatedClearTime = zone.waiting.estimatedClearTime
             )
         }
     }

@@ -37,7 +37,8 @@ class TrafficZoneMonitorCollectScheduler(
                  */
                 executeScheduler(
                     lock = { distributedLockManager.collectTrafficZoneMonitoringSchedulerLock { it() } },
-                    block = { trafficZoneMonitorCollectPort.collect().also { logger.info("Collected Traffic Zone Monitoring count : ${it.size}") } }
+                    block = { trafficZoneMonitorCollectPort.collect() },
+                    logging = { logger.info("Collected Traffic Zone Monitoring count : ${it.size}") }
                 )
             } catch (e: Exception) {
                 logger.error("Traffic Zone Monitoring Scheduler Failed.", e)
