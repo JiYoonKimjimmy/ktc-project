@@ -29,19 +29,17 @@ class TrafficZoneSaveService(
         return zone.update(dto).saveTrafficZone()
     }
 
-    override suspend fun delete(zoneId: String) {
-        trafficZoneRepository.findByZoneId(zoneId)
+    override suspend fun delete(zoneId: String): TrafficZone {
+        return trafficZoneRepository.findByZoneId(zoneId)
             ?.delete()
             ?.saveTrafficZone()
-            ?.let { trafficZoneCachingPort.clearAll(listOf(it.zoneId)) }
+            ?.also { trafficZoneCachingPort.clearAll(listOf(it.zoneId)) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 
     private suspend fun TrafficZone.saveTrafficZone(): TrafficZone {
-        return with(this) {
-            trafficZoneRepository.save(zone = this)
-            trafficZoneCachingPort.save(zone = this)
-        }
+        return trafficZoneRepository.save(zone = this)
+            .also { trafficZoneCachingPort.save(zone = it) }
     }
 
 }

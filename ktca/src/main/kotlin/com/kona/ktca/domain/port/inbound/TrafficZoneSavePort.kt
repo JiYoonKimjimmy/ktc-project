@@ -9,6 +9,6 @@ interface TrafficZoneSavePort {
 
     suspend fun update(zone: TrafficZone, dto: TrafficZoneDTO): TrafficZone
 
-    suspend fun delete(zoneId: String)
+    suspend fun delete(zoneId: String): TrafficZone
 
 }

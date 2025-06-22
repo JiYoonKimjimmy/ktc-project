@@ -50,6 +50,8 @@ paths:
         트래픽 제어 Zone 등록<br>
         - 요청 `zoneId` 정보 미포함인 경우, `zoneId` 자체 생성하여 신규 등록 처리<br>
         - 요청 `zoneId` 정보 포함인 경우, 요청 `zoneId` 기준 신규 등록 처리<br>
+      parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
       requestBody:
         required: true
         content:
@@ -112,6 +114,7 @@ paths:
       description: |
         트래픽 제어 Zone 수정
       parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
         - $ref: '#/components/parameters/path-zoneId'
       requestBody:
         required: true
@@ -146,6 +149,7 @@ paths:
       description: |
         트래픽 제어 Zone 정보 단일 삭제
       parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
         - $ref: '#/components/parameters/path-zoneId'
       responses:
         '200':
@@ -441,9 +445,20 @@ components:
       name: memberId
       required: true
       schema:
-        type: string
+        type: integer
+        format: int64
         example: 12345
         description: 관리자 ID
+
+    header-X-KTC-Member-Id:
+      in: header
+      name: X-KTC-Member-Id
+      required: false
+      schema:
+        type: integer
+        format: int64
+        description: 요청 관리자 ID
+        example: 12345
 
     ##### query
     query-page:
@@ -498,7 +513,8 @@ components:
       required: false
       schema:
         type: integer
-        example: "12345"
+        format: int64
+        example: 12345
         description: 관리자 ID
 
     query-loginId:
@@ -721,6 +737,7 @@ components:
 
     memberId:
       type: integer
+      format: int64
       description: Member ID
       example: 12345
 

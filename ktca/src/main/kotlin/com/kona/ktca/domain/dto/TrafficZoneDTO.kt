@@ -12,6 +12,7 @@ data class TrafficZoneDTO(
     val threshold: Long? = null,
     val status: TrafficZoneStatus? = null,
     val activationTime: LocalDateTime? = null,
+    val requesterId: Long? = null
 ) {
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(

@@ -11,7 +11,6 @@ import com.kona.ktca.presentation.model.V1ZoneModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 
@@ -21,13 +20,17 @@ class V1ZoneManagementController(
     private val v1ZoneModelMapper: V1ZoneModelMapper
 ) : V1ZoneManagementApiDelegate {
 
-    override fun createZone(v1CreateZoneRequest: V1CreateZoneRequest): ResponseEntity<V1CreateZoneResponse> = runBlocking {
+    override fun createZone(
+        v1CreateZoneRequest: V1CreateZoneRequest,
+        xKTCMemberId: Long?,
+    ): ResponseEntity<V1CreateZoneResponse> = runBlocking {
         val dto = TrafficZoneDTO(
             zoneId = v1CreateZoneRequest.zoneId,
             zoneAlias = v1CreateZoneRequest.zoneAlias,
             threshold = v1CreateZoneRequest.threshold.toLong(),
             activationTime = v1CreateZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
-            status = v1CreateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE
+            status = v1CreateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE,
+            requesterId = xKTCMemberId
         )
         val result = trafficZoneManagementUseCase.createTrafficZone(dto)
         ResponseEntity(V1CreateZoneResponse(zoneId = result.zoneId),  HttpStatus.CREATED)
@@ -35,7 +38,7 @@ class V1ZoneManagementController(
 
     override fun findZone(zoneId: String): ResponseEntity<V1FindZoneResponse> = runBlocking {
         val result = trafficZoneManagementUseCase.findTrafficZone(zoneId)
-        ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(result)), HttpStatus.OK)
+        ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(zone =result)), HttpStatus.OK)
     }
 
     override fun findZoneList(page: Int?, size: Int?, zoneId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> = runBlocking {
@@ -57,19 +60,27 @@ class V1ZoneManagementController(
         ResponseEntity(response, HttpStatus.OK)
     }
 
-    override fun updateZone(zoneId: String, v1UpdateZoneRequest: V1UpdateZoneRequest): ResponseEntity<V1UpdateZoneResponse> = runBlocking {
+    override fun updateZone(
+        zoneId: String,
+        v1UpdateZoneRequest: V1UpdateZoneRequest,
+        xKTCMemberId: Long?,
+    ): ResponseEntity<V1UpdateZoneResponse> = runBlocking {
         val dto = TrafficZoneDTO(
             zoneAlias = v1UpdateZoneRequest.zoneAlias,
             threshold = v1UpdateZoneRequest.threshold?.toLong(),
             activationTime = v1UpdateZoneRequest.activationTime?.convertPatternOf(),
-            status = v1UpdateZoneRequest.status?.name?.let(TrafficZoneStatus::valueOf)
+            status = v1UpdateZoneRequest.status?.name?.let(TrafficZoneStatus::valueOf),
+            requesterId = xKTCMemberId
         )
         val result = trafficZoneManagementUseCase.updateTrafficZone(zoneId, dto)
         ResponseEntity(V1UpdateZoneResponse(zoneId = result.zoneId),  HttpStatus.OK)
     }
 
-    override fun deleteZone(zoneId: String): ResponseEntity<V1DeleteZoneResponse> = runBlocking {
-        trafficZoneManagementUseCase.deleteTrafficZone(zoneId)
+    override fun deleteZone(
+        zoneId: String,
+        xKTCMemberId: Long?,
+    ): ResponseEntity<V1DeleteZoneResponse> = runBlocking {
+        trafficZoneManagementUseCase.deleteTrafficZone(zoneId, requesterId = xKTCMemberId)
         ResponseEntity(V1DeleteZoneResponse(), HttpStatus.OK)
     }
 

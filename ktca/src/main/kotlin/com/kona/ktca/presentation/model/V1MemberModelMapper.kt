@@ -12,7 +12,7 @@ class V1MemberModelMapper {
 
     fun domainToModel(member: Member): V1MemberData {
         return V1MemberData(
-            memberId = member.memberId?.toInt(),
+            memberId = member.memberId,
             loginId = member.loginId,
             password = member.password,
             name = member.name,

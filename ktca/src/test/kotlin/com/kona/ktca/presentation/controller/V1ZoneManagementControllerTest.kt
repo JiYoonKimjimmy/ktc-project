@@ -29,6 +29,7 @@ class V1ZoneManagementControllerTest(
 
     given("트래픽 Zone 정보 등록 API 요청하여") {
         val url = "/api/v1/zone"
+        val memberId = 1L
 
         `when`("요청 'zoneId' 없이 신규 정보 등록 요청인 경우") {
             val request = V1CreateZoneRequest(
@@ -39,6 +40,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .post(url) {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -66,6 +68,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .post(url) {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -102,6 +105,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .post(url) {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -190,6 +194,7 @@ class V1ZoneManagementControllerTest(
 
     given("트래픽 Zone 정보 단일 수정 API 요청하여") {
         val url = "/api/v1/zone"
+        val memberId = 1L
 
         val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
@@ -207,6 +212,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .put("$url/${activeTrafficZone.zoneId}") {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -231,6 +237,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .put("$url/$notFondZoneId") {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -262,6 +269,7 @@ class V1ZoneManagementControllerTest(
 
             val result = mockMvc
                 .put("$url/${deleteTrafficZone.zoneId}") {
+                    header("X-KTC-Member-Id", memberId)
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
@@ -281,10 +289,13 @@ class V1ZoneManagementControllerTest(
     given("트래픽 Zone 정보 단일 삭제 API 요청하여") {
         val url = "/api/v1/zone"
         val notFoundZoneId = "not-found-zone-id"
+        val memberId = 1L
 
         `when`("존재하지 않는 'zoneId' 기준 요청인 경우") {
             val result = mockMvc
-                .delete("$url/$notFoundZoneId")
+                .delete("$url/$notFoundZoneId") {
+                    header("X-KTC-Member-Id", memberId)
+                }
                 .andDo { print() }
 
             then("'404 Not Found' 응답 정상 확인한다") {

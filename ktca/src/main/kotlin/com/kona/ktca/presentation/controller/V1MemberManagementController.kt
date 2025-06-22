@@ -7,13 +7,7 @@ import com.kona.ktca.domain.dto.MemberDTO
 import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.port.inbound.MemberFindPort
 import com.kona.ktca.domain.port.inbound.MemberSavePort
-import com.kona.ktca.dto.Pageable
-import com.kona.ktca.dto.V1CreateMemberRequest
-import com.kona.ktca.dto.V1CreateMemberResponse
-import com.kona.ktca.dto.V1FindAllMemberResponse
-import com.kona.ktca.dto.V1FindMemberResponse
-import com.kona.ktca.dto.V1UpdateMemberRequest
-import com.kona.ktca.dto.V1UpdateMemberResponse
+import com.kona.ktca.dto.*
 import com.kona.ktca.presentation.model.V1MemberModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
@@ -39,12 +33,12 @@ class V1MemberManagementController(
             role = MemberRole.valueOf(v1CreateMemberRequest.role.name),
         )
         val result = memberSavePort.create(dto)
-        val response = V1CreateMemberResponse(memberId = result.memberId!!.toInt())
+        val response = V1CreateMemberResponse(memberId = result.memberId!!)
         ResponseEntity(response, HttpStatus.CREATED)
     }
 
-    override fun findMember(memberId: Int?, loginId: String?): ResponseEntity<V1FindMemberResponse> = runBlocking {
-        val dto = MemberDTO(memberId = memberId?.toLong(), loginId = loginId)
+    override fun findMember(memberId: Long?, loginId: String?): ResponseEntity<V1FindMemberResponse> = runBlocking {
+        val dto = MemberDTO(memberId = memberId, loginId = loginId)
         val result = memberFindPort.findMember(dto)
         val response = V1FindMemberResponse(v1MemberModelMapper.domainToModel(result))
         ResponseEntity(response, HttpStatus.OK)
@@ -53,7 +47,7 @@ class V1MemberManagementController(
     override fun findMemberList(
         page: Int?,
         size: Int?,
-        memberId: Int?,
+        memberId: Long?,
         loginId: String?,
         name: String?,
         email: String?,
@@ -62,7 +56,7 @@ class V1MemberManagementController(
         status: String?,
     ): ResponseEntity<V1FindAllMemberResponse> = runBlocking {
         val dto = MemberDTO(
-            memberId = memberId?.toLong(),
+            memberId = memberId,
             loginId = loginId,
             name = name,
             email = email,
@@ -88,11 +82,11 @@ class V1MemberManagementController(
     }
 
     override fun updateMember(
-        memberId: String,
+        memberId: Long,
         v1UpdateMemberRequest: V1UpdateMemberRequest,
     ): ResponseEntity<V1UpdateMemberResponse> = runBlocking {
         val dto = MemberDTO(
-            memberId = memberId.toLong(),
+            memberId = memberId,
             loginId = v1UpdateMemberRequest.loginId,
             password = v1UpdateMemberRequest.password,
             name = v1UpdateMemberRequest.name,
@@ -102,7 +96,7 @@ class V1MemberManagementController(
             status = v1UpdateMemberRequest.status?.name?.let { MemberStatus.valueOf(it) }
         )
         val result = memberSavePort.update(dto)
-        val response = V1UpdateMemberResponse(memberId = result.memberId!!.toInt())
+        val response = V1UpdateMemberResponse(memberId = result.memberId!!)
         ResponseEntity(response, HttpStatus.OK)
     }
 
