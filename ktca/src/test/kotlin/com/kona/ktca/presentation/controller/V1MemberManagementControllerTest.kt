@@ -273,14 +273,15 @@ class V1MemberManagementControllerTest(
         }
 
         val memberId = saved.memberId
-        val duplicatedLogindIdRequest = V1UpdateMemberRequest(loginId = saved.loginId)
+        val duplicatedLoginIdRequest = V1UpdateMemberRequest(loginId = saved.loginId)
 
         `when` ("요청 'memberId' 기준 관리자 정보 동일 'loginId' 변경 요청인 경우") {
             val result = mockMvc
                 .put("$url/$memberId") {
                     contentType = MediaType.APPLICATION_JSON
-                    content = objectMapper.writeValueAsString(duplicatedLogindIdRequest)
+                    content = objectMapper.writeValueAsString(duplicatedLoginIdRequest)
                 }
+                .andDo { print() }
 
             then("'400 Bad Request' 응답 결과 정상 확인한다") {
                 result.andExpect {
@@ -302,6 +303,7 @@ class V1MemberManagementControllerTest(
                     contentType = MediaType.APPLICATION_JSON
                     content = objectMapper.writeValueAsString(request)
                 }
+                .andDo { print() }
 
             then("'200 Ok' 응답 결과 정상 확인한다") {
                 result.andExpect {

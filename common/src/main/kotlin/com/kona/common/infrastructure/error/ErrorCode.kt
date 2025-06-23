@@ -12,6 +12,7 @@ enum class ErrorCode(
     DELETED_TRAFFIC_ZONE_CANNOT_BE_CHANGED(HttpStatus.BAD_REQUEST, "101", "Deleted traffic zone cannot be changed"),
     TRAFFIC_ZONE_STATUS_IS_BLOCKED(HttpStatus.INTERNAL_SERVER_ERROR, "102", "Traffic zone status is blocked"),
     TRAFFIC_ZONE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "103", "Traffic zone already exists"),
+    TRAFFIC_ZONE_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "104", "Traffic zone group not found"),
 
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "200", "Member not found"),
     MEMBER_LOGIN_ID_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "201", "Member loginId already exists"),

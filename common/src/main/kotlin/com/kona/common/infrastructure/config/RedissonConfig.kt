@@ -30,7 +30,6 @@ class RedissonConfig(
     private fun redissonClientConfig(): Config {
         val config = when (this.activeProfile) {
             "test" -> this::redissonSingleServerConfig
-            "prod" -> this::redissonElastiCacheClusterServersConfig
             else -> this::redissonClusterServersConfig
         }
         return Config().apply(config)
@@ -59,27 +58,8 @@ class RedissonConfig(
             .setSlaveConnectionPoolSize(maxActive)
     }
 
-    /**
-     * AWS ElastiCache Serverless - cluster, no pw, apply ssl/tls
-     */
-    private fun redissonElastiCacheClusterServersConfig(config: Config) {
-        config
-            .useClusterServers()
-            .addNodeAddress(*nodes.toRedissonTlsAddresses())
-            .setTimeout(timeout.toMillis().toInt())
-            .setConnectTimeout(connectTimeout.toMillis().toInt())
-            .setMasterConnectionMinimumIdleSize(minIdle)
-            .setMasterConnectionPoolSize(maxActive)
-            .setSlaveConnectionMinimumIdleSize(minIdle)
-            .setSlaveConnectionPoolSize(maxActive)
-    }
-
     private fun List<String>.toRedissonAddresses(): Array<String> {
         return this.map { "redis://$it" }.toTypedArray()
-    }
-
-    private fun List<String>.toRedissonTlsAddresses(): Array<String> {
-        return this.map { "rediss://$it" }.toTypedArray()
     }
 
 }

@@ -8,6 +8,8 @@ import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.common.infrastructure.error.exception.RestClientServiceException
 import com.kona.common.infrastructure.error.exception.ServiceUnavailableException
 import com.kona.common.infrastructure.util.EMPTY
+import com.kona.common.infrastructure.util.error
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -18,45 +20,57 @@ import org.springframework.web.client.HttpClientErrorException
 class BaseExceptionHandler(
     private val featureCode: FeatureCode = FeatureCode.UNKNOWN
 ) {
+    // logger
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
+    private fun Exception.errorResponse(featureCode: FeatureCode, errorCode: ErrorCode, detailMessage: String? = null): ResponseEntity<ErrorResponse> {
+        logger.error(this)
+        return ErrorResponse.toResponseEntity(featureCode, errorCode, detailMessage ?: cause?.message ?: message)
+    }
+
+    private fun Exception.errorResponse(detailMessage: String): ResponseEntity<ErrorResponse> {
+        logger.error(this)
+        return ErrorResponse.toResponseEntity(detailMessage)
+    }
 
     @ExceptionHandler(ServiceUnavailableException::class)
-    fun handleServiceUnavailableException(e: BaseException): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(FeatureCode.FAULTY, e.errorCode)
+    fun handleServiceUnavailableException(exception: BaseException): ResponseEntity<ErrorResponse> {
+        return exception.errorResponse(FeatureCode.FAULTY, exception.errorCode)
     }
 
     @ExceptionHandler(ResourceNotFoundException::class)
-    fun handleResourceNotFoundException(e: BaseException): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, e.errorCode)
+    fun handleResourceNotFoundException(exception: BaseException): ResponseEntity<ErrorResponse> {
+        return exception.errorResponse(featureCode, exception.errorCode)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        val message = e.bindingResult.fieldErrors.joinToString(". ") { it.defaultMessage ?: EMPTY }
-        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.ARGUMENT_NOT_VALID_ERROR, message)
+    fun handleValidationException(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        val message = exception.bindingResult.fieldErrors.joinToString(". ") { it.defaultMessage ?: EMPTY }
+        return exception.errorResponse(featureCode, ErrorCode.ARGUMENT_NOT_VALID_ERROR, message)
     }
 
     @ExceptionHandler(HttpClientErrorException::class)
     fun handleHttpClientErrorException(e: HttpClientErrorException): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.cause?.message)
+        return e.errorResponse(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR)
     }
 
     @ExceptionHandler(RestClientServiceException::class)
-    fun handleRestClientServiceException(e: RestClientServiceException): ResponseEntity<ErrorResponse> {
+    fun handleRestClientServiceException(exception: RestClientServiceException): ResponseEntity<ErrorResponse> {
         return try {
-            ErrorResponse.toResponseEntity(e.detailMessage!!)
+            exception.errorResponse(exception.detailMessage!!)
         } catch (e: Exception) {
-            ErrorResponse.toResponseEntity(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR, e.cause?.message)
+            e.errorResponse(featureCode, ErrorCode.EXTERNAL_SERVICE_ERROR)
         }
     }
 
     @ExceptionHandler(BaseException::class)
-    fun handleCustomException(e: BaseException): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, e.errorCode, e.detailMessage)
+    fun handleCustomException(exception: BaseException): ResponseEntity<ErrorResponse> {
+        return exception.errorResponse(featureCode, exception.errorCode, exception.detailMessage)
     }
 
     @ExceptionHandler(Exception::class)
-    fun exceptionHandler(e: Exception): ResponseEntity<ErrorResponse> {
-        return ErrorResponse.toResponseEntity(featureCode, ErrorCode.UNKNOWN_ERROR, e.cause?.message)
+    fun exceptionHandler(exception: Exception): ResponseEntity<ErrorResponse> {
+        return exception.errorResponse(featureCode, ErrorCode.UNKNOWN_ERROR)
     }
 
 }

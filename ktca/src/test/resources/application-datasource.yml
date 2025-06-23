@@ -4,7 +4,7 @@ spring:
       on-profile: test
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:ktc;MODE=Oracle
+    url: jdbc:h2:mem:ktc;MODE=MySQL
     username: sa
     password:
   jpa:

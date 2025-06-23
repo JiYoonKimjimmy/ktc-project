@@ -29,6 +29,7 @@ servers:
 
 tags:
   - name: V1.Zone Management
+  - name: V1.Zone Group Management
   - name: V1.Zone Monitoring
   - name: V1.Member Management
 
@@ -36,6 +37,7 @@ x-tagGroups:
   - name: KTC-API
     tags:
       - V1.Zone Management
+      - V1.Zone Group Management
       - V1.Zone Monitoring
       - V1.Member Management
 
@@ -223,6 +225,133 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V1ClearZoneCacheResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/zone/group:
+    post:
+      summary: 트래픽 제어 Zone 그룹 단일 등록
+      tags:
+        - V1.Zone Group Management
+      operationId: createZoneGroup
+      description: |
+        트래픽 제어 Zone 그룹 단일 등록
+      parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1CreateZoneGroupRequest'
+      responses:
+        '200':
+          description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1CreateZoneGroupResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/zone/group/{groupId}:
+    put:
+      summary: 트래픽 제어 Zone 그룹 단일 수정
+      tags:
+        - V1.Zone Group Management
+      operationId: updateZoneGroup
+      description: |
+        트래픽 제어 Zone 그룹 수정
+      parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
+        - $ref: '#/components/parameters/path-groupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1UpdateZoneGroupRequest'
+      responses:
+        '200':
+          description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1UpdateZoneGroupResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: 트래픽 제어 Zone 그룹 단일 삭제
+      tags:
+        - V1.Zone Group Management
+      operationId: deleteZoneGroup
+      description: |
+        트래픽 제어 Zone 그룹 단일 삭제
+      parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
+        - $ref: '#/components/parameters/path-groupId'
+      responses:
+        '200':
+          description: 'Ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1DeleteZoneGroupResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/zone/group/list:
+    get:
+      summary: 트래픽 제어 Zone 그룹 목록 조회
+      tags:
+        - V1.Zone Group Management
+      operationId: findZoneGroupList
+      description: |
+        트래픽 제어 Zone 그룹 목록 조회
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1FindZoneGroupListResponse'
         '400':
           description: |
             Failed
@@ -483,6 +612,16 @@ components:
         format: int64
         example: 12345
         description: 관리자 ID
+
+    path-groupId:
+      in: path
+      name: groupId
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 12345
+        description: 그룹 ID
 
     header-X-KTC-Member-Id:
       in: header
@@ -877,6 +1016,31 @@ components:
       description: 관리자 로그 구분
       example: "TRAFFIC_ZONE_CREATED"
 
+    zoneGroupId:
+      type: integer
+      format: int64
+      description: 그룹 ID
+      example: 12345
+
+    zoneGroupName:
+      type: string
+      description: 그룹명
+      example: "그룹명"
+
+    zoneGroupOrder:
+      type: integer
+      description: 그룹 순서
+      example: 1
+
+    zoneGroupStatus:
+      type: string
+      enum: [
+        ACTIVE,
+        DELETED
+      ]
+      description: 그룹 상태
+      example: "ACTIVE"
+
     ##### api dto start
     ResultResponse:
       type: object
@@ -1172,8 +1336,6 @@ components:
           $ref: '#/components/schemas/memberRole'
         status:
           $ref: '#/components/schemas/memberStatus'
-        requestMemberId:
-          $ref: '#/components/schemas/memberId'
 
     V1UpdateMemberResponse:
       type: object
@@ -1235,5 +1397,80 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1MemberLogData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1ZoneGroupData:
+      type: object
+      properties:
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
+        groupName:
+          $ref: '#/components/schemas/zoneGroupName'
+        groupOrder:
+          $ref: '#/components/schemas/zoneGroupOrder'
+        groupStatus:
+          $ref: '#/components/schemas/zoneGroupStatus'
+        created:
+          $ref: '#/components/schemas/created'
+        updated:
+          $ref: '#/components/schemas/updated'
+
+    V1CreateZoneGroupRequest:
+      type: object
+      required:
+        - groupName
+      properties:
+        groupName:
+          $ref: '#/components/schemas/zoneGroupName'
+
+    V1CreateZoneGroupResponse:
+      type: object
+      required:
+        - groupId
+        - result
+      properties:
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindZoneGroupListResponse:
+      type: object
+      required:
+        - content
+        - result
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1ZoneGroupData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1UpdateZoneGroupRequest:
+      type: object
+      properties:
+        groupName:
+          $ref: '#/components/schemas/zoneGroupName'
+        groupOrder:
+          $ref: '#/components/schemas/zoneGroupOrder'
+
+    V1UpdateZoneGroupResponse:
+      type: object
+      required:
+        - groupId
+        - result
+      properties:
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1DeleteZoneGroupResponse:
+      type: object
+      required:
+        - result
+      properties:
         result:
           $ref: '#/components/schemas/ResultResponse'
