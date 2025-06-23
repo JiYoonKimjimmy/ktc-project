@@ -5,8 +5,8 @@ import com.kona.ktca.domain.port.inbound.TrafficZoneEntryCountExpirePort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class TrafficZoneMonitoringStoppedEventListener(
@@ -16,7 +16,7 @@ class TrafficZoneMonitoringStoppedEventListener(
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    @TransactionalEventListener
+    @EventListener
     fun handleTrafficZoneMonitoringStoppedEvent(
         event: TrafficZoneMonitoringStoppedEvent,
     ) = defaultCoroutineScope.launch {

@@ -426,6 +426,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/member/log/list:
+    get:
+      summary: 관리자 로그 목록 조회
+      tags:
+        - V1.Member Management
+      operationId: findMemberLogList
+      description: |
+        관리자 로그 목록 조회
+      parameters:
+        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
+        - $ref: '#/components/parameters/query-page'
+        - $ref: '#/components/parameters/query-size'
+        - $ref: '#/components/parameters/query-startDate'
+        - $ref: '#/components/parameters/query-endDate'
+        - $ref: '#/components/parameters/query-memberLogType'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1FindMemberLogListResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   parameters:
     ##### path
@@ -478,6 +512,24 @@ components:
         type: integer
       example: 10
       description: Page 크기
+
+    query-startDate:
+      in: query
+      name: startDate
+      required: false
+      schema:
+        type: string
+      example: "20250615"
+      description: 조회 시작 일자
+
+    query-endDate:
+      in: query
+      name: endDate
+      required: false
+      schema:
+        type: string
+      example: "20250622"
+      description: 조회 종료 일자
 
     query-zoneId:
       in: query
@@ -570,6 +622,20 @@ components:
         type: string
         example: "ACTIVE"
         description: 상태
+
+    query-memberLogType:
+      in: query
+      name: type
+      required: false
+      schema:
+        type: string
+        enum: [
+          TRAFFIC_ZONE_CREATED,
+          TRAFFIC_ZONE_UPDATED,
+          TRAFFIC_ZONE_DELETED
+        ]
+      description: 관리자 로그 구분
+      example: "TRAFFIC_ZONE_CREATED"
 
   schemas:
     ##### common schema start
@@ -801,6 +867,15 @@ components:
       description: 마지막 로그인 일시
       example: "20250619205030"
 
+    memberLogType:
+      type: string
+      enum: [
+        TRAFFIC_ZONE_CREATED,
+        TRAFFIC_ZONE_UPDATED,
+        TRAFFIC_ZONE_DELETED
+      ]
+      description: 관리자 로그 구분
+      example: "TRAFFIC_ZONE_CREATED"
 
     ##### api dto start
     ResultResponse:
@@ -1111,5 +1186,57 @@ components:
       properties:
         memberId:
           $ref: '#/components/schemas/memberId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1MemberLogData:
+      type: object
+      properties:
+        memberId:
+          $ref: '#/components/schemas/memberId'
+        loginId:
+          $ref: '#/components/schemas/loginId'
+        name:
+          $ref: '#/components/schemas/memberName'
+        zoneLog:
+          $ref: '#/components/schemas/V1MemberZoneLogData'
+        created:
+          $ref: '#/components/schemas/created'
+        updated:
+          $ref: '#/components/schemas/updated'
+
+    V1MemberZoneLogData:
+      type: object
+      properties:
+        logType:
+          $ref: '#/components/schemas/memberLogType'
+        zoneId:
+          $ref: '#/components/schemas/zoneId'
+        zoneAlias:
+          $ref: '#/components/schemas/zoneAlias'
+        threshold:
+          $ref: '#/components/schemas/threshold'
+        zoneStatus:
+          $ref: '#/components/schemas/zoneStatus'
+        activationTime:
+          $ref: '#/components/schemas/activationTime'
+        created:
+          $ref: '#/components/schemas/created'
+        updated:
+          $ref: '#/components/schemas/updated'
+
+    V1FindMemberLogListResponse:
+      type: object
+      required:
+        - pageable
+        - content
+        - result
+      properties:
+        pageable:
+          $ref: '#/components/schemas/pageable'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1MemberLogData'
         result:
           $ref: '#/components/schemas/ResultResponse'

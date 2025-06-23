@@ -4,14 +4,11 @@ import com.kona.common.infrastructure.enumerate.MemberLogType
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.ktca.domain.model.MemberLog
 import com.kona.ktca.domain.model.TrafficZone
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
+import com.linecorp.kotlinjdsl.querymodel.jpql.JpqlQueryable
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
+import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Table(name = "KTC_MEMBER_ZONE_LOG")
@@ -49,30 +46,43 @@ class MemberZoneLogEntity(
             return MemberZoneLogEntity(
                 memberId = domain.memberId,
                 type = domain.type,
-                zoneId = domain.zone.zoneId,
-                zoneAlias = domain.zone.zoneAlias,
-                threshold = domain.zone.threshold,
-                status = domain.zone.status,
-                activationTime = domain.zone.activationTime,
-                zoneCreated = domain.zone.created!!,
-                zoneUpdated = domain.zone.updated!!
+                zoneId = domain.zoneLog.zoneId,
+                zoneAlias = domain.zoneLog.zoneAlias,
+                threshold = domain.zoneLog.threshold,
+                status = domain.zoneLog.status,
+                activationTime = domain.zoneLog.activationTime,
+                zoneCreated = domain.zoneLog.created ?: domain.zoneLog.updated ?: LocalDateTime.now(),
+                zoneUpdated = domain.zoneLog.updated ?: LocalDateTime.now()
             )
+        }
+
+        fun jpqlQuery(where: Array<Predicatable?>): Jpql.() -> JpqlQueryable<SelectQuery<MemberZoneLogEntity>> {
+            val query: Jpql.() -> JpqlQueryable<SelectQuery<MemberZoneLogEntity>> = {
+                select(entity(MemberZoneLogEntity::class))
+                    .from(entity(MemberZoneLogEntity::class))
+                    .whereAnd(*where)
+            }
+            return query
         }
     }
 
     override fun toDomain(): MemberLog {
-        return MemberLog(
+        val zone = TrafficZone(
+            zoneId = zoneId,
+            zoneAlias = zoneAlias,
+            threshold = threshold,
+            status = status,
+            activationTime = activationTime,
+            created = zoneCreated,
+            updated = zoneUpdated
+        )
+        val log = MemberLog(
+            logId = id,
             memberId = memberId,
             type = type,
-            zone = TrafficZone(
-                zoneId = zoneId,
-                zoneAlias = zoneAlias,
-                threshold = threshold,
-                status = status,
-                activationTime = activationTime,
-                created = zoneCreated,
-                updated = zoneUpdated
-            )
+            created = created,
+            updated = updated,
         )
+        return log.applyZoneLog(zone)
     }
 }

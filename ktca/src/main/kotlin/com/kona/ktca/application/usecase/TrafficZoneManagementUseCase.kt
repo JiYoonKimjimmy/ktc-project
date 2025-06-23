@@ -56,11 +56,10 @@ class TrafficZoneManagementUseCase(
         trafficZoneCachingPort.clearAll(zoneIds)
     }
 
-    suspend fun TrafficZone.publishTrafficZoneChangedEvent(requesterId: Long?, type: MemberLogType): TrafficZone {
-        return this.also {
-            val event = TrafficZoneChangedEvent(memberId = requesterId ?: DEFAULT_MEMBER_ID, type = type, zone = it)
-            eventPublisher.publishEvent(event)
-        }
+    private suspend fun TrafficZone.publishTrafficZoneChangedEvent(requesterId: Long?, type: MemberLogType): TrafficZone {
+        val event = TrafficZoneChangedEvent(memberId = requesterId ?: DEFAULT_MEMBER_ID, type = type, zone = this)
+        eventPublisher.publishEvent(event)
+        return this
     }
 
 }

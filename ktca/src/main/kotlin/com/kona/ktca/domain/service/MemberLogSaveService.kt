@@ -17,11 +17,7 @@ class MemberLogSaveService(
         type: MemberLogType,
         zone: TrafficZone,
     ) : MemberLog {
-        val log = MemberLog(
-            memberId = memberId,
-            type = type,
-            zone = zone
-        )
+        val log = MemberLog(memberId = memberId, type = type).applyZoneLog(zone)
         return memberZoneLogRepository.save(log)
     }
 

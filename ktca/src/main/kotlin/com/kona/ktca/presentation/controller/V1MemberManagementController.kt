@@ -1,23 +1,26 @@
 package com.kona.ktca.presentation.controller
 
+import com.kona.common.infrastructure.enumerate.MemberLogType
 import com.kona.common.infrastructure.enumerate.MemberRole
 import com.kona.common.infrastructure.enumerate.MemberStatus
+import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.api.V1MemberManagementApiDelegate
+import com.kona.ktca.application.usecase.MemberManagementUseCase
 import com.kona.ktca.domain.dto.MemberDTO
+import com.kona.ktca.domain.dto.MemberLogDTO
 import com.kona.ktca.domain.dto.PageableDTO
-import com.kona.ktca.domain.port.inbound.MemberFindPort
-import com.kona.ktca.domain.port.inbound.MemberSavePort
 import com.kona.ktca.dto.*
 import com.kona.ktca.presentation.model.V1MemberModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
+import java.time.LocalTime
 
 @RestController
 class V1MemberManagementController(
-    private val memberSavePort: MemberSavePort,
-    private val memberFindPort: MemberFindPort,
+    private val memberManagementUseCase: MemberManagementUseCase,
     private val v1MemberModelMapper: V1MemberModelMapper
 ) : V1MemberManagementApiDelegate {
 
@@ -32,14 +35,14 @@ class V1MemberManagementController(
             team = v1CreateMemberRequest.team,
             role = MemberRole.valueOf(v1CreateMemberRequest.role.name),
         )
-        val result = memberSavePort.create(dto)
-        val response = V1CreateMemberResponse(memberId = result.memberId!!)
+        val result = memberManagementUseCase.createMember(dto)
+        val response = V1CreateMemberResponse(memberId = result)
         ResponseEntity(response, HttpStatus.CREATED)
     }
 
     override fun findMember(memberId: Long?, loginId: String?): ResponseEntity<V1FindMemberResponse> = runBlocking {
         val dto = MemberDTO(memberId = memberId, loginId = loginId)
-        val result = memberFindPort.findMember(dto)
+        val result = memberManagementUseCase.findMember(dto)
         val response = V1FindMemberResponse(v1MemberModelMapper.domainToModel(result))
         ResponseEntity(response, HttpStatus.OK)
     }
@@ -65,7 +68,7 @@ class V1MemberManagementController(
             status = status?.let { MemberStatus.valueOf(it) }
         )
         val pageable = PageableDTO(number = page ?: 0, size = size ?: 20)
-        val result = memberFindPort.findPageMember(dto, pageable)
+        val result = memberManagementUseCase.findPageMember(dto, pageable)
         val response = V1FindAllMemberResponse(
             pageable = Pageable(
                 first = result.isFirst,
@@ -95,8 +98,39 @@ class V1MemberManagementController(
             role = v1UpdateMemberRequest.role?.name?.let { MemberRole.valueOf(it) },
             status = v1UpdateMemberRequest.status?.name?.let { MemberStatus.valueOf(it) }
         )
-        val result = memberSavePort.update(dto)
-        val response = V1UpdateMemberResponse(memberId = result.memberId!!)
+        val result = memberManagementUseCase.updateMember(dto)
+        val response = V1UpdateMemberResponse(memberId = result)
+        ResponseEntity(response, HttpStatus.OK)
+    }
+
+    override fun findMemberLogList(
+        xKTCMemberId: Long?,
+        page: Int?,
+        size: Int?,
+        startDate: String?,
+        endDate: String?,
+        type: String?,
+    ): ResponseEntity<V1FindMemberLogListResponse> = runBlocking {
+        val dto = MemberLogDTO(
+            memberId = xKTCMemberId!!,
+            type = type?.let { MemberLogType.valueOf(it) },
+            fromDate = startDate?.convertPatternOf() ?: LocalDate.now().minusDays(7).atStartOfDay(),
+            toDate = endDate?.convertPatternOf() ?: LocalDate.now().atTime(LocalTime.MAX)
+        )
+        val pageable = PageableDTO(number = page ?: 0, size = size ?: 20)
+        val result = memberManagementUseCase.findPageMemberLog(dto, pageable)
+        val response = V1FindMemberLogListResponse(
+            pageable = Pageable(
+                first = result.isFirst,
+                last = result.isLast,
+                number = result.number,
+                numberOfElements = result.numberOfElements,
+                propertySize = result.size,
+                totalPages = result.totalPages,
+                totalElements = result.totalElements,
+            ),
+            content = result.content.map { v1MemberModelMapper.domainToModel(it) }
+        )
         ResponseEntity(response, HttpStatus.OK)
     }
 
