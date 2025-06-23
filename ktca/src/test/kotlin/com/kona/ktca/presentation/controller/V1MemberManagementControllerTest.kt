@@ -44,8 +44,7 @@ class V1MemberManagementControllerTest(
             name = "name",
             email = "email",
             team = "team",
-            role = MemberRole.VIEWER,
-            requestMemberId = 1
+            role = MemberRole.VIEWER
         )
 
         `when`("요청 'loginId' 이미 등록된 정보 등록 요청인 경우") {
@@ -74,8 +73,7 @@ class V1MemberManagementControllerTest(
             name = "name",
             email = "email",
             team = "team",
-            role = MemberRole.VIEWER,
-            requestMemberId = 1
+            role = MemberRole.VIEWER
         )
 
         `when`("신규 정보 등록 요청인 경우") {
