@@ -591,6 +591,17 @@ paths:
 
 components:
   parameters:
+    ##### header
+    header-X-KTC-Member-Id:
+      in: header
+      name: X-KTC-Member-Id
+      required: false
+      schema:
+        type: integer
+        format: int64
+        description: 요청 관리자 ID
+        example: 12345
+
     ##### path
     path-zoneId:
       in: path
@@ -611,7 +622,7 @@ components:
         type: integer
         format: int64
         example: 12345
-        description: 관리자 ID
+        description: "관리자 ID"
 
     path-groupId:
       in: path
@@ -621,17 +632,7 @@ components:
         type: integer
         format: int64
         example: 12345
-        description: 그룹 ID
-
-    header-X-KTC-Member-Id:
-      in: header
-      name: X-KTC-Member-Id
-      required: false
-      schema:
-        type: integer
-        format: int64
-        description: 요청 관리자 ID
-        example: 12345
+        description: "Zone 그룹 ID"
 
     ##### query
     query-page:
