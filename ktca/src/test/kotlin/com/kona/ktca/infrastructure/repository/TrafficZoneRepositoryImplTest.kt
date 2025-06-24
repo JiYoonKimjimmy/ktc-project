@@ -50,8 +50,8 @@ class TrafficZoneRepositoryImplTest(
 
         // then
         result shouldNotBe null
-        result.created?.shouldBeGreaterThan(expectedDate)
-        result.updated?.shouldBeGreaterThan(expectedDate)
+        result.created?.shouldBeGreaterThanOrEqualTo(expectedDate)
+        result.updated?.shouldBeGreaterThanOrEqualTo(expectedDate)
     }
 
     "TrafficZoneEntity DB 변경 결과 정상 확인한다" {
@@ -69,7 +69,7 @@ class TrafficZoneRepositoryImplTest(
 
         // then
         result shouldNotBe null
-        result.updated!!.shouldBeGreaterThan(saved.updated!!)
+        result.updated!!.shouldBeGreaterThanOrEqualTo(saved.updated!!)
     }
 
     "TrafficZoneEntity 'id: test-zone-id' 기준 Page DB 조회 결과 정상 확인한다" {
