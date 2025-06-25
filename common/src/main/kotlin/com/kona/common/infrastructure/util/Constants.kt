@@ -12,6 +12,7 @@ const val ONE_SECONDS_MILLIS = 1000L
 const val SIX_SECONDS_MILLIS = 6000L
 
 const val TRAFFIC_ZONE_ID_PREFIX = "KZ"
+const val TRAFFIC_GROUP_ID_PREFIX = "KG"
 const val QUEUE_STATUS_KEY = "status"
 const val QUEUE_ACTIVATION_TIME_KEY = "activationTime"
 
@@ -19,6 +20,5 @@ const val CORRELATION_ID_HEADER_FIELD = "X-KM-Correlation-Id"
 const val CORRELATION_ID_LOG_FIELD = "correlationId"
 const val CORRELATION_ID_HEX_STRING_LENGTH = 7
 
-const val DEFAULT_ZONE_GROUP_ID = 1L
 const val DEFAULT_POLLING_PERIOD = 3000L
 const val DEFAULT_MEMBER_ID = 1L

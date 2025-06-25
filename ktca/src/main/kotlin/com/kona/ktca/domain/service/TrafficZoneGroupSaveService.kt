@@ -15,7 +15,7 @@ class TrafficZoneGroupSaveService(
 ) : TrafficZoneGroupSavePort {
 
     override suspend fun create(name: String): TrafficZoneGroup {
-        return trafficZoneGroupRepository.saveNextOrder(name)
+        return trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroup.create(name))
     }
 
     override suspend fun update(dto: TrafficZoneGroupDTO): TrafficZoneGroup {
@@ -23,7 +23,7 @@ class TrafficZoneGroupSaveService(
         return trafficZoneGroupRepository.save(group)
     }
 
-    private suspend fun findActiveTrafficZoneGroup(groupId: Long?): TrafficZoneGroup {
+    private suspend fun findActiveTrafficZoneGroup(groupId: String?): TrafficZoneGroup {
         return groupId
             ?.let { trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = it, status = TrafficZoneGroupStatus.ACTIVE) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_GROUP_NOT_FOUND)

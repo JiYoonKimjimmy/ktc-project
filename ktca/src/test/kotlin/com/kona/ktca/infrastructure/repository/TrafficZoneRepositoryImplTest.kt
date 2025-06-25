@@ -10,7 +10,6 @@ import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneGroupJpaRepository
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneJpaRepository
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -105,7 +104,7 @@ class TrafficZoneRepositoryImplTest(
         val content = result.content[0]
         content!! shouldNotBe null
         content.zoneId shouldBe saved.zoneId
-        content.groupId shouldBeGreaterThan 0
+        content.groupId shouldNotBe null
         content.created?.convertPatternOf() shouldBe saved.created?.convertPatternOf()
         content.updated!!.convertPatternOf() shouldBeGreaterThanOrEqualTo saved.updated!!.convertPatternOf()
     }

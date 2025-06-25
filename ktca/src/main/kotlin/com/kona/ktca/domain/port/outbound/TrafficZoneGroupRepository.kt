@@ -7,14 +7,14 @@ interface TrafficZoneGroupRepository {
 
     suspend fun save(group: TrafficZoneGroup): TrafficZoneGroup
 
-    suspend fun saveNextOrder(name: String): TrafficZoneGroup
+    suspend fun saveNextOrder(group: TrafficZoneGroup): TrafficZoneGroup
 
-    suspend fun findByGroupId(groupId: Long): TrafficZoneGroup?
+    suspend fun findByGroupId(groupId: String): TrafficZoneGroup?
 
-    suspend fun findByGroupIdAndStatus(groupId: Long, status: TrafficZoneGroupStatus): TrafficZoneGroup?
+    suspend fun findByGroupIdAndStatus(groupId: String, status: TrafficZoneGroupStatus): TrafficZoneGroup?
 
     suspend fun findAllByStatus(status: TrafficZoneGroupStatus): List<TrafficZoneGroup>
 
-    suspend fun delete(groupId: Long)
+    suspend fun delete(groupId: String)
 
 }

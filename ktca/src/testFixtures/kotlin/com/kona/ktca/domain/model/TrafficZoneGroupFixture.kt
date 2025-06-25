@@ -2,6 +2,7 @@ package com.kona.ktca.domain.model
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
 import com.kona.common.infrastructure.util.SnowflakeIdGenerator
+import com.kona.common.infrastructure.util.TRAFFIC_GROUP_ID_PREFIX
 import java.util.concurrent.atomic.AtomicInteger
 
 object TrafficZoneGroupFixture {
@@ -9,7 +10,7 @@ object TrafficZoneGroupFixture {
     private val orderGenerator = AtomicInteger(0)
 
     fun giveOne(
-        groupId: Long? = null,
+        groupId: String = "$TRAFFIC_GROUP_ID_PREFIX${SnowflakeIdGenerator.generate()}",
         name: String = "그룹-${SnowflakeIdGenerator.generate()}",
         order: Int? = null,
         status: TrafficZoneGroupStatus = TrafficZoneGroupStatus.ACTIVE,

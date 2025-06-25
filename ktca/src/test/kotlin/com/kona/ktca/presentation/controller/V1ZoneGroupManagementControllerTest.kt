@@ -2,6 +2,7 @@ package com.kona.ktca.presentation.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
 import com.kona.ktca.dto.V1CreateZoneGroupRequest
 import com.kona.ktca.dto.V1UpdateZoneGroupRequest
@@ -54,8 +55,8 @@ class V1ZoneGroupManagementControllerTest(
     given("트래픽 Zone 그룹 정보 목록 조회 API 요청하여") {
         val url = "/api/v1/zone/group/list"
 
-        trafficZoneGroupRepository.saveNextOrder("테스트 그룹-1")
-        trafficZoneGroupRepository.saveNextOrder("테스트 그룹-2")
+        trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
 
         `when`("정상 조회 성공인 경우") {
             val result = mockMvc
@@ -96,8 +97,7 @@ class V1ZoneGroupManagementControllerTest(
             }
         }
 
-        val group = trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
-        val groupId = group.groupId!!
+        val groupId = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne()).groupId
 
         `when`("요청 'groupId' 기준 일치한 정보 변경하는 경우") {
             val result = mockMvc
@@ -111,7 +111,7 @@ class V1ZoneGroupManagementControllerTest(
                 result.andExpect {
                     status { isOk() }
                     content {
-                        jsonPath("$.groupId", equalTo(groupId.toInt()))
+                        jsonPath("$.groupId", equalTo(groupId))
                     }
                 }
             }
@@ -142,8 +142,7 @@ class V1ZoneGroupManagementControllerTest(
             }
         }
 
-        val group = trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
-        val groupId = group.groupId!!
+        val groupId = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne()).groupId
 
         `when`("요청 'groupId' 기준 일치한 정보 변경하는 경우") {
             val result = mockMvc

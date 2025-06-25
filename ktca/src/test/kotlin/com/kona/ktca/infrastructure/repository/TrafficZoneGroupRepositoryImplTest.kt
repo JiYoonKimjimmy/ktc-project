@@ -18,25 +18,12 @@ class TrafficZoneGroupRepositoryImplTest(
 
     val trafficZoneGroupRepository = TrafficZoneGroupRepositoryImpl(trafficZoneGroupJpaRepository)
 
-    "TrafficZoneGroup 단일 등록 처리 결과 정상 확인한다" {
-        // given
-        val group = TrafficZoneGroupFixture.giveOne(name = "테스트 그룹", order = 1)
-
-        // when
-        val result = trafficZoneGroupRepository.save(group)
-
-        // then
-        result.groupId shouldNotBe null
-        result.name shouldBe "테스트 그룹"
-        result.order shouldBe 1
-    }
-
     "TrafficZoneGroup 'max(order) + 1' 단일 등록 처리 결과 정상 확인한다" {
         // given
-        val name = "테스트 그룹"
+        val group = TrafficZoneGroupFixture.giveOne(name = "테스트 그룹")
 
         // when
-        val result = trafficZoneGroupRepository.saveNextOrder(name)
+        val result = trafficZoneGroupRepository.saveNextOrder(group)
 
         // then
         result.groupId shouldNotBe null
@@ -46,10 +33,10 @@ class TrafficZoneGroupRepositoryImplTest(
 
     "TrafficZoneGroup 단일 조회 결과 정상 확인한다" {
         // given
-        val group = trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
 
         // when
-        val result = trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = group.groupId!!, status = TrafficZoneGroupStatus.ACTIVE)
+        val result = trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = group.groupId, status = TrafficZoneGroupStatus.ACTIVE)
 
         // then
         result shouldNotBe null
@@ -57,8 +44,8 @@ class TrafficZoneGroupRepositoryImplTest(
 
     "TrafficZoneGroup 전체 조회 결과 정상 확인한다" {
         // given
-        trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
-        trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
+        trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
 
         // when
         val result = trafficZoneGroupRepository.findAllByStatus(status = TrafficZoneGroupStatus.ACTIVE)
@@ -69,10 +56,10 @@ class TrafficZoneGroupRepositoryImplTest(
 
     "TrafficZoneGroup 단일 삭제 처리 결과 정상 확인다" {
         // given
-        val group = trafficZoneGroupRepository.saveNextOrder("테스트 그룹")
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
 
         // when
-        trafficZoneGroupRepository.delete(group.groupId!!)
+        trafficZoneGroupRepository.delete(group.groupId)
 
         // then
         val result = trafficZoneGroupRepository.findAllByStatus(status = TrafficZoneGroupStatus.ACTIVE).filter { it.groupId == group.groupId }

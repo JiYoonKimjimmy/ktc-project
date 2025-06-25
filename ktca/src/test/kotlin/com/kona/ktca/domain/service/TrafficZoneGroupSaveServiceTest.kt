@@ -8,8 +8,8 @@ import com.kona.ktca.infrastructure.repository.FakeTrafficZoneGroupRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
-import io.kotest.matchers.longs.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 class TrafficZoneGroupSaveServiceTest : BehaviorSpec({
 
@@ -23,7 +23,7 @@ class TrafficZoneGroupSaveServiceTest : BehaviorSpec({
             val result = trafficZoneGroupSaveService.create(name)
 
             then("신규 정보 생성 처리 결과 정상 확인한다") {
-                result.groupId!! shouldBeGreaterThan 0
+                result.groupId shouldNotBe null
                 result.name shouldBe name
                 result.order shouldBeGreaterThanOrEqual 1
             }
@@ -31,7 +31,7 @@ class TrafficZoneGroupSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 그룹 정보 수정 요청되어") {
-        val notExistGroupId = 999L
+        val notExistGroupId = "not-exist-group-id"
         val notExistGroupDTO = TrafficZoneGroupDTO(groupId = notExistGroupId, order = 2)
 
         `when`("요청 'groupId' 기준 일치한 정보 없는 경우") {

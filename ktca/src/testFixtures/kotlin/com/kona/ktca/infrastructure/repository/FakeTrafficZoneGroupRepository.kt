@@ -9,32 +9,30 @@ import java.util.concurrent.ConcurrentHashMap
 
 class FakeTrafficZoneGroupRepository : TrafficZoneGroupRepository {
 
-    private val entities = ConcurrentHashMap<Long, TrafficZoneGroupEntity>()
+    private val entities = ConcurrentHashMap<String, TrafficZoneGroupEntity>()
 
     override suspend fun save(group: TrafficZoneGroup): TrafficZoneGroup {
         val entity = TrafficZoneGroupEntity.of(domain = group)
-        if (entity.id == null) {
-            entity.id = entities.keys.maxOrNull()?.plus(1) ?: 1L
+        if (entity.created == null) {
             entity.created = LocalDateTime.now()
             entity.updated = LocalDateTime.now()
         } else {
             entity.updated = LocalDateTime.now()
         }
-        entities[entity.id!!] = entity
+        entities[entity.id] = entity
         return entity.toDomain()
     }
 
-    override suspend fun saveNextOrder(name: String): TrafficZoneGroup {
+    override suspend fun saveNextOrder(group: TrafficZoneGroup): TrafficZoneGroup {
         val groupOrder = (entities.values.maxOfOrNull { it.groupOrder } ?: 0) + 1
-        val group = TrafficZoneGroup(name = name, order = groupOrder, status = TrafficZoneGroupStatus.ACTIVE)
-        return save(group)
+        return save(group.copy(order = groupOrder))
     }
 
-    override suspend fun findByGroupId(groupId: Long): TrafficZoneGroup? {
+    override suspend fun findByGroupId(groupId: String): TrafficZoneGroup? {
         return entities[groupId]?.toDomain()
     }
 
-    override suspend fun findByGroupIdAndStatus(groupId: Long, status: TrafficZoneGroupStatus): TrafficZoneGroup? {
+    override suspend fun findByGroupIdAndStatus(groupId: String, status: TrafficZoneGroupStatus): TrafficZoneGroup? {
         return entities[groupId]?.takeIf { it.status == status }?.toDomain()
     }
 
@@ -42,7 +40,7 @@ class FakeTrafficZoneGroupRepository : TrafficZoneGroupRepository {
         return entities.values.filter { it.status == status }.map { it.toDomain() }
     }
 
-    override suspend fun delete(groupId: Long) {
+    override suspend fun delete(groupId: String) {
         entities.remove(groupId)
     }
 

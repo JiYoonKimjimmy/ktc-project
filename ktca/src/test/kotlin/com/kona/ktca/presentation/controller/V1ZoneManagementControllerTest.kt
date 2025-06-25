@@ -45,6 +45,7 @@ class V1ZoneManagementControllerTest(
             val request = V1CreateZoneRequest(
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
+                groupId = savedGroup.groupId,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -73,7 +74,7 @@ class V1ZoneManagementControllerTest(
                 zoneId = zoneId,
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
-                groupId = savedGroup.groupId!!,
+                groupId = savedGroup.groupId,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -102,7 +103,7 @@ class V1ZoneManagementControllerTest(
                 zoneId = "test-zone-id",
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
-                groupId = savedGroup.groupId!!,
+                groupId = savedGroup.groupId,
                 status = TrafficZoneStatus.ACTIVE,
                 activationTime = LocalDateTime.now()
             )
@@ -113,7 +114,7 @@ class V1ZoneManagementControllerTest(
                 zoneId = zoneId,
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
-                groupId = 1,
+                groupId = savedGroup.groupId,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -165,7 +166,7 @@ class V1ZoneManagementControllerTest(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
-            groupId = savedGroup.groupId!!,
+            groupId = savedGroup.groupId,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
@@ -181,7 +182,7 @@ class V1ZoneManagementControllerTest(
                     status { isOk() }
                     content {
                         jsonPath("$.data.zoneId", equalTo(activeTrafficZone.zoneId))
-                        jsonPath("$.data.groupId", equalTo(activeTrafficZone.groupId?.toInt()))
+                        jsonPath("$.data.groupId", equalTo(activeTrafficZone.groupId))
                         jsonPath("$.data.groupName", equalTo(activeTrafficZone.group?.name))
                         jsonPath("$.result.status", equalTo("SUCCESS"))
                     }
@@ -218,7 +219,7 @@ class V1ZoneManagementControllerTest(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
-            groupId = savedGroup.groupId!!,
+            groupId = savedGroup.groupId,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
@@ -277,7 +278,7 @@ class V1ZoneManagementControllerTest(
             zoneId = "delete-test-zone-id",
             zoneAlias = "delete-test-zone-alias",
             threshold = 1,
-            groupId = savedGroup.groupId!!,
+            groupId = savedGroup.groupId,
             status = TrafficZoneStatus.DELETED,
             activationTime = LocalDateTime.now()
         )
@@ -334,7 +335,7 @@ class V1ZoneManagementControllerTest(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
-            groupId = savedGroup.groupId!!,
+            groupId = savedGroup.groupId,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )

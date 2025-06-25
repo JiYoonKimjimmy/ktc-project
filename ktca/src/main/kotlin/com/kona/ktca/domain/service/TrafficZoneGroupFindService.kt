@@ -13,10 +13,6 @@ class TrafficZoneGroupFindService(
     private val trafficZoneGroupRepository: TrafficZoneGroupRepository
 ) : TrafficZoneGroupFindPort {
 
-    override suspend fun findTrafficZoneGroup(groupId: Long): TrafficZoneGroup {
-        return trafficZoneGroupRepository.findByGroupId(groupId = groupId) ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_GROUP_NOT_FOUND)
-    }
-
     override suspend fun findAllTrafficZoneGroup(): List<TrafficZoneGroup> {
         return trafficZoneGroupRepository.findAllByStatus(status = TrafficZoneGroupStatus.ACTIVE)
     }

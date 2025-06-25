@@ -11,7 +11,7 @@ data class TrafficZoneDTO(
     val zoneId: String? = null,
     val zoneAlias: String? = null,
     val threshold: Long? = null,
-    val groupId: Long? = null,
+    val groupId: String? = null,
     val status: TrafficZoneStatus? = null,
     val activationTime: LocalDateTime? = null,
     val requesterId: Long? = null

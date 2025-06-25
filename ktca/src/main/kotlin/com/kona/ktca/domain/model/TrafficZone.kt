@@ -20,7 +20,7 @@ data class TrafficZone(
 
     lateinit var waiting: TrafficZoneWaiting
 
-    val groupId: Long by lazy { group!!.groupId!! }
+    val groupId: String by lazy { group!!.groupId }
 
     companion object {
         fun create(dto: TrafficZoneDTO): TrafficZone {
@@ -30,7 +30,7 @@ data class TrafficZone(
                 threshold = dto.threshold!!,
                 status = dto.status ?: TrafficZoneStatus.ACTIVE,
                 activationTime = dto.activationTime ?: LocalDateTime.now(),
-                group = dto.group,
+                group = dto.group
             )
         }
 

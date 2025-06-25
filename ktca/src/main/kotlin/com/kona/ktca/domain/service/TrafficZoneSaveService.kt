@@ -5,7 +5,6 @@ import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
 import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
-import com.kona.common.infrastructure.util.DEFAULT_ZONE_GROUP_ID
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.model.TrafficZoneGroup
@@ -23,7 +22,7 @@ class TrafficZoneSaveService(
 ) : TrafficZoneSavePort {
 
     override suspend fun create(dto: TrafficZoneDTO): TrafficZone {
-        val group = findTrafficZoneGroup(groupId = dto.groupId ?: DEFAULT_ZONE_GROUP_ID)
+        val group = findTrafficZoneGroup(groupId = dto.groupId)
         return TrafficZone.create(dto = dto.applyGroup(group)).saveTrafficZone()
     }
 
@@ -44,8 +43,8 @@ class TrafficZoneSaveService(
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
     }
 
-    private suspend fun findTrafficZoneGroup(groupId: Long): TrafficZoneGroup {
-        return trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = groupId, status = TrafficZoneGroupStatus.ACTIVE)
+    private suspend fun findTrafficZoneGroup(groupId: String?): TrafficZoneGroup {
+        return groupId?.let { trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = it, status = TrafficZoneGroupStatus.ACTIVE) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_GROUP_NOT_FOUND)
     }
 

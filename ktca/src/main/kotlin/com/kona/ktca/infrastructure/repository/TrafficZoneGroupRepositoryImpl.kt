@@ -19,17 +19,17 @@ class TrafficZoneGroupRepositoryImpl(
         trafficZoneGroupJpaRepository.save(TrafficZoneGroupEntity.of(domain = group)).toDomain()
     }
 
-    override suspend fun saveNextOrder(name: String) = withContext(Dispatchers.IO) {
-        val groupOrder = maxGroupOrder() + 1
-        val entity = TrafficZoneGroupEntity.create(name, groupOrder)
+    override suspend fun saveNextOrder(group: TrafficZoneGroup) = withContext(Dispatchers.IO) {
+        val nextOrder = maxGroupOrder() + 1
+        val entity = TrafficZoneGroupEntity.of(domain = group, nextOrder = nextOrder)
         trafficZoneGroupJpaRepository.save(entity).toDomain()
     }
 
-    override suspend fun findByGroupId(groupId: Long): TrafficZoneGroup? {
-        return trafficZoneGroupJpaRepository.findById(groupId).getOrNull()?.toDomain()
+    override suspend fun findByGroupId(groupId: String): TrafficZoneGroup? = withContext(Dispatchers.IO) {
+        trafficZoneGroupJpaRepository.findById(groupId).getOrNull()?.toDomain()
     }
 
-    override suspend fun findByGroupIdAndStatus(groupId: Long, status: TrafficZoneGroupStatus): TrafficZoneGroup? = withContext(Dispatchers.IO) {
+    override suspend fun findByGroupIdAndStatus(groupId: String, status: TrafficZoneGroupStatus): TrafficZoneGroup? = withContext(Dispatchers.IO) {
         trafficZoneGroupJpaRepository.findAll(offset = 0, limit = 1) {
             select(entity(TrafficZoneGroupEntity::class))
                 .from(entity(TrafficZoneGroupEntity::class))
@@ -50,7 +50,7 @@ class TrafficZoneGroupRepositoryImpl(
             .mapNotNull { it?.toDomain() }
     }
 
-    override suspend fun delete(groupId: Long) = withContext(Dispatchers.IO) {
+    override suspend fun delete(groupId: String) = withContext(Dispatchers.IO) {
         trafficZoneGroupJpaRepository.deleteById(groupId)
     }
 

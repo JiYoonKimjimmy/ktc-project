@@ -30,7 +30,7 @@ class MemberZoneLogEntity(
     @Column(nullable = false)
     val threshold: Long,
     @Column(nullable = false)
-    val groupId: Long,
+    val groupId: String,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val status: TrafficZoneStatus,

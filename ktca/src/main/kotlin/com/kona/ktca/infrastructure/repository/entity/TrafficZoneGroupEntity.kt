@@ -12,8 +12,7 @@ import jakarta.persistence.*
 class TrafficZoneGroupEntity(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: String,
     @Column(nullable = false)
     val name: String,
     @Column(nullable = false)
@@ -25,21 +24,16 @@ class TrafficZoneGroupEntity(
 ) : BaseEntity() {
 
     companion object {
-        fun create(name: String, groupOrder: Int): TrafficZoneGroupEntity {
-            return TrafficZoneGroupEntity(
-                name = name, 
-                groupOrder = groupOrder,
-                status = TrafficZoneGroupStatus.ACTIVE
-            )
-        }
-
-        fun of(domain: TrafficZoneGroup): TrafficZoneGroupEntity {
+        fun of(domain: TrafficZoneGroup, nextOrder: Int? = null): TrafficZoneGroupEntity {
             return TrafficZoneGroupEntity(
                 id = domain.groupId,
                 name = domain.name,
-                groupOrder = domain.order,
+                groupOrder = nextOrder ?: domain.order,
                 status = domain.status
-            )
+            ).apply {
+                created = domain.created
+                updated = domain.updated
+            }
         }
     }
 

@@ -13,19 +13,19 @@ class TrafficZoneGroupManagementUseCase(
     private val trafficZoneGroupFindPort: TrafficZoneGroupFindPort
 ) {
 
-    suspend fun createTrafficZoneGroup(name: String): Long {
-        return trafficZoneGroupSavePort.create(name).groupId!!
+    suspend fun createTrafficZoneGroup(name: String): String {
+        return trafficZoneGroupSavePort.create(name).groupId
     }
 
     suspend fun findAllTrafficZoneGroup(): List<TrafficZoneGroup> {
         return trafficZoneGroupFindPort.findAllTrafficZoneGroup()
     }
 
-    suspend fun updateTrafficZoneGroup(dto: TrafficZoneGroupDTO): Long {
-        return trafficZoneGroupSavePort.update(dto).groupId!!
+    suspend fun updateTrafficZoneGroup(dto: TrafficZoneGroupDTO): String {
+        return trafficZoneGroupSavePort.update(dto).groupId
     }
 
-    suspend fun deleteTrafficZoneGroup(groupId: Long) {
+    suspend fun deleteTrafficZoneGroup(groupId: String) {
         val dto = TrafficZoneGroupDTO(groupId = groupId, status = TrafficZoneGroupStatus.DELETED)
         trafficZoneGroupSavePort.update(dto)
     }

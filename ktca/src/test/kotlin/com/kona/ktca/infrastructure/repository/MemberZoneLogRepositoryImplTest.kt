@@ -3,9 +3,7 @@ package com.kona.ktca.infrastructure.repository
 import com.kona.common.infrastructure.enumerate.MemberLogType
 import com.kona.ktca.domain.dto.MemberLogDTO
 import com.kona.ktca.domain.dto.PageableDTO
-import com.kona.ktca.domain.model.MemberLog
-import com.kona.ktca.domain.model.MemberLogFixture
-import com.kona.ktca.domain.model.TrafficZoneFixture
+import com.kona.ktca.domain.model.*
 import com.kona.ktca.domain.port.outbound.MemberZoneLogRepository
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -18,24 +16,29 @@ import java.time.LocalTime
 
 @SpringBootTest
 class MemberZoneLogRepositoryImplTest(
-    private val memberZoneLogRepository: MemberZoneLogRepository
+    private val memberZoneLogRepository: MemberZoneLogRepository,
 ) : StringSpec({
 
     lateinit var saved: MemberLog
+    lateinit var savedZone: TrafficZone
+    lateinit var savedGroup: TrafficZoneGroup
 
     beforeSpec {
         val memberId = 1L
         val type = MemberLogType.TRAFFIC_ZONE_CREATED
-        val zone = TrafficZoneFixture.giveOne()
+        val group = TrafficZoneGroupFixture.giveOne()
+        val zone = TrafficZoneFixture.giveOne(group = group)
         val log = MemberLogFixture.giveOne(memberId, type, zone)
         saved = memberZoneLogRepository.save(log)
+        savedZone = zone
+        savedGroup = group
     }
 
     "관리자 Member log 저장 처리 결과 정상 확인한다" {
         // given
         val memberId = 1L
         val type = MemberLogType.TRAFFIC_ZONE_UPDATED
-        val zone = TrafficZoneFixture.giveOne(zoneId = saved.zoneLog.zoneId)
+        val zone = TrafficZoneFixture.giveOne(zoneId = savedZone.zoneId, group = savedGroup)
         val log = MemberLogFixture.giveOne(memberId, type, zone)
 
         // when

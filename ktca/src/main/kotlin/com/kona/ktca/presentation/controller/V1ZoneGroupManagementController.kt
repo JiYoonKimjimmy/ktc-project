@@ -32,7 +32,7 @@ class V1ZoneGroupManagementController(
     }
 
     override fun updateZoneGroup(
-        groupId: Long,
+        groupId: String,
         v1UpdateZoneGroupRequest: V1UpdateZoneGroupRequest,
         xKTCMemberId: Long?,
     ): ResponseEntity<V1UpdateZoneGroupResponse> = runBlocking {
@@ -47,7 +47,7 @@ class V1ZoneGroupManagementController(
     }
 
     override fun deleteZoneGroup(
-        groupId: Long,
+        groupId: String,
         xKTCMemberId: Long?,
     ): ResponseEntity<V1DeleteZoneGroupResponse> = runBlocking {
         trafficZoneGroupManagementUseCase.deleteTrafficZoneGroup(groupId)

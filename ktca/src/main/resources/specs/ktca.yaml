@@ -629,9 +629,8 @@ components:
       name: groupId
       required: true
       schema:
-        type: integer
-        format: int64
-        example: 12345
+        type: string
+        example: "KZ202504111730001234"
         description: "Zone 그룹 ID"
 
     ##### query
@@ -1018,10 +1017,9 @@ components:
       example: "TRAFFIC_ZONE_CREATED"
 
     zoneGroupId:
-      type: integer
-      format: int64
+      type: string
       description: 그룹 ID
-      example: 12345
+      example: "KG202504111730001234"
 
     zoneGroupName:
       type: string
