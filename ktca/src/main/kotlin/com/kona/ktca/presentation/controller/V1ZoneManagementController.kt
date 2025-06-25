@@ -28,6 +28,7 @@ class V1ZoneManagementController(
             zoneId = v1CreateZoneRequest.zoneId,
             zoneAlias = v1CreateZoneRequest.zoneAlias,
             threshold = v1CreateZoneRequest.threshold.toLong(),
+            groupId = v1CreateZoneRequest.groupId,
             activationTime = v1CreateZoneRequest.activationTime?.convertPatternOf() ?: LocalDateTime.now(),
             status = v1CreateZoneRequest.status?.let { TrafficZoneStatus.valueOf(it.name) } ?: TrafficZoneStatus.ACTIVE,
             requesterId = xKTCMemberId
@@ -68,6 +69,7 @@ class V1ZoneManagementController(
         val dto = TrafficZoneDTO(
             zoneAlias = v1UpdateZoneRequest.zoneAlias,
             threshold = v1UpdateZoneRequest.threshold?.toLong(),
+            groupId = v1UpdateZoneRequest.groupId,
             activationTime = v1UpdateZoneRequest.activationTime?.convertPatternOf(),
             status = v1UpdateZoneRequest.status?.name?.let(TrafficZoneStatus::valueOf),
             requesterId = xKTCMemberId

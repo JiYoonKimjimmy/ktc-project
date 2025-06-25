@@ -29,6 +29,8 @@ class MemberZoneLogEntity(
     val zoneAlias: String,
     @Column(nullable = false)
     val threshold: Long,
+    @Column(nullable = false)
+    val groupId: Long,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val status: TrafficZoneStatus,
@@ -49,6 +51,7 @@ class MemberZoneLogEntity(
                 zoneId = domain.zoneLog.zoneId,
                 zoneAlias = domain.zoneLog.zoneAlias,
                 threshold = domain.zoneLog.threshold,
+                groupId = domain.zoneLog.groupId,
                 status = domain.zoneLog.status,
                 activationTime = domain.zoneLog.activationTime,
                 zoneCreated = domain.zoneLog.created ?: domain.zoneLog.updated ?: LocalDateTime.now(),
@@ -67,7 +70,19 @@ class MemberZoneLogEntity(
     }
 
     override fun toDomain(): MemberLog {
-        val zone = TrafficZone(
+        val log = MemberLog(
+            logId = id,
+            memberId = memberId,
+            type = type,
+            created = created,
+            updated = updated,
+        )
+        val zone = this.generateZone()
+        return log.applyZoneLog(zone)
+    }
+
+    private fun generateZone(): TrafficZone {
+        return TrafficZone(
             zoneId = zoneId,
             zoneAlias = zoneAlias,
             threshold = threshold,
@@ -76,13 +91,5 @@ class MemberZoneLogEntity(
             created = zoneCreated,
             updated = zoneUpdated
         )
-        val log = MemberLog(
-            logId = id,
-            memberId = memberId,
-            type = type,
-            created = created,
-            updated = updated,
-        )
-        return log.applyZoneLog(zone)
     }
 }

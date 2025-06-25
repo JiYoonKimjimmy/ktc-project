@@ -5,7 +5,7 @@ import com.kona.common.infrastructure.enumerate.MemberStatus
 import com.kona.common.infrastructure.util.SnowflakeIdGenerator
 import java.time.LocalDateTime
 
-class MemberFixture {
+object MemberFixture {
 
     fun giveOne(
         loginId: String = SnowflakeIdGenerator.generate(),

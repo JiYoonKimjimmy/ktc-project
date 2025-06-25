@@ -19,5 +19,6 @@ const val CORRELATION_ID_HEADER_FIELD = "X-KM-Correlation-Id"
 const val CORRELATION_ID_LOG_FIELD = "correlationId"
 const val CORRELATION_ID_HEX_STRING_LENGTH = 7
 
+const val DEFAULT_ZONE_GROUP_ID = 1L
 const val DEFAULT_POLLING_PERIOD = 3000L
 const val DEFAULT_MEMBER_ID = 1L

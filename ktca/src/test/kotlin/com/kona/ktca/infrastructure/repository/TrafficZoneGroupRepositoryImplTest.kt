@@ -17,11 +17,10 @@ class TrafficZoneGroupRepositoryImplTest(
 ) : StringSpec({
 
     val trafficZoneGroupRepository = TrafficZoneGroupRepositoryImpl(trafficZoneGroupJpaRepository)
-    val trafficZoneGroupFixture = TrafficZoneGroupFixture()
 
     "TrafficZoneGroup 단일 등록 처리 결과 정상 확인한다" {
         // given
-        val group = trafficZoneGroupFixture.giveOne(name = "테스트 그룹", order = 1)
+        val group = TrafficZoneGroupFixture.giveOne(name = "테스트 그룹", order = 1)
 
         // when
         val result = trafficZoneGroupRepository.save(group)

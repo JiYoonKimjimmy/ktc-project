@@ -15,9 +15,12 @@ data class TrafficZone(
     val activationTime: LocalDateTime,
     val created: LocalDateTime? = null,
     val updated: LocalDateTime? = null,
+    val group: TrafficZoneGroup? = null,
 ) {
 
     lateinit var waiting: TrafficZoneWaiting
+
+    val groupId: Long by lazy { group!!.groupId!! }
 
     companion object {
         fun create(dto: TrafficZoneDTO): TrafficZone {
@@ -25,8 +28,9 @@ data class TrafficZone(
                 zoneId = dto.zoneId ?: generateZoneId(),
                 zoneAlias = dto.zoneAlias!!,
                 threshold = dto.threshold!!,
+                status = dto.status ?: TrafficZoneStatus.ACTIVE,
                 activationTime = dto.activationTime ?: LocalDateTime.now(),
-                status = dto.status ?: TrafficZoneStatus.ACTIVE
+                group = dto.group,
             )
         }
 
@@ -41,11 +45,12 @@ data class TrafficZone(
     }
 
     fun update(dto: TrafficZoneDTO): TrafficZone {
-        return this.copy(
+        return copy(
             zoneAlias = dto.zoneAlias ?: zoneAlias,
             threshold = dto.threshold ?: threshold,
+            status = dto.status ?: status,
             activationTime = dto.activationTime ?: activationTime,
-            status = dto.status ?: status
+            group = dto.group ?: group
         )
     }
 

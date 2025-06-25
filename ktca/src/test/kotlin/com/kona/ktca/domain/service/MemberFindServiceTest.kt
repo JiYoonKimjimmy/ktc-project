@@ -17,8 +17,6 @@ class MemberFindServiceTest : BehaviorSpec({
     val memberRepository = FakeMemberRepository()
     val memberFindService = MemberFindService(memberRepository)
 
-    val memberFixture = MemberFixture()
-
     given("'loginId' 기준 관리자 정보 단일 조회 요청하여") {
         val notExistLoginIdDTO = MemberDTO(loginId = "notExistLoginId")
 
@@ -30,7 +28,7 @@ class MemberFindServiceTest : BehaviorSpec({
             }
         }
 
-        val saved = memberRepository.save(memberFixture.giveOne("testLoginId"))
+        val saved = memberRepository.save(MemberFixture.giveOne("testLoginId"))
         val dto = MemberDTO(loginId = saved.loginId)
 
         `when`("일치한 정보 있는 경우") {
@@ -66,8 +64,8 @@ class MemberFindServiceTest : BehaviorSpec({
 
         val team = "team-${SnowflakeIdGenerator.generate()}"
         val dto = MemberDTO(team = team)
-        memberRepository.save(memberFixture.giveOne(team = team))
-        memberRepository.save(memberFixture.giveOne(team = team))
+        memberRepository.save(MemberFixture.giveOne(team = team))
+        memberRepository.save(MemberFixture.giveOne(team = team))
 
         `when`("일치한 정보 총 '2건' 있는 경우") {
             val result = memberFindService.findPageMember(dto, pageable)

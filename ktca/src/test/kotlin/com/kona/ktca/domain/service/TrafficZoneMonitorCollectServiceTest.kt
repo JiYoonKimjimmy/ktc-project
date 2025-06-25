@@ -3,11 +3,13 @@ package com.kona.ktca.domain.service
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.THRESHOLD
-import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
 import com.kona.common.testsupport.redis.EmbeddedRedis
-import com.kona.ktca.domain.model.TrafficZone
+import com.kona.ktca.domain.model.TrafficZoneFixture
+import com.kona.ktca.domain.model.TrafficZoneGroup
+import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
 import com.kona.ktca.infrastructure.adapter.TrafficZoneMonitorCachingAdapter
+import com.kona.ktca.infrastructure.repository.FakeTrafficZoneGroupRepository
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneMonitorRepository
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneRepository
 import com.kona.ktca.testsupport.FakeApplicationEventPublisher
@@ -17,7 +19,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.reactor.awaitSingle
 import java.time.Instant
-import java.time.LocalDateTime
 
 class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
 
@@ -36,6 +37,14 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
         trafficZoneMonitorCachingPort,
         eventPublisher = eventPublisher
     )
+
+    val trafficZoneGroupRepository = FakeTrafficZoneGroupRepository()
+
+    lateinit var savedGroup: TrafficZoneGroup
+
+    beforeSpec {
+        savedGroup = trafficZoneGroupRepository.save(TrafficZoneGroupFixture.giveOne())
+    }
 
     given("전체 트래픽 제어 Zone 모니터링 수집 요청되어") {
 
@@ -64,8 +73,11 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
         val token1 = "test-token-1"
         val token2 = "test-token-2"
 
-        trafficZoneRepository.save(TrafficZone(zoneId = zoneId1, zoneAlias = zoneId1, threshold = 1, activationTime = LocalDateTime.now(), status = ACTIVE))
-        trafficZoneRepository.save(TrafficZone(zoneId = zoneId2, zoneAlias = zoneId2, threshold = 1, activationTime = LocalDateTime.now(), status = ACTIVE))
+        val zone1 = TrafficZoneFixture.giveOne(zoneId = zoneId1, group = savedGroup)
+        val zone2 = TrafficZoneFixture.giveOne(zoneId = zoneId2, group = savedGroup)
+
+        trafficZoneRepository.save(zone1)
+        trafficZoneRepository.save(zone2)
 
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId1), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
         reactiveStringRedisTemplate.opsForZSet().add(QUEUE.getKey(zoneId2), token1, Instant.now().toEpochMilli().toDouble()).awaitSingle()
@@ -148,8 +160,8 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
 
     given("트래픽 제어 Zone 모니터링 수집 '10회' 반복 요청되어") {
         val zoneId1 = "test-zone-1"
-
-        trafficZoneRepository.save(TrafficZone(zoneId = zoneId1, zoneAlias = zoneId1, threshold = 1, activationTime = LocalDateTime.now(), status = ACTIVE))
+        val zone1 = TrafficZoneFixture.giveOne(zoneId = zoneId1, group = savedGroup)
+        trafficZoneRepository.save(zone1)
 
         `when`("최초 '5회' 수집 처리 성공 인 경우") {
             (1..5).sumOf {

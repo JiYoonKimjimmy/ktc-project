@@ -15,13 +15,22 @@ class TrafficZoneEntity(
 
     @Id
     val id: String,
+    @Column(nullable = false)
     val alias: String,
+    @Column(nullable = false)
     val threshold: Long,
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     val status: TrafficZoneStatus,
+    @Column(nullable = false)
     val activationTime: LocalDateTime,
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "group_id", nullable = false)
+    val group: TrafficZoneGroupEntity
+
 ) : BaseEntity() {
+
 
     companion object {
         fun of(domain: TrafficZone): TrafficZoneEntity {
@@ -30,7 +39,8 @@ class TrafficZoneEntity(
                 alias = domain.zoneAlias,
                 threshold = domain.threshold,
                 status = domain.status,
-                activationTime = domain.activationTime
+                activationTime = domain.activationTime,
+                group = TrafficZoneGroupEntity.of(domain.group!!),
             ).apply {
                 this.created = domain.created
                 this.updated = domain.updated
@@ -52,10 +62,11 @@ class TrafficZoneEntity(
             zoneId = id,
             zoneAlias = alias,
             threshold = threshold,
-            activationTime = activationTime,
             status = status,
+            activationTime = activationTime,
             created = created,
-            updated = updated
+            updated = updated,
+            group = group.toDomain(),
         )
     }
 

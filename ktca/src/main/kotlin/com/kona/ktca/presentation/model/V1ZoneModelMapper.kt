@@ -14,6 +14,8 @@ class V1ZoneModelMapper {
             zoneId = zone.zoneId,
             zoneAlias = zone.zoneAlias,
             threshold = zone.threshold.toInt(),
+            groupId = zone.group?.groupId,
+            groupName = zone.group?.name,
             status = zone.status.name.let(ZoneStatus::valueOf),
             activationTime = zone.activationTime.convertPatternOf(),
             created = zone.created?.convertPatternOf(),

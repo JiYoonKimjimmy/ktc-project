@@ -19,11 +19,10 @@ class MemberRepositoryImplTest(
 ) : StringSpec({
 
     val memberRepository = MemberRepositoryImpl(memberJpaRepository)
-    val memberFixture = MemberFixture()
 
     "Member 신규 생성 결과 정상 확인한다" {
         // given
-        val member = memberFixture.giveOne()
+        val member = MemberFixture.giveOne()
 
         // when
         val result = memberRepository.save(member)
@@ -46,7 +45,7 @@ class MemberRepositoryImplTest(
 
     "Member 'loginId' and 'name' 기준 단건 조회 결과 정상 확인한다" {
         // given
-        val member = memberRepository.save(memberFixture.giveOne())
+        val member = memberRepository.save(MemberFixture.giveOne())
         val dto = MemberDTO(
             loginId = member.loginId,
             name = member.name
@@ -66,8 +65,8 @@ class MemberRepositoryImplTest(
         val dto = MemberDTO(team = team)
         val pageable = PageableDTO(number = 0, size = 10)
 
-        memberRepository.save(memberFixture.giveOne(team = team))
-        memberRepository.save(memberFixture.giveOne(team = team))
+        memberRepository.save(MemberFixture.giveOne(team = team))
+        memberRepository.save(MemberFixture.giveOne(team = team))
 
         // when
         val result = memberRepository.findPageByPredicate(dto, pageable)
@@ -84,8 +83,8 @@ class MemberRepositoryImplTest(
         val dto = MemberDTO(team = team)
         val pageable = PageableDTO(number = 1, size = 1)
 
-        memberRepository.save(memberFixture.giveOne(team = team))
-        val expected = memberRepository.save(memberFixture.giveOne(team = team))
+        memberRepository.save(MemberFixture.giveOne(team = team))
+        val expected = memberRepository.save(MemberFixture.giveOne(team = team))
 
         // when
         val result = memberRepository.findPageByPredicate(dto, pageable)
@@ -99,7 +98,7 @@ class MemberRepositoryImplTest(
 
     "Member 'loginId' 기준 정보 존재 여부 조회하여 정상 확인한다" {
         // given
-        val entity = memberFixture.giveOne()
+        val entity = MemberFixture.giveOne()
         memberRepository.save(entity)
 
         // when

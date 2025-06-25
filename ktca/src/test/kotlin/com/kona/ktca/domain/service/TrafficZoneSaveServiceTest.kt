@@ -4,6 +4,7 @@ import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.ACTIVATION_ZONES
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.THRESHOLD
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.*
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
@@ -13,7 +14,10 @@ import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ID_PREFIX
 import com.kona.common.infrastructure.util.convertUTCEpochTime
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.model.TrafficZoneGroup
+import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
+import com.kona.ktca.infrastructure.repository.FakeTrafficZoneGroupRepository
 import com.kona.ktca.infrastructure.repository.FakeTrafficZoneRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -26,14 +30,24 @@ import java.time.LocalDateTime
 class TrafficZoneSaveServiceTest : BehaviorSpec({
 
     val redisExecuteAdapter = RedisExecuteAdapterImpl(EmbeddedRedis.reactiveStringRedisTemplate)
-    val trafficZoneCachingAdapter = TrafficZoneCachingAdapter(redisExecuteAdapter)
+    val trafficZoneCachingPort = TrafficZoneCachingAdapter(redisExecuteAdapter)
     val trafficZoneRepository = FakeTrafficZoneRepository()
-    val trafficZoneSaveService = TrafficZoneSaveService(trafficZoneRepository, trafficZoneCachingAdapter)
+    val trafficZoneGroupRepository = FakeTrafficZoneGroupRepository()
+    val trafficZoneSaveService = TrafficZoneSaveService(trafficZoneRepository, trafficZoneCachingPort, trafficZoneGroupRepository)
+
+    lateinit var savedGroup1: TrafficZoneGroup
+    lateinit var savedGroup2: TrafficZoneGroup
+
+    beforeSpec {
+        savedGroup1 = trafficZoneGroupRepository.save(group = TrafficZoneGroupFixture.giveOne())
+        savedGroup2 = trafficZoneGroupRepository.save(group = TrafficZoneGroupFixture.giveOne())
+    }
 
     given("트래픽 Zone 정보 신규 등록 요청되어") {
         val newTrafficZone = TrafficZoneDTO(
             zoneAlias = "test-zone-alias",
             threshold = 1000,
+            groupId = savedGroup1.groupId,
             status = ACTIVE,
             activationTime = LocalDateTime.now(),
         )
@@ -47,12 +61,13 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
                 entity.zoneId shouldBe result.zoneId
                 entity.zoneAlias shouldBe result.zoneAlias
                 entity.threshold shouldBe result.threshold
-                entity.activationTime shouldBe result.activationTime
+                entity.groupId shouldBe result.groupId
                 entity.status shouldBe result.status
+                entity.activationTime shouldBe result.activationTime
             }
 
             then("트래픽 Zone 'threshold: 1000' Cache 저장 결과 정상 확인한다") {
-                val threshold = redisExecuteAdapter.getValue(TrafficCacheKey.THRESHOLD.getKey(result.zoneId))
+                val threshold = redisExecuteAdapter.getValue(THRESHOLD.getKey(result.zoneId))
                 threshold shouldBe "1000"
             }
 
@@ -80,9 +95,16 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 정보 변경 요청 되어") {
-        val newTrafficZone = TrafficZoneDTO(zoneAlias = "test-zone-alias", threshold = 1000, status = ACTIVE, activationTime = LocalDateTime.now())
+        val newTrafficZone = TrafficZoneDTO(
+            zoneAlias = "test-zone-alias",
+            threshold = 1000,
+            groupId = savedGroup1.groupId,
+            status = ACTIVE,
+            activationTime = LocalDateTime.now()
+        )
         val saved = trafficZoneSaveService.create(newTrafficZone)
-        val thresholdKey = TrafficCacheKey.THRESHOLD.getKey(saved.zoneId)
+
+        val thresholdKey = THRESHOLD.getKey(saved.zoneId)
         val queueStatusKey = QUEUE_STATUS.getKey(saved.zoneId)
         val activationZonesKey = ACTIVATION_ZONES.key
 
@@ -122,6 +144,23 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
             then("트래픽 Zone 'threshold: 2000' Cache 변경 결과 정상 확인한다") {
                 val threshold = redisExecuteAdapter.getValue(thresholdKey)
                 threshold shouldBe "2000"
+            }
+        }
+
+        val updateGroupId = savedGroup2.groupId
+        val updateGroupTrafficZone = TrafficZoneDTO(
+            zoneId = saved.zoneId,
+            groupId = updateGroupId
+        )
+
+        `when`("트래픽 Zone 'groupId' 변경 요청인 경우") {
+            val result = trafficZoneSaveService.update(saved, updateGroupTrafficZone)
+
+            then("DB 변경 결과 정상 확인한다") {
+                val entity = trafficZoneRepository.findByZoneId(result.zoneId)
+                entity!! shouldNotBe null
+                entity.zoneId shouldBe result.zoneId
+                entity.groupId shouldBe updateGroupId
             }
         }
 
@@ -215,7 +254,13 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 정보 삭제 요청되어") {
-        val newTrafficZone = TrafficZoneDTO(zoneAlias = "test-zone-alias", threshold = 1000, status = ACTIVE, activationTime = LocalDateTime.now())
+        val newTrafficZone = TrafficZoneDTO(
+            zoneAlias = "test-zone-alias",
+            threshold = 1000,
+            groupId = savedGroup1.groupId,
+            status = ACTIVE,
+            activationTime = LocalDateTime.now()
+        )
         val saved = trafficZoneSaveService.create(newTrafficZone)
 
         `when`("트래픽 Zone 삭제 처리 성공인 경우") {

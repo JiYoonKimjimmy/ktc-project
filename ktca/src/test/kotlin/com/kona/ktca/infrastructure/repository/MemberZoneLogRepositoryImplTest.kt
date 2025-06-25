@@ -21,16 +21,13 @@ class MemberZoneLogRepositoryImplTest(
     private val memberZoneLogRepository: MemberZoneLogRepository
 ) : StringSpec({
 
-    val memberLogFixture = MemberLogFixture()
-    val trafficZoneFixture = TrafficZoneFixture()
-
     lateinit var saved: MemberLog
 
     beforeSpec {
         val memberId = 1L
         val type = MemberLogType.TRAFFIC_ZONE_CREATED
-        val zone = trafficZoneFixture.giveOne()
-        val log = memberLogFixture.giveOne(memberId, type, zone)
+        val zone = TrafficZoneFixture.giveOne()
+        val log = MemberLogFixture.giveOne(memberId, type, zone)
         saved = memberZoneLogRepository.save(log)
     }
 
@@ -38,8 +35,8 @@ class MemberZoneLogRepositoryImplTest(
         // given
         val memberId = 1L
         val type = MemberLogType.TRAFFIC_ZONE_UPDATED
-        val zone = trafficZoneFixture.giveOne(zoneId = saved.zoneLog.zoneId)
-        val log = memberLogFixture.giveOne(memberId, type, zone)
+        val zone = TrafficZoneFixture.giveOne(zoneId = saved.zoneLog.zoneId)
+        val log = MemberLogFixture.giveOne(memberId, type, zone)
 
         // when
         val result = memberZoneLogRepository.save(log)

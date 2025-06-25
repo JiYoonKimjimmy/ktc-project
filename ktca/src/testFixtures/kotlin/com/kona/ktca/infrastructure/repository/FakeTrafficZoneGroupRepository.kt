@@ -30,6 +30,10 @@ class FakeTrafficZoneGroupRepository : TrafficZoneGroupRepository {
         return save(group)
     }
 
+    override suspend fun findByGroupId(groupId: Long): TrafficZoneGroup? {
+        return entities[groupId]?.toDomain()
+    }
+
     override suspend fun findByGroupIdAndStatus(groupId: Long, status: TrafficZoneGroupStatus): TrafficZoneGroup? {
         return entities[groupId]?.takeIf { it.status == status }?.toDomain()
     }

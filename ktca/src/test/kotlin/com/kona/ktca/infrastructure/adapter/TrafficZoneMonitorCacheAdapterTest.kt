@@ -10,11 +10,9 @@ class TrafficZoneMonitorCacheAdapterTest : StringSpec({
 
     val trafficZoneMonitorCacheAdapter = TrafficZoneMonitorCachingAdapter()
 
-    val trafficZoneMonitorFixture = TrafficZoneMonitorFixture()
-
     lateinit var saved: List<TrafficZoneMonitor>
     beforeTest {
-        saved = (1..10).map { trafficZoneMonitorFixture.giveOne(it) }
+        saved = (1..10).map { TrafficZoneMonitorFixture.giveOne(it) }
         listOf("2025-06-11", "2025-06-12").forEach {
             val now = LocalDate.parse(it)
             trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(saved, now)
@@ -24,7 +22,7 @@ class TrafficZoneMonitorCacheAdapterTest : StringSpec({
     "Traffic Zone 모니터링 결과 Local Cache 저장 & 조회하여 정상 확인한다" {
         // given
         val today = LocalDate.parse("2025-06-12")
-        val monitoring = (1..10).map { trafficZoneMonitorFixture.giveOne(it) }
+        val monitoring = (1..10).map { TrafficZoneMonitorFixture.giveOne(it) }
 
         // when
         trafficZoneMonitorCacheAdapter.saveMonitoringLatestResult(monitoring, today)

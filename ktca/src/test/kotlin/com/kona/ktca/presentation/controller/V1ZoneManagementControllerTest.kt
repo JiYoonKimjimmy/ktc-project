@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.model.TrafficZoneGroup
+import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.domain.port.inbound.TrafficZoneFindPort
 import com.kona.ktca.domain.port.inbound.TrafficZoneSavePort
+import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
 import com.kona.ktca.dto.UpdateZoneStatus
 import com.kona.ktca.dto.V1CreateZoneRequest
 import com.kona.ktca.dto.V1UpdateZoneRequest
@@ -25,7 +28,14 @@ class V1ZoneManagementControllerTest(
     private val objectMapper: ObjectMapper,
     private val trafficZoneSavePort: TrafficZoneSavePort,
     private val trafficZoneFindPort: TrafficZoneFindPort,
+    private val trafficZoneGroupRepository: TrafficZoneGroupRepository
 ) : BehaviorSpec({
+
+    lateinit var savedGroup: TrafficZoneGroup
+
+    beforeSpec {
+        savedGroup = trafficZoneGroupRepository.save(TrafficZoneGroupFixture.giveOne())
+    }
 
     given("트래픽 Zone 정보 등록 API 요청하여") {
         val url = "/api/v1/zone"
@@ -63,6 +73,7 @@ class V1ZoneManagementControllerTest(
                 zoneId = zoneId,
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
+                groupId = savedGroup.groupId!!,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -86,10 +97,12 @@ class V1ZoneManagementControllerTest(
         }
 
         `when`("이미 등록된 'zoneId' 기준 신규 정보 등록 요청인 경우") {
+            // 트래픽 Zone 테스트 데이터 등록
             val activeTrafficZone = TrafficZoneDTO(
                 zoneId = "test-zone-id",
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
+                groupId = savedGroup.groupId!!,
                 status = TrafficZoneStatus.ACTIVE,
                 activationTime = LocalDateTime.now()
             )
@@ -100,6 +113,7 @@ class V1ZoneManagementControllerTest(
                 zoneId = zoneId,
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
+                groupId = 1,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -146,10 +160,12 @@ class V1ZoneManagementControllerTest(
             }
         }
 
+        // 트래픽 Zone 테스트 데이터 등록
         val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
+            groupId = savedGroup.groupId!!,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
@@ -165,6 +181,8 @@ class V1ZoneManagementControllerTest(
                     status { isOk() }
                     content {
                         jsonPath("$.data.zoneId", equalTo(activeTrafficZone.zoneId))
+                        jsonPath("$.data.groupId", equalTo(activeTrafficZone.groupId?.toInt()))
+                        jsonPath("$.data.groupName", equalTo(activeTrafficZone.group?.name))
                         jsonPath("$.result.status", equalTo("SUCCESS"))
                     }
                 }
@@ -200,6 +218,7 @@ class V1ZoneManagementControllerTest(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
+            groupId = savedGroup.groupId!!,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )
@@ -253,10 +272,12 @@ class V1ZoneManagementControllerTest(
             }
         }
 
+        // 트래픽 Zone 테스트 데이터 등록
         val deleteTrafficZone = TrafficZoneDTO(
             zoneId = "delete-test-zone-id",
             zoneAlias = "delete-test-zone-alias",
             threshold = 1,
+            groupId = savedGroup.groupId!!,
             status = TrafficZoneStatus.DELETED,
             activationTime = LocalDateTime.now()
         )
@@ -308,10 +329,12 @@ class V1ZoneManagementControllerTest(
             }
         }
 
+        // 트래픽 Zone 테스트 데이터 등록
         val activeTrafficZone = TrafficZoneDTO(
             zoneId = "test-zone-id",
             zoneAlias = "test-zone-alias",
             threshold = 1,
+            groupId = savedGroup.groupId!!,
             status = TrafficZoneStatus.ACTIVE,
             activationTime = LocalDateTime.now()
         )

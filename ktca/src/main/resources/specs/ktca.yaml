@@ -1081,6 +1081,10 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
+        groupName:
+          $ref: '#/components/schemas/zoneGroupName'
         status:
           $ref: '#/components/schemas/zoneStatus'
         activationTime:
@@ -1130,6 +1134,8 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
         status:
           $ref: '#/components/schemas/zoneStatus'
         activationTime:
@@ -1180,6 +1186,8 @@ components:
           $ref: '#/components/schemas/zoneAlias'
         threshold:
           $ref: '#/components/schemas/threshold'
+        groupId:
+          $ref: '#/components/schemas/zoneGroupId'
         status:
           $ref: '#/components/schemas/updateZoneStatus'
         activationTime:

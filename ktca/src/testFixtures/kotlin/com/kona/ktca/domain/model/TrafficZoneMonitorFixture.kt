@@ -3,7 +3,7 @@ package com.kona.ktca.domain.model
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
 import java.time.LocalDateTime
 
-class TrafficZoneMonitorFixture {
+object TrafficZoneMonitorFixture {
 
     fun giveOne(index: Int): TrafficZoneMonitor {
         return TrafficZoneMonitor(

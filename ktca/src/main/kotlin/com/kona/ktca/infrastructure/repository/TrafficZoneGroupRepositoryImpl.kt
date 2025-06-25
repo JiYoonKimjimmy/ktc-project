@@ -8,6 +8,7 @@ import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneGroupJpaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Repository
+import kotlin.jvm.optionals.getOrNull
 
 @Repository
 class TrafficZoneGroupRepositoryImpl(
@@ -22,6 +23,10 @@ class TrafficZoneGroupRepositoryImpl(
         val groupOrder = maxGroupOrder() + 1
         val entity = TrafficZoneGroupEntity.create(name, groupOrder)
         trafficZoneGroupJpaRepository.save(entity).toDomain()
+    }
+
+    override suspend fun findByGroupId(groupId: Long): TrafficZoneGroup? {
+        return trafficZoneGroupJpaRepository.findById(groupId).getOrNull()?.toDomain()
     }
 
     override suspend fun findByGroupIdAndStatus(groupId: Long, status: TrafficZoneGroupStatus): TrafficZoneGroup? = withContext(Dispatchers.IO) {

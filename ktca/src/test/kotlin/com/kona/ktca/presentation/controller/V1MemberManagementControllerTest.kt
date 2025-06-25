@@ -27,11 +27,10 @@ class V1MemberManagementControllerTest(
     private val memberRepository: MemberRepository
 ) : BehaviorSpec({
 
-    val memberFixture = MemberFixture()
     lateinit var saved: Member
 
     beforeSpec {
-        val member = memberFixture.giveOne()
+        val member = MemberFixture.giveOne()
         saved = memberRepository.save(member)
     }
     
