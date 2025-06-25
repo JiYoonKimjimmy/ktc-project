@@ -2,6 +2,7 @@ package com.kona.ktca.presentation.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
 import com.kona.ktca.dto.V1CreateZoneGroupRequest
@@ -117,7 +118,7 @@ class V1ZoneGroupManagementControllerTest(
             }
 
             then("DB 'order' 변경 결과 정상 확인한다") {
-                val entity = trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = groupId, status = TrafficZoneGroupStatus.ACTIVE)!!
+                val entity = trafficZoneGroupRepository.findByPredicate(TrafficZoneGroupDTO(groupId = groupId, status = TrafficZoneGroupStatus.ACTIVE))!!
                 entity.order shouldBe request.groupOrder
             }
         }
@@ -156,7 +157,7 @@ class V1ZoneGroupManagementControllerTest(
             }
 
             then("DB 'status: DELETED' 변경 결과 정상 확인한다") {
-                val entity = trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = groupId, status = TrafficZoneGroupStatus.DELETED)!!
+                val entity = trafficZoneGroupRepository.findByPredicate(TrafficZoneGroupDTO(groupId = groupId, status = TrafficZoneGroupStatus.DELETED))!!
                 entity.status shouldBe TrafficZoneGroupStatus.DELETED
             }
         }

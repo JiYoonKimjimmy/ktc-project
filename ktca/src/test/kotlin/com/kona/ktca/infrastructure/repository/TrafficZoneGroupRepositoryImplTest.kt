@@ -1,6 +1,7 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneGroupJpaRepository
 import io.kotest.core.spec.style.StringSpec
@@ -34,9 +35,10 @@ class TrafficZoneGroupRepositoryImplTest(
     "TrafficZoneGroup 단일 조회 결과 정상 확인한다" {
         // given
         val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        val dto = TrafficZoneGroupDTO(groupId = group.groupId, status = TrafficZoneGroupStatus.ACTIVE)
 
         // when
-        val result = trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = group.groupId, status = TrafficZoneGroupStatus.ACTIVE)
+        val result = trafficZoneGroupRepository.findByPredicate(dto)
 
         // then
         result shouldNotBe null

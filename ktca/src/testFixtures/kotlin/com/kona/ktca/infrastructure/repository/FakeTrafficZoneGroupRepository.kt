@@ -1,6 +1,7 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneGroupEntity
@@ -28,12 +29,8 @@ class FakeTrafficZoneGroupRepository : TrafficZoneGroupRepository {
         return save(group.copy(order = groupOrder))
     }
 
-    override suspend fun findByGroupId(groupId: String): TrafficZoneGroup? {
-        return entities[groupId]?.toDomain()
-    }
-
-    override suspend fun findByGroupIdAndStatus(groupId: String, status: TrafficZoneGroupStatus): TrafficZoneGroup? {
-        return entities[groupId]?.takeIf { it.status == status }?.toDomain()
+    override suspend fun findByPredicate(dto: TrafficZoneGroupDTO): TrafficZoneGroup? {
+        return entities.values.find { checkPredicate(dto, it) }?.toDomain()
     }
 
     override suspend fun findAllByStatus(status: TrafficZoneGroupStatus): List<TrafficZoneGroup> {
@@ -42,6 +39,12 @@ class FakeTrafficZoneGroupRepository : TrafficZoneGroupRepository {
 
     override suspend fun delete(groupId: String) {
         entities.remove(groupId)
+    }
+
+    private fun checkPredicate(dto: TrafficZoneGroupDTO, entity: TrafficZoneGroupEntity): Boolean {
+        return (dto.groupId?.let { it == entity.id } ?: true)
+                && (dto.name?.let { it == entity.name } ?: true)
+                && (dto.status?.let { it == entity.status } ?: true)
     }
 
 }

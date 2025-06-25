@@ -25,7 +25,8 @@ class TrafficZoneGroupSaveService(
 
     private suspend fun findActiveTrafficZoneGroup(groupId: String?): TrafficZoneGroup {
         return groupId
-            ?.let { trafficZoneGroupRepository.findByGroupIdAndStatus(groupId = it, status = TrafficZoneGroupStatus.ACTIVE) }
+            ?.let { TrafficZoneGroupDTO(groupId = it, status = TrafficZoneGroupStatus.ACTIVE) }
+            ?.let { trafficZoneGroupRepository.findByPredicate(dto = it) }
             ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_GROUP_NOT_FOUND)
     }
 

@@ -1,6 +1,7 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneGroupEntity
@@ -8,7 +9,6 @@ import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneGroupJpaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Repository
-import kotlin.jvm.optionals.getOrNull
 
 @Repository
 class TrafficZoneGroupRepositoryImpl(
@@ -25,19 +25,9 @@ class TrafficZoneGroupRepositoryImpl(
         trafficZoneGroupJpaRepository.save(entity).toDomain()
     }
 
-    override suspend fun findByGroupId(groupId: String): TrafficZoneGroup? = withContext(Dispatchers.IO) {
-        trafficZoneGroupJpaRepository.findById(groupId).getOrNull()?.toDomain()
-    }
-
-    override suspend fun findByGroupIdAndStatus(groupId: String, status: TrafficZoneGroupStatus): TrafficZoneGroup? = withContext(Dispatchers.IO) {
-        trafficZoneGroupJpaRepository.findAll(offset = 0, limit = 1) {
-            select(entity(TrafficZoneGroupEntity::class))
-                .from(entity(TrafficZoneGroupEntity::class))
-                .whereAnd(
-                    path(TrafficZoneGroupEntity::id).eq(groupId),
-                    path(TrafficZoneGroupEntity::status).eq(status)
-                )
-        }.firstOrNull()?.toDomain()
+    override suspend fun findByPredicate(dto: TrafficZoneGroupDTO): TrafficZoneGroup? {
+        val query = TrafficZoneGroupEntity.jpqlQuery(dto.toPredicatable())
+        return trafficZoneGroupJpaRepository.findAll(0, 1) { query() }.firstOrNull()?.toDomain()
     }
 
     override suspend fun findAllByStatus(status: TrafficZoneGroupStatus): List<TrafficZoneGroup> = withContext(Dispatchers.IO) {

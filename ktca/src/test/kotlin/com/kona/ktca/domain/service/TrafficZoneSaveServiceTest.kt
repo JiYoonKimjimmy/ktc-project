@@ -2,9 +2,7 @@ package com.kona.ktca.domain.service
 
 import com.kona.common.infrastructure.cache.redis.RedisExecuteAdapterImpl
 import com.kona.common.infrastructure.enumerate.TrafficCacheKey
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.ACTIVATION_ZONES
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.QUEUE_STATUS
-import com.kona.common.infrastructure.enumerate.TrafficCacheKey.THRESHOLD
+import com.kona.common.infrastructure.enumerate.TrafficCacheKey.*
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.*
 import com.kona.common.infrastructure.error.ErrorCode
 import com.kona.common.infrastructure.error.exception.InternalServiceException
@@ -14,6 +12,8 @@ import com.kona.common.infrastructure.util.TRAFFIC_ZONE_ID_PREFIX
 import com.kona.common.infrastructure.util.convertUTCEpochTime
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.dto.TrafficZoneDTOFixture
+import com.kona.ktca.domain.model.TrafficZoneFixture
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
@@ -33,7 +33,7 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     val trafficZoneCachingPort = TrafficZoneCachingAdapter(redisExecuteAdapter)
     val trafficZoneRepository = FakeTrafficZoneRepository()
     val trafficZoneGroupRepository = FakeTrafficZoneGroupRepository()
-    val trafficZoneSaveService = TrafficZoneSaveService(trafficZoneRepository, trafficZoneCachingPort, trafficZoneGroupRepository)
+    val trafficZoneSaveService = TrafficZoneSaveService(trafficZoneRepository, trafficZoneCachingPort)
 
     lateinit var savedGroup1: TrafficZoneGroup
     lateinit var savedGroup2: TrafficZoneGroup
@@ -44,12 +44,13 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 정보 신규 등록 요청되어") {
-        val newTrafficZone = TrafficZoneDTO(
+        val newTrafficZone = TrafficZoneDTOFixture.giveOne(
             zoneAlias = "test-zone-alias",
             threshold = 1000,
             groupId = savedGroup1.groupId,
             status = ACTIVE,
             activationTime = LocalDateTime.now(),
+            group = savedGroup1
         )
 
         `when`("정상 요청인 경우") {
@@ -95,12 +96,13 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 정보 변경 요청 되어") {
-        val newTrafficZone = TrafficZoneDTO(
+        val newTrafficZone = TrafficZoneDTOFixture.giveOne(
             zoneAlias = "test-zone-alias",
             threshold = 1000,
             groupId = savedGroup1.groupId,
             status = ACTIVE,
-            activationTime = LocalDateTime.now()
+            activationTime = LocalDateTime.now(),
+            group = savedGroup1
         )
         val saved = trafficZoneSaveService.create(newTrafficZone)
 
@@ -147,11 +149,7 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
             }
         }
 
-        val updateGroupId = savedGroup2.groupId
-        val updateGroupTrafficZone = TrafficZoneDTO(
-            zoneId = saved.zoneId,
-            groupId = updateGroupId
-        )
+        val updateGroupTrafficZone = TrafficZoneDTO(zoneId = saved.zoneId).applyGroup(savedGroup2)
 
         `when`("트래픽 Zone 'groupId' 변경 요청인 경우") {
             val result = trafficZoneSaveService.update(saved, updateGroupTrafficZone)
@@ -160,7 +158,7 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
                 val entity = trafficZoneRepository.findByZoneId(result.zoneId)
                 entity!! shouldNotBe null
                 entity.zoneId shouldBe result.zoneId
-                entity.groupId shouldBe updateGroupId
+                entity.groupId shouldBe savedGroup2.groupId
             }
         }
 
@@ -254,12 +252,13 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
     }
 
     given("트래픽 Zone 정보 삭제 요청되어") {
-        val newTrafficZone = TrafficZoneDTO(
+        val newTrafficZone = TrafficZoneDTOFixture.giveOne(
             zoneAlias = "test-zone-alias",
             threshold = 1000,
             groupId = savedGroup1.groupId,
             status = ACTIVE,
-            activationTime = LocalDateTime.now()
+            activationTime = LocalDateTime.now(),
+            group = savedGroup1
         )
         val saved = trafficZoneSaveService.create(newTrafficZone)
 

@@ -2,18 +2,19 @@ package com.kona.ktca.presentation.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.util.DEFAULT_ZONE_GROUP_NAME
 import com.kona.common.infrastructure.util.convertPatternOf
-import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.model.TrafficZoneFixture
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
-import com.kona.ktca.domain.port.inbound.TrafficZoneFindPort
-import com.kona.ktca.domain.port.inbound.TrafficZoneSavePort
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
+import com.kona.ktca.domain.port.outbound.TrafficZoneRepository
 import com.kona.ktca.dto.UpdateZoneStatus
 import com.kona.ktca.dto.V1CreateZoneRequest
 import com.kona.ktca.dto.V1UpdateZoneRequest
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.hamcrest.Matchers.*
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,26 +27,24 @@ import java.time.LocalDateTime
 class V1ZoneManagementControllerTest(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
-    private val trafficZoneSavePort: TrafficZoneSavePort,
-    private val trafficZoneFindPort: TrafficZoneFindPort,
+    private val trafficZoneRepository: TrafficZoneRepository,
     private val trafficZoneGroupRepository: TrafficZoneGroupRepository
 ) : BehaviorSpec({
 
     lateinit var savedGroup: TrafficZoneGroup
 
     beforeSpec {
-        savedGroup = trafficZoneGroupRepository.save(TrafficZoneGroupFixture.giveOne())
+        savedGroup = trafficZoneGroupRepository.save(TrafficZoneGroupFixture.giveOne(name = DEFAULT_ZONE_GROUP_NAME))
     }
 
     given("트래픽 Zone 정보 등록 API 요청하여") {
         val url = "/api/v1/zone"
         val memberId = 1L
 
-        `when`("요청 'zoneId' 없이 신규 정보 등록 요청인 경우") {
+        `when`("요청 'zoneId' and 'groupId' 없이 신규 정보 등록 요청인 경우") {
             val request = V1CreateZoneRequest(
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
-                groupId = savedGroup.groupId,
                 activationTime = LocalDateTime.now().convertPatternOf()
             )
 
@@ -68,7 +67,7 @@ class V1ZoneManagementControllerTest(
             }
         }
 
-        `when`("요청 'zoneId' 포함하여 신규 정보 등록 요청인 경우") {
+        `when`("요청 'zoneId' and 'groupId' 포함하여 신규 정보 등록 요청인 경우") {
             val zoneId = "TEST_ZONE"
             val request = V1CreateZoneRequest(
                 zoneId = zoneId,
@@ -99,19 +98,11 @@ class V1ZoneManagementControllerTest(
 
         `when`("이미 등록된 'zoneId' 기준 신규 정보 등록 요청인 경우") {
             // 트래픽 Zone 테스트 데이터 등록
-            val activeTrafficZone = TrafficZoneDTO(
-                zoneId = "test-zone-id",
-                zoneAlias = "test-zone-alias",
-                threshold = 1,
-                groupId = savedGroup.groupId,
-                status = TrafficZoneStatus.ACTIVE,
-                activationTime = LocalDateTime.now()
-            )
-            trafficZoneSavePort.create(activeTrafficZone)
+            val activeTrafficZone = TrafficZoneFixture.giveOne(zoneId = "test-zone-id", group = savedGroup)
+            trafficZoneRepository.save(activeTrafficZone)
 
-            val zoneId = activeTrafficZone.zoneId
             val request = V1CreateZoneRequest(
-                zoneId = zoneId,
+                zoneId = activeTrafficZone.zoneId,
                 zoneAlias = "test-zone-alias",
                 threshold = 1,
                 groupId = savedGroup.groupId,
@@ -162,15 +153,8 @@ class V1ZoneManagementControllerTest(
         }
 
         // 트래픽 Zone 테스트 데이터 등록
-        val activeTrafficZone = TrafficZoneDTO(
-            zoneId = "test-zone-id",
-            zoneAlias = "test-zone-alias",
-            threshold = 1,
-            groupId = savedGroup.groupId,
-            status = TrafficZoneStatus.ACTIVE,
-            activationTime = LocalDateTime.now()
-        )
-        trafficZoneSavePort.create(activeTrafficZone)
+        val activeTrafficZone = TrafficZoneFixture.giveOne(zoneId = "test-zone-id", group = savedGroup)
+        trafficZoneRepository.save(activeTrafficZone)
 
         `when`("존재하는 'zoneId' 기준 요청인 경우") {
             val result = mockMvc
@@ -215,15 +199,8 @@ class V1ZoneManagementControllerTest(
         val url = "/api/v1/zone"
         val memberId = 1L
 
-        val activeTrafficZone = TrafficZoneDTO(
-            zoneId = "test-zone-id",
-            zoneAlias = "test-zone-alias",
-            threshold = 1,
-            groupId = savedGroup.groupId,
-            status = TrafficZoneStatus.ACTIVE,
-            activationTime = LocalDateTime.now()
-        )
-        trafficZoneSavePort.create(activeTrafficZone)
+        val activeTrafficZone = TrafficZoneFixture.giveOne(zoneId = "test-zone-id", group = savedGroup)
+        trafficZoneRepository.save(activeTrafficZone)
 
         `when`("'threshold : 1000' 정보 변경 요청인 경우") {
             val request = V1UpdateZoneRequest(
@@ -274,15 +251,8 @@ class V1ZoneManagementControllerTest(
         }
 
         // 트래픽 Zone 테스트 데이터 등록
-        val deleteTrafficZone = TrafficZoneDTO(
-            zoneId = "delete-test-zone-id",
-            zoneAlias = "delete-test-zone-alias",
-            threshold = 1,
-            groupId = savedGroup.groupId,
-            status = TrafficZoneStatus.DELETED,
-            activationTime = LocalDateTime.now()
-        )
-        trafficZoneSavePort.create(deleteTrafficZone)
+        val deleteTrafficZone = TrafficZoneFixture.giveOne(zoneId = "delete-test-zone-id", group = savedGroup, status = TrafficZoneStatus.DELETED)
+        trafficZoneRepository.save(deleteTrafficZone)
 
         `when`("이미 'DELETED' 상태 Zone 정보 변경 요청인 경우") {
             val request = V1UpdateZoneRequest(
@@ -331,15 +301,8 @@ class V1ZoneManagementControllerTest(
         }
 
         // 트래픽 Zone 테스트 데이터 등록
-        val activeTrafficZone = TrafficZoneDTO(
-            zoneId = "test-zone-id",
-            zoneAlias = "test-zone-alias",
-            threshold = 1,
-            groupId = savedGroup.groupId,
-            status = TrafficZoneStatus.ACTIVE,
-            activationTime = LocalDateTime.now()
-        )
-        trafficZoneSavePort.create(activeTrafficZone)
+        val activeTrafficZone = TrafficZoneFixture.giveOne(zoneId = "test-zone-id", group = savedGroup)
+        trafficZoneRepository.save(activeTrafficZone)
 
         `when`("존재하는 'zoneId' 기준 요청인 경우") {
             val result = mockMvc
@@ -354,7 +317,8 @@ class V1ZoneManagementControllerTest(
             }
 
             then("요청 'zoneId' 기준 DB 정보 조회하여 'DELETED' 상태 변경 정상 확인한다") {
-                val entity = trafficZoneFindPort.findTrafficZone(zoneId = activeTrafficZone.zoneId!!)
+                val entity = trafficZoneRepository.findByZoneId(zoneId = activeTrafficZone.zoneId)
+                entity!! shouldNotBe null
                 entity.status shouldBe TrafficZoneStatus.DELETED
             }
         }
