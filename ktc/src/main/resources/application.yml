@@ -16,8 +16,3 @@ management:
   endpoints:
     web:
       base-path: /ktc/actuator
-
-logging:
-  file:
-    path: log
-    name: ktc-log
