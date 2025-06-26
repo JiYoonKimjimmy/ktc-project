@@ -31,7 +31,7 @@ spring:
     password: StgTGS1104#
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -55,7 +55,7 @@ spring:
     password: StgTGS1104#
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -79,7 +79,7 @@ spring:
     password: KonaKTCA0519#
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:

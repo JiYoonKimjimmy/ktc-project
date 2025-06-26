@@ -9,7 +9,7 @@ spring:
       connection-timeout: 10000
       connection-test-query: SELECT 1 FROM DUAL
   jpa:
-    database-platform: org.hibernate.dialect.OracleDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
         order_inserts: true
@@ -25,18 +25,22 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@db-dev1.konadc.com:15322:KMDBP19
-    username: mis
-    password: StgMIS1104#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql-dev1.konadc.com:33061/tgs
+    username: tgs
+    password: StgTGS1104#
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         generate_statistics: true
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: TGS
 
 ---
 
@@ -45,12 +49,11 @@ spring:
     activate:
       on-profile: qa
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@db-dev3.konadc.com:15321:KMDBP
-    username: mis
-    password: StgMIS1104#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql-dev3.konadc.com:33061/tgs
+    username: tgs
+    password: StgTGS1104#
   jpa:
-    database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
       ddl-auto: validate
     show-sql: true
@@ -58,6 +61,10 @@ spring:
       hibernate:
         format_sql: true
         generate_statistics: true
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: TGS
 
 ---
 
@@ -66,12 +73,11 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@db.konadc.com:15321/KMDBP
-    username: mis
-    password: StgMIS1104#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://konai-prod-ktc-db-sg.cluster-crx1gdtzqqkg.ap-northeast-2.rds.amazonaws.com:33306/ktca
+    username: ktca
+    password: KonaKTCA0519#
   jpa:
-    database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -79,3 +85,7 @@ spring:
       hibernate:
         format_sql: false
         generate_statistics: false
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: KTCA

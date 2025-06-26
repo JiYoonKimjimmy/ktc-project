@@ -1,5 +1,5 @@
--- KTCA.MEMBERS
-CREATE TABLE IF NOT EXISTS ${schema}.MEMBERS (
+-- ktca.members
+CREATE TABLE IF NOT EXISTS ${schema}.members (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     login_id VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS ${schema}.MEMBERS (
     updated TIMESTAMP
 );
 
--- KTCA.MEMBER_ZONE_LOG
-CREATE TABLE IF NOT EXISTS ${schema}.MEMBER_ZONE_LOG (
+-- ktca.member_zone_log
+CREATE TABLE IF NOT EXISTS ${schema}.member_zone_log (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     member_id BIGINT NOT NULL,
     type VARCHAR(50) NOT NULL,
@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS ${schema}.MEMBER_ZONE_LOG (
     updated TIMESTAMP
 );
 
--- KTCA.TRAFFIC_ZONE_GROUPS
-CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONE_GROUPS (
+-- ktca.traffic_zone_groups
+CREATE TABLE IF NOT EXISTS ${schema}.traffic_zone_groups (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     group_order INT NOT NULL,
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONE_GROUPS (
     CONSTRAINT uk_zone_group_order UNIQUE (group_order)
 );
 
--- KTCA.TRAFFIC_ZONES
-CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONES (
+-- ktca.traffic_zones
+CREATE TABLE IF NOT EXISTS ${schema}.traffic_zones (
     id VARCHAR(255) PRIMARY KEY,
     alias VARCHAR(255) NOT NULL,
     threshold BIGINT NOT NULL,
@@ -51,11 +51,11 @@ CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONES (
     activation_time TIMESTAMP NOT NULL,
     created TIMESTAMP,
     updated TIMESTAMP,
-    CONSTRAINT fk_traffic_zone_group FOREIGN KEY (group_id) REFERENCES ${schema}.TRAFFIC_ZONE_GROUPS(id)
+    CONSTRAINT fk_traffic_zone_group FOREIGN KEY (group_id) REFERENCES ${schema}.traffic_zone_groups(id)
 );
 
--- KTCA.TRAFFIC_ZONE_MONITORING
-CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONE_MONITORING (
+-- ktca.traffic_zone_monitoring
+CREATE TABLE IF NOT EXISTS ${schema}.traffic_zone_monitoring (
     id VARCHAR(255) PRIMARY KEY,
     zone_id VARCHAR(255) NOT NULL,
     zone_alias VARCHAR(255) NOT NULL,
@@ -69,10 +69,10 @@ CREATE TABLE IF NOT EXISTS ${schema}.TRAFFIC_ZONE_MONITORING (
     updated TIMESTAMP
 );
 
--- MEMBERS
-INSERT INTO ${schema}.MEMBERS (login_id, password, name, email, team, role, status, last_login_at, created, updated)
+-- members
+INSERT INTO ${schema}.members (login_id, password, name, email, team, role, status, last_login_at, created, updated)
 VALUES ('admin', 'admin', '관리자', 'admin@konai.com', '관리자', 'ADMINISTRATOR', 'ACTIVE', NOW(), NOW(), NOW());
 
--- TRAFFIC_ZONE_GROUPS
-INSERT INTO ${schema}.TRAFFIC_ZONE_GROUPS (id, name, group_order, status, created, updated)
+-- traffic_zone_groups
+INSERT INTO ${schema}.traffic_zone_groups (id, name, group_order, status, created, updated)
 VALUES ('KG0000000000000000000', '기본 그룹', 1, 'ACTIVE', NOW(), NOW());
