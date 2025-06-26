@@ -25,8 +25,8 @@ data class TrafficWaiting(
 
     private fun calProgressiveEstimatedWaitTime(numberInQueue: Long): Long {
         return when (numberInQueue) {
-            in 20_001..150_000 -> DEFAULT_POLLING_PERIOD * 2
-            in 150_001..Long.MAX_VALUE -> DEFAULT_POLLING_PERIOD * 3
+            in 20_001..100_000 -> DEFAULT_POLLING_PERIOD * 2
+            in 100_001..Long.MAX_VALUE -> DEFAULT_POLLING_PERIOD * 4
             else -> DEFAULT_POLLING_PERIOD
         }
     }
