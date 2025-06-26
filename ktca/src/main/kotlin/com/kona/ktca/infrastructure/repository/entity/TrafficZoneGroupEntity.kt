@@ -9,7 +9,7 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import jakarta.persistence.*
 
 @Table(
-    name = "KTC_TRAFFIC_ZONE_GROUPS",
+    name = "TRAFFIC_ZONE_GROUPS",
     uniqueConstraints = [ UniqueConstraint(name = "uk_zone_group_order", columnNames = ["groupOrder"]) ]
 )
 @Entity

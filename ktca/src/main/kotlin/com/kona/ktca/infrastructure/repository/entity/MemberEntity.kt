@@ -10,7 +10,7 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Table(name = "KTC_MEMBERS")
+@Table(name = "MEMBERS")
 @Entity
 class MemberEntity(
 

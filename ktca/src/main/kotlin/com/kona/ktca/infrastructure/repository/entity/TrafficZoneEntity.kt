@@ -9,7 +9,7 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Table(name = "KTC_TRAFFIC_ZONES")
+@Table(name = "TRAFFIC_ZONES")
 @Entity
 class TrafficZoneEntity(
 

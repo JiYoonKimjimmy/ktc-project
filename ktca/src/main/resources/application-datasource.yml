@@ -31,12 +31,16 @@ spring:
     password: StgTGS1104#
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         generate_statistics: true
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: TGS
 
 ---
 
@@ -51,12 +55,16 @@ spring:
     password: StgTGS1104#
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         generate_statistics: true
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: TGS
 
 ---
 
@@ -71,9 +79,13 @@ spring:
     password: KonaKTCA0519#
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
         format_sql: false
         generate_statistics: false
+  flyway:
+    baseline-on-migrate: true
+    placeholders:
+      schema: KTCA

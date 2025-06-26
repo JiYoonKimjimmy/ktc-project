@@ -60,6 +60,10 @@ dependencies {
     // mysql
     runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
 
+    // flyway
+    implementation("org.flywaydb:flyway-core:11.9.1")
+    implementation("org.flywaydb:flyway-mysql:11.9.1")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
