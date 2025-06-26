@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS ${schema}.traffic_zone_monitoring (
 
 -- members
 INSERT INTO ${schema}.members (login_id, password, name, email, team, role, status, last_login_at, created, updated)
-VALUES ('admin', 'admin', '관리자', 'admin@konai.com', '관리자', 'ADMINISTRATOR', 'ACTIVE', NOW(), NOW(), NOW());
+VALUES ('admin', '$2a$10$NLe3joUTFguOesWtQExQkuQg0Ba0rC7La0NNFqBuSWXY445tDoo7a', '관리자', 'admin@konai.com', '관리자', 'ADMINISTRATOR', 'ACTIVE', NOW(), NOW(), NOW());
 
 -- traffic_zone_groups
 INSERT INTO ${schema}.traffic_zone_groups (id, name, group_order, status, created, updated)
