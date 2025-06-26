@@ -42,7 +42,7 @@ class TrafficWaitingTest : BehaviorSpec({
             }
         }
 
-        `when`("number 정보가 20_001 ~ 150_000 인 경우") {
+        `when`("number 정보가 20_001 ~ 100_000 인 경우") {
             val trafficWaiting = TrafficWaiting(
                 result = 0,
                 number = 20_001,
@@ -55,16 +55,16 @@ class TrafficWaitingTest : BehaviorSpec({
             }
         }
 
-        `when`("number 정보가 150_001 이상인 경우") {
+        `when`("number 정보가 100_001 이상인 경우") {
             val trafficWaiting = TrafficWaiting(
                 result = 0,
-                number = 150_001,
+                number = 100_001,
                 estimatedTime = estimatedTime,
                 totalCount = totalCount
             )
 
-            then("pollingPeriod: 6_000 가 설정된다") {
-                trafficWaiting.pollingPeriod shouldBe 9_000
+            then("pollingPeriod: 12_000 가 설정된다") {
+                trafficWaiting.pollingPeriod shouldBe 12_000
             }
         }
 

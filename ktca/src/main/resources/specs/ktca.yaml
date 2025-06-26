@@ -1343,6 +1343,8 @@ components:
           $ref: '#/components/schemas/memberRole'
         status:
           $ref: '#/components/schemas/memberStatus'
+        lastLoginAt:
+          $ref: '#/components/schemas/lastLoginAt'
 
     V1UpdateMemberResponse:
       type: object

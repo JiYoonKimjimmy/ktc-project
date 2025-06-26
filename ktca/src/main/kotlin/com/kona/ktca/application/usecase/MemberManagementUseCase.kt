@@ -10,9 +10,7 @@ import com.kona.ktca.domain.port.inbound.MemberLogFindPort
 import com.kona.ktca.domain.port.inbound.MemberSavePort
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 
-@Transactional(readOnly = true)
 @Component
 class MemberManagementUseCase(
     private val memberSavePort: MemberSavePort,
@@ -20,7 +18,6 @@ class MemberManagementUseCase(
     private val memberLogFindPort: MemberLogFindPort,
 ) {
 
-    @Transactional
     suspend fun createMember(dto: MemberDTO): Long {
         return memberSavePort.create(dto).memberId!!
     }
@@ -33,7 +30,6 @@ class MemberManagementUseCase(
         return memberFindPort.findPageMember(dto, pageable)
     }
 
-    @Transactional
     suspend fun updateMember(dto: MemberDTO): Long {
         return memberSavePort.update(dto).memberId!!
     }

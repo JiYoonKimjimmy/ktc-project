@@ -10,6 +10,8 @@ import com.kona.ktca.dto.V1CreateMemberRequest
 import com.kona.ktca.dto.V1MemberData
 import com.kona.ktca.dto.V1UpdateMemberRequest
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.hamcrest.Matchers.*
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
+import java.time.LocalDateTime
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -294,13 +297,13 @@ class V1MemberManagementControllerTest(
             }
         }
 
-        val request = V1UpdateMemberRequest(loginId = "newLoginId")
+        val updateLoginIdRequest = V1UpdateMemberRequest(loginId = "newLoginId")
 
         `when` ("요청 'memberId' 기준 관리자 정보 신규 'loginId' 변경 요청인 경우") {
             val result = mockMvc
                 .put("$url/$memberId") {
                     contentType = MediaType.APPLICATION_JSON
-                    content = objectMapper.writeValueAsString(request)
+                    content = objectMapper.writeValueAsString(updateLoginIdRequest)
                 }
                 .andDo { print() }
 
@@ -308,9 +311,43 @@ class V1MemberManagementControllerTest(
                 result.andExpect {
                     status { isOk() }
                     content {
-                        content { jsonPath("$.memberId", equalTo(1)) }
+                        content { jsonPath("$.memberId", equalTo(memberId?.toInt())) }
                     }
                 }
+            }
+
+            then("Member 'loginId' DB 정보 변경 정상 확인하다") {
+                val member = memberRepository.findByMemberId(memberId!!)
+                member!! shouldNotBe null
+                member.loginId shouldBe updateLoginIdRequest.loginId
+            }
+        }
+
+        val updateLastLoginAt = LocalDateTime.now().convertPatternOf()
+        val updateLastLoginAtRequest = V1UpdateMemberRequest(lastLoginAt = updateLastLoginAt)
+
+        `when`("요청 'memberId' 기준 관리자 정보 'lastLoginAt' 변경 요청인 경우") {
+            val result = mockMvc
+                .put("$url/$memberId") {
+                    contentType = MediaType.APPLICATION_JSON
+                    content = objectMapper.writeValueAsString(updateLastLoginAtRequest)
+                }
+                .andDo { print() }
+
+            then("'200 Ok' 응답 결과 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content {
+                        content { jsonPath("$.memberId", equalTo(memberId?.toInt())) }
+                    }
+                }
+
+            }
+
+            then("Member 'lastLoginAt' DB 정보 변경 정상 확인하다") {
+                val member = memberRepository.findByMemberId(memberId!!)
+                member!! shouldNotBe null
+                member.lastLoginAt.convertPatternOf() shouldBe updateLastLoginAt
             }
         }
     }

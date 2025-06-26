@@ -96,7 +96,8 @@ class V1MemberManagementController(
             email = v1UpdateMemberRequest.email,
             team = v1UpdateMemberRequest.team,
             role = v1UpdateMemberRequest.role?.name?.let { MemberRole.valueOf(it) },
-            status = v1UpdateMemberRequest.status?.name?.let { MemberStatus.valueOf(it) }
+            status = v1UpdateMemberRequest.status?.name?.let { MemberStatus.valueOf(it) },
+            lastLoginAt = v1UpdateMemberRequest.lastLoginAt?.convertPatternOf(),
         )
         val result = memberManagementUseCase.updateMember(dto)
         val response = V1UpdateMemberResponse(memberId = result)
