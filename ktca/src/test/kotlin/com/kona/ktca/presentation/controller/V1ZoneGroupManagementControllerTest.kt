@@ -52,6 +52,45 @@ class V1ZoneGroupManagementControllerTest(
             }
         }
     }
+    
+    given("트래픽 Zone 그룹 정보 단일 조회 API 요청하여") {
+        val url = "/api/v1/zone/group"
+        val notExistGroupId = "not-exist-group-id"
+
+        `when`("요청 'groupId' 기준 일치한 정보 없는 경우") {
+            val result = mockMvc
+                .get("$url/$notExistGroupId")
+                .andDo { print() }
+            
+            then("'404 Not Found' 에러 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isNotFound() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
+                    content { jsonPath("$.result.code", equalTo("228_1005_104")) }
+                    content { jsonPath("$.result.message", equalTo("Traffic Zone Group Management Service failed. Traffic zone group not found.")) }
+                }
+            }
+        }
+
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        val groupId = group.groupId
+
+        `when`("요청 'groupId' 기준 일치한 정보 있는 경우") {
+            val result = mockMvc
+                .get("$url/$groupId")
+                .andDo { print() }
+
+            then("'200 Ok' 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.data.groupId", equalTo(groupId)) }
+                    content { jsonPath("$.data.groupName", equalTo(group.name)) }
+                    content { jsonPath("$.data.groupOrder", equalTo(group.order)) }
+                    content { jsonPath("$.data.groupStatus", equalTo(group.status.name)) }
+                }
+            }
+        }
+    }
 
     given("트래픽 Zone 그룹 정보 목록 조회 API 요청하여") {
         val url = "/api/v1/zone/group/list"

@@ -17,6 +17,10 @@ class TrafficZoneGroupManagementUseCase(
         return trafficZoneGroupSavePort.create(name).groupId
     }
 
+    suspend fun findTrafficZoneGroup(groupId: String): TrafficZoneGroup {
+        return trafficZoneGroupFindPort.findTrafficZoneGroup(TrafficZoneGroupDTO(groupId = groupId))
+    }
+
     suspend fun findAllTrafficZoneGroup(): List<TrafficZoneGroup> {
         return trafficZoneGroupFindPort.findAllTrafficZoneGroup()
     }

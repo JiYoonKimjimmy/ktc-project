@@ -273,6 +273,34 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/zone/group/{groupId}:
+    get:
+      summary: 트래픽 제어 Zone 그룹 단일 조회
+      tags:
+        - V1.Zone Group Management
+      operationId: findZoneGroup
+      description: |
+        트래픽 제어 Zone 그룹 정보 단일 조회
+      parameters:
+        - $ref: '#/components/parameters/path-groupId'
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1FindZoneGroupResponse'
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     put:
       summary: 트래픽 제어 Zone 그룹 단일 수정
       tags:
@@ -630,7 +658,7 @@ components:
       required: true
       schema:
         type: string
-        example: "KZ202504111730001234"
+        example: "KG202504111730001234"
         description: "Zone 그룹 ID"
 
     ##### query
@@ -1441,6 +1469,17 @@ components:
       properties:
         groupId:
           $ref: '#/components/schemas/zoneGroupId'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1FindZoneGroupResponse:
+      type: object
+      required:
+        - data
+        - result
+      properties:
+        data:
+          $ref: '#/components/schemas/V1ZoneGroupData'
         result:
           $ref: '#/components/schemas/ResultResponse'
 

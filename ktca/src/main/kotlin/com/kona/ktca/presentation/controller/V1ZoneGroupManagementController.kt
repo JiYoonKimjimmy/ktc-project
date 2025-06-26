@@ -25,6 +25,12 @@ class V1ZoneGroupManagementController(
         ResponseEntity(response, HttpStatus.CREATED)
     }
 
+    override fun findZoneGroup(groupId: String): ResponseEntity<V1FindZoneGroupResponse> = runBlocking {
+        val result = trafficZoneGroupManagementUseCase.findTrafficZoneGroup(groupId)
+        val response = V1FindZoneGroupResponse(v1ZoneGroupModelMapper.domainToModel(result))
+        ResponseEntity(response, HttpStatus.OK)
+    }
+
     override fun findZoneGroupList(): ResponseEntity<V1FindZoneGroupListResponse> = runBlocking {
         val result = trafficZoneGroupManagementUseCase.findAllTrafficZoneGroup().map { v1ZoneGroupModelMapper.domainToModel(it) }
         val response = V1FindZoneGroupListResponse(content = result)
