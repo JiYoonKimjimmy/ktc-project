@@ -17,11 +17,11 @@ data class TrafficZoneGroup(
 ) {
 
     companion object {
-        fun create(name: String): TrafficZoneGroup {
+        fun create(name: String, order: Int? = null): TrafficZoneGroup {
             return TrafficZoneGroup(
                 groupId = generateGroupId(),
                 name = name,
-                order = ZERO.toInt(),
+                order = order ?: ZERO.toInt(),
                 status = TrafficZoneGroupStatus.ACTIVE
             )
         }

@@ -3,8 +3,10 @@ package com.kona.ktca.presentation.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
 import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
+import com.kona.ktca.domain.model.TrafficZoneFixture
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
+import com.kona.ktca.domain.port.outbound.TrafficZoneRepository
 import com.kona.ktca.dto.V1CreateZoneGroupRequest
 import com.kona.ktca.dto.V1UpdateZoneGroupRequest
 import com.kona.ktca.dto.V1ZoneGroupData
@@ -22,7 +24,8 @@ import org.springframework.test.web.servlet.*
 class V1ZoneGroupManagementControllerTest(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
-    private val trafficZoneGroupRepository: TrafficZoneGroupRepository
+    private val trafficZoneGroupRepository: TrafficZoneGroupRepository,
+    private val trafficZoneRepository: TrafficZoneRepository
 ) : BehaviorSpec({
 
     given("트래픽 Zone 그룹 정보 단일 등록 API 요청하여") {
@@ -117,7 +120,7 @@ class V1ZoneGroupManagementControllerTest(
     given("트래픽 Zone 그룹 정보 단일 수정 API 요청하여") {
         val url = "/api/v1/zone/group"
         val notExistGroupId = 0
-        val request = V1UpdateZoneGroupRequest(groupOrder = 10)
+        val request = V1UpdateZoneGroupRequest(groupOrder = 99999)
 
         `when`("요청 'groupId' 기준 일치한 정보 없는 경우") {
             val result = mockMvc
@@ -181,12 +184,34 @@ class V1ZoneGroupManagementControllerTest(
                 }
             }
         }
+        
+        // Zone Group 신규 생성
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        
+        // Zone 생성
+        val zone = trafficZoneRepository.save(TrafficZoneFixture.giveOne(group = group))
+        
+        `when`("이미 특정 Zone 에 등록된 'groupId' 삭제 요청인 경우") {
+            val result = mockMvc
+                .delete("$url/${group.groupId}")
+                .andDo { print() }
 
-        val groupId = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne()).groupId
+            then("'400 Bad Request' 에러 응답 정상 확인한다") {
+                result.andExpect {
+                    status { isBadRequest() }
+                    content { jsonPath("$.result.status", equalTo("FAILED")) }
+                    content { jsonPath("$.result.code", equalTo("228_1005_105")) }
+                    content { jsonPath("$.result.message", equalTo("Traffic Zone Group Management Service failed. Traffic zone cannot be deleted.")) }
+                }
+            }
+        }
+
+        // Zone 삭제
+        trafficZoneRepository.deleteByZoneId(zone.zoneId)
 
         `when`("요청 'groupId' 기준 일치한 정보 변경하는 경우") {
             val result = mockMvc
-                .delete("$url/$groupId")
+                .delete("$url/${group.groupId}")
                 .andDo { print() }
 
             then("'200 Ok' 응답 결과 정상 확인한다") {
@@ -196,8 +221,8 @@ class V1ZoneGroupManagementControllerTest(
             }
 
             then("DB 'status: DELETED' 변경 결과 정상 확인한다") {
-                val entity = trafficZoneGroupRepository.findByPredicate(TrafficZoneGroupDTO(groupId = groupId, status = TrafficZoneGroupStatus.DELETED))!!
-                entity.status shouldBe TrafficZoneGroupStatus.DELETED
+                val entity = trafficZoneGroupRepository.findByPredicate(TrafficZoneGroupDTO(groupId = group.groupId))
+                entity shouldBe null
             }
         }
     }

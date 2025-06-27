@@ -245,8 +245,6 @@ paths:
       operationId: createZoneGroup
       description: |
         트래픽 제어 Zone 그룹 단일 등록
-      parameters:
-        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
       requestBody:
         required: true
         content:
@@ -309,7 +307,6 @@ paths:
       description: |
         트래픽 제어 Zone 그룹 수정
       parameters:
-        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
         - $ref: '#/components/parameters/path-groupId'
       requestBody:
         required: true
@@ -344,7 +341,6 @@ paths:
       description: |
         트래픽 제어 Zone 그룹 단일 삭제
       parameters:
-        - $ref: '#/components/parameters/header-X-KTC-Member-Id'
         - $ref: '#/components/parameters/path-groupId'
       responses:
         '200':
@@ -1460,6 +1456,8 @@ components:
       properties:
         groupName:
           $ref: '#/components/schemas/zoneGroupName'
+        groupOrder:
+          $ref: '#/components/schemas/zoneGroupOrder'
 
     V1CreateZoneGroupResponse:
       type: object

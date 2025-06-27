@@ -36,6 +36,7 @@ class TrafficZoneGroupRepositoryImpl(
                 select(entity(TrafficZoneGroupEntity::class))
                     .from(entity(TrafficZoneGroupEntity::class))
                     .where(path(TrafficZoneGroupEntity::status).eq(status))
+                    .orderBy(path(TrafficZoneGroupEntity::groupOrder).asc())
             }
             .mapNotNull { it?.toDomain() }
     }

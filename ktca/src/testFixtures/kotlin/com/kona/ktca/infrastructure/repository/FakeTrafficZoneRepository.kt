@@ -60,4 +60,7 @@ class FakeTrafficZoneRepository : TrafficZoneRepository {
                 && (dto.status?.let { it == entity.status } ?: true)
     }
 
+    override suspend fun deleteByZoneId(zoneId: String) {
+        entities.remove(zoneId)
+    }
 }

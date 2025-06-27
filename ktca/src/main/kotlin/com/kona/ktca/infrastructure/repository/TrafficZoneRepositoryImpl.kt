@@ -43,4 +43,8 @@ class TrafficZoneRepositoryImpl(
             .map { it?.toDomain() }
     }
 
+    override suspend fun deleteByZoneId(zoneId: String) {
+        return trafficZoneJpaRepository.deleteById(zoneId)
+    }
+
 }

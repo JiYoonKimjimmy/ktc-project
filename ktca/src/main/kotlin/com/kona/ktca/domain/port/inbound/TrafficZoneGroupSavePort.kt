@@ -5,8 +5,10 @@ import com.kona.ktca.domain.model.TrafficZoneGroup
 
 interface TrafficZoneGroupSavePort {
 
-    suspend fun create(name: String): TrafficZoneGroup
+    suspend fun create(name: String, order: Int? = null): TrafficZoneGroup
 
     suspend fun update(dto: TrafficZoneGroupDTO): TrafficZoneGroup
+
+    suspend fun delete(groupId: String)
 
 }

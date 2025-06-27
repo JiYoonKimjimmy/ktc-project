@@ -18,4 +18,6 @@ interface TrafficZoneRepository {
 
     suspend fun findPage(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone>
 
+    suspend fun deleteByZoneId(zoneId: String)
+
 }

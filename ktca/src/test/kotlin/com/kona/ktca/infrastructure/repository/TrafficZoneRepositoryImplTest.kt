@@ -28,12 +28,14 @@ class TrafficZoneRepositoryImplTest(
     lateinit var saved: TrafficZone
 
     beforeSpec {
-        saved = trafficZoneRepository.save(TrafficZoneFixture.giveOne())
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        saved = trafficZoneRepository.save(TrafficZoneFixture.giveOne(group = group))
     }
 
     "TrafficZoneEntity DB 저장 처리 결과 정상 확인한다" {
         // given
-        val zone = TrafficZoneFixture.giveOne()
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        val zone = TrafficZoneFixture.giveOne(group = group)
         val expectedDate = LocalDateTime.now()
 
         // when
@@ -69,7 +71,7 @@ class TrafficZoneRepositoryImplTest(
 
     "TrafficZoneEntity 'group' DB 변경 결과 정상 확인한다" {
         // given
-        val newGroup = trafficZoneGroupRepository.save(TrafficZoneGroupFixture.giveOne())
+        val newGroup = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
         val zone = TrafficZone(
             zoneId = saved.zoneId,
             zoneAlias = saved.zoneAlias,

@@ -25,7 +25,7 @@ class TrafficZoneEntity(
     @Column(nullable = false)
     val activationTime: LocalDateTime,
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id", nullable = false)
     val group: TrafficZoneGroupEntity
 

@@ -1,6 +1,5 @@
 package com.kona.ktca.application.usecase
 
-import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
 import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.port.inbound.TrafficZoneGroupFindPort
@@ -13,8 +12,8 @@ class TrafficZoneGroupManagementUseCase(
     private val trafficZoneGroupFindPort: TrafficZoneGroupFindPort
 ) {
 
-    suspend fun createTrafficZoneGroup(name: String): String {
-        return trafficZoneGroupSavePort.create(name).groupId
+    suspend fun createTrafficZoneGroup(name: String, order: Int?): String {
+        return trafficZoneGroupSavePort.create(name, order).groupId
     }
 
     suspend fun findTrafficZoneGroup(groupId: String): TrafficZoneGroup {
@@ -30,8 +29,7 @@ class TrafficZoneGroupManagementUseCase(
     }
 
     suspend fun deleteTrafficZoneGroup(groupId: String) {
-        val dto = TrafficZoneGroupDTO(groupId = groupId, status = TrafficZoneGroupStatus.DELETED)
-        trafficZoneGroupSavePort.update(dto)
+        trafficZoneGroupSavePort.delete(groupId)
     }
 
 }

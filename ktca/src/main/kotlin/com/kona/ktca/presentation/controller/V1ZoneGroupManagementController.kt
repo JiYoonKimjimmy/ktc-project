@@ -18,9 +18,8 @@ class V1ZoneGroupManagementController(
 
     override fun createZoneGroup(
         v1CreateZoneGroupRequest: V1CreateZoneGroupRequest,
-        xKTCMemberId: Long?,
     ): ResponseEntity<V1CreateZoneGroupResponse> = runBlocking {
-        val result = trafficZoneGroupManagementUseCase.createTrafficZoneGroup(v1CreateZoneGroupRequest.groupName)
+        val result = trafficZoneGroupManagementUseCase.createTrafficZoneGroup(v1CreateZoneGroupRequest.groupName, v1CreateZoneGroupRequest.groupOrder)
         val response = V1CreateZoneGroupResponse(groupId = result)
         ResponseEntity(response, HttpStatus.CREATED)
     }
@@ -40,7 +39,6 @@ class V1ZoneGroupManagementController(
     override fun updateZoneGroup(
         groupId: String,
         v1UpdateZoneGroupRequest: V1UpdateZoneGroupRequest,
-        xKTCMemberId: Long?,
     ): ResponseEntity<V1UpdateZoneGroupResponse> = runBlocking {
         val dto = TrafficZoneGroupDTO(
             groupId = groupId,
@@ -54,7 +52,6 @@ class V1ZoneGroupManagementController(
 
     override fun deleteZoneGroup(
         groupId: String,
-        xKTCMemberId: Long?,
     ): ResponseEntity<V1DeleteZoneGroupResponse> = runBlocking {
         trafficZoneGroupManagementUseCase.deleteTrafficZoneGroup(groupId)
         ResponseEntity(V1DeleteZoneGroupResponse(), HttpStatus.OK)

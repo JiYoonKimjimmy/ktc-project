@@ -78,7 +78,7 @@ class TrafficZoneManagementUseCase(
         // `group name : "기본 그룹"` 인 그룹 조회, 없는 경우 "기본 그룹" 신규 등록
         return try {
             trafficZoneGroupFindPort.findTrafficZoneGroup(TrafficZoneGroupDTO(name = DEFAULT_ZONE_GROUP_NAME))
-        } catch (e: ResourceNotFoundException) {
+        } catch (_: ResourceNotFoundException) {
             trafficZoneGroupSavePort.create(DEFAULT_ZONE_GROUP_NAME)
         }
     }
