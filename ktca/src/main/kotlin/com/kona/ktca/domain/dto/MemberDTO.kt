@@ -24,13 +24,13 @@ data class MemberDTO(
 
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
-            memberId?.let { whereEqualTo(it, MemberEntity::id) },
-            loginId?.let { whereEqualTo(it, MemberEntity::loginId) },
-            name?.let { whereEqualTo(it, MemberEntity::name) },
-            email?.let { whereEqualTo(it, MemberEntity::email) },
-            team?.let { whereEqualTo(it, MemberEntity::team) },
-            role?.let { whereEqualTo(it, MemberEntity::role) },
-            status?.let { whereEqualTo(it, MemberEntity::status) },
+            memberId?.let { whereEqualTo(column = MemberEntity::id, value = it) },
+            loginId?.let { whereEqualTo(column = MemberEntity::loginId, value = it) },
+            name?.let { whereEqualTo(column = MemberEntity::name, value = it) },
+            email?.let { whereEqualTo(column = MemberEntity::email, value = it) },
+            team?.let { whereEqualTo(column = MemberEntity::team, value = it) },
+            role?.let { whereEqualTo(column = MemberEntity::role, value = it) },
+            status?.let { whereEqualTo(column = MemberEntity::status, value = it) },
         )
     }
 }

@@ -13,10 +13,10 @@ data class TrafficZoneGroupDTO(
 ) {
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
-            groupId?.let { whereEqualTo(it, TrafficZoneGroupEntity::id) },
-            name?.let { whereEqualTo(it, TrafficZoneGroupEntity::name) },
-            order?.let { whereEqualTo(it, TrafficZoneGroupEntity::groupOrder) },
-            status?.let { whereEqualTo(it, TrafficZoneGroupEntity::status) }
+            groupId?.let { whereEqualTo(column = TrafficZoneGroupEntity::id, value = it) },
+            name?.let { whereEqualTo(column = TrafficZoneGroupEntity::name, value = it) },
+            order?.let { whereEqualTo(column = TrafficZoneGroupEntity::groupOrder, value = it) },
+            status?.let { whereEqualTo(column = TrafficZoneGroupEntity::status, value = it) }
         )
     }
 }

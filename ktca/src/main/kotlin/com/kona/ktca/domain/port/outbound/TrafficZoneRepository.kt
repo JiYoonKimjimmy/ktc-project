@@ -14,6 +14,8 @@ interface TrafficZoneRepository {
 
     suspend fun findByZoneIdAndStatusNot(zoneId: String, status: TrafficZoneStatus): TrafficZone?
 
+    suspend fun findByPredicate(dto: TrafficZoneDTO): TrafficZone?
+
     suspend fun findAllByPredicate(dto: TrafficZoneDTO): List<TrafficZone>
 
     suspend fun findPage(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone>

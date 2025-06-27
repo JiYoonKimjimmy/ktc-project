@@ -1,6 +1,8 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneGroupStatus
+import com.kona.common.infrastructure.util.LIMIT_ONE
+import com.kona.common.infrastructure.util.OFFSET_ZERO
 import com.kona.ktca.domain.dto.TrafficZoneGroupDTO
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.port.outbound.TrafficZoneGroupRepository
@@ -27,7 +29,7 @@ class TrafficZoneGroupRepositoryImpl(
 
     override suspend fun findByPredicate(dto: TrafficZoneGroupDTO): TrafficZoneGroup? {
         val query = TrafficZoneGroupEntity.jpqlQuery(dto.toPredicatable())
-        return trafficZoneGroupJpaRepository.findAll(0, 1) { query() }.firstOrNull()?.toDomain()
+        return trafficZoneGroupJpaRepository.findAll(OFFSET_ZERO, LIMIT_ONE) { query() }.firstOrNull()?.toDomain()
     }
 
     override suspend fun findAllByStatus(status: TrafficZoneGroupStatus): List<TrafficZoneGroup> = withContext(Dispatchers.IO) {

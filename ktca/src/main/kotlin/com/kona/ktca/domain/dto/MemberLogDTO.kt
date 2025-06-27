@@ -16,8 +16,8 @@ data class MemberLogDTO(
 ) {
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
-            whereEqualTo(property = MemberZoneLogEntity::memberId, value = memberId),
-            whereEqualTo(property = MemberZoneLogEntity::type, value = type),
+            whereEqualTo(column = MemberZoneLogEntity::memberId, value = memberId),
+            whereEqualTo(column = MemberZoneLogEntity::type, value = type),
             greaterThanOrEqualTo(property = MemberZoneLogEntity::created, value = fromDate),
             lessThanOrEqualTo(property = MemberZoneLogEntity::created, value = toDate),
         )

@@ -398,6 +398,7 @@ paths:
         트래픽 제어 Zone 트래픽 현황 조회
       parameters:
         - $ref: "#/components/parameters/query-zoneId"
+        - $ref: "#/components/parameters/query-groupId"
       responses:
         '200':
           description: '성공'
@@ -799,6 +800,15 @@ components:
         ]
       description: 관리자 로그 구분
       example: "TRAFFIC_ZONE_CREATED"
+
+    query-groupId:
+      in: query
+      name: groupId
+      required: false
+      schema:
+        type: string
+      example: "KG202504111730001234"
+      description: "Zone 그룹 ID"
 
   schemas:
     ##### common schema start

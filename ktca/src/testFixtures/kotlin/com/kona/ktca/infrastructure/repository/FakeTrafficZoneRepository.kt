@@ -27,6 +27,10 @@ class FakeTrafficZoneRepository : TrafficZoneRepository {
         return entities.values.find { it.id == zoneId && it.status != status }?.toDomain()
     }
 
+    override suspend fun findByPredicate(dto: TrafficZoneDTO): TrafficZone? {
+        return entities.values.find { checkPredicate(dto, it) }?.toDomain()
+    }
+
     override suspend fun findAllByPredicate(dto: TrafficZoneDTO): List<TrafficZone> {
         return entities.values.filter { checkPredicate(dto, it) }.map { it.toDomain() }
     }

@@ -14,8 +14,8 @@ class V1ZoneMonitoringController(
     private val v1ZoneMonitoringModelMapper: V1ZoneMonitoringModelMapper
 ) : V1ZoneMonitoringApiDelegate {
 
-    override fun zoneMonitoring(zoneId: String?): ResponseEntity<V1ZoneMonitoringResponse> = runBlocking {
-        trafficZoneMonitoringUseCase.trafficZoneMonitoring(zoneId)
+    override fun zoneMonitoring(zoneId: String?, groupId: String?): ResponseEntity<V1ZoneMonitoringResponse> = runBlocking {
+        trafficZoneMonitoringUseCase.trafficZoneMonitoring(zoneId, groupId)
             .map { v1ZoneMonitoringModelMapper.domainToModel(it) }
             .let { ResponseEntity.ok(V1ZoneMonitoringResponse(it)) }
     }

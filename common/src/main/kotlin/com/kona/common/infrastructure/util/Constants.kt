@@ -23,3 +23,5 @@ const val CORRELATION_ID_HEX_STRING_LENGTH = 7
 const val DEFAULT_POLLING_PERIOD = 3000L
 const val DEFAULT_MEMBER_ID = 1L
 const val DEFAULT_ZONE_GROUP_NAME = "기본 그룹"
+const val OFFSET_ZERO = 0
+const val LIMIT_ONE = 1

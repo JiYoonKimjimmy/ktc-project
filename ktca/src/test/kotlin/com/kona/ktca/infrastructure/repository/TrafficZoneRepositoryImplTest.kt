@@ -92,7 +92,33 @@ class TrafficZoneRepositoryImplTest(
         result.updated!!.shouldBeGreaterThanOrEqualTo(expectedDate)
     }
 
-    "TrafficZoneEntity 'id: test-zone-id' 기준 Page DB 조회 결과 정상 확인한다" {
+    "TrafficZoneEntity 'id' 기준 DB 조회 결과 정상 확인한다" {
+        // given
+        val dto = TrafficZoneDTO(zoneId = saved.zoneId)
+
+        // when
+        val result = trafficZoneRepository.findByPredicate(dto)
+
+        // then
+        result!! shouldNotBe null
+        result.zoneId shouldBe saved.zoneId
+        result.groupId shouldBe saved.groupId
+    }
+
+    "TrafficZoneEntity 'groupId' 기준 DB 조회 결과 정상 확인한다" {
+        // given
+        val dto = TrafficZoneDTO(groupId = saved.groupId)
+
+        // when
+        val result = trafficZoneRepository.findByPredicate(dto)
+
+        // then
+        result!! shouldNotBe null
+        result.zoneId shouldBe saved.zoneId
+        result.groupId shouldBe saved.groupId
+    }
+
+    "TrafficZoneEntity 'id' 기준 Page DB 조회 결과 정상 확인한다" {
         // given
         val dto = TrafficZoneDTO(zoneId = saved.zoneId)
         val pageable = PageableDTO(number = 0, size = 1)
@@ -111,7 +137,7 @@ class TrafficZoneRepositoryImplTest(
         content.updated!!.convertPatternOf() shouldBeGreaterThanOrEqualTo saved.updated!!.convertPatternOf()
     }
 
-    "TrafficZoneEntity 'status: ACTIVE' 기준 Page DB 조회 결과 정상 확인한다" {
+    "TrafficZoneEntity 'status' 기준 Page DB 조회 결과 정상 확인한다" {
         // given
         val dto = TrafficZoneDTO(status = TrafficZoneStatus.ACTIVE)
         val pageable = PageableDTO(number = 0, size = 1)

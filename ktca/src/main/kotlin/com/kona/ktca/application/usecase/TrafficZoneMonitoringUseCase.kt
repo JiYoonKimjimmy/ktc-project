@@ -16,15 +16,15 @@ class TrafficZoneMonitoringUseCase(
     /**
      * 트래픽 제어 Zone 모니터링 결과 조회
      */
-    suspend fun trafficZoneMonitoring(zoneId: String? = null): List<TrafficZoneMonitor> {
-        return trafficZoneMonitorFindPort.findLatestMonitoring(zoneId)
+    suspend fun trafficZoneMonitoring(zoneId: String?, groupId: String?): List<TrafficZoneMonitor> {
+        return trafficZoneMonitorFindPort.findLatestMonitoring(zoneId, groupId)
     }
 
     /**
      * 트래픽 제어 Zone 모니터링 결과 수집
      */
     @Transactional
-    suspend fun collectTrafficZoneMonitoring(zoneId: String? = null): List<TrafficZoneMonitor> {
+    suspend fun collectTrafficZoneMonitoring(zoneId: String?): List<TrafficZoneMonitor> {
         return trafficZoneMonitorCollectPort.collect(zoneId)
     }
 

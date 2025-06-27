@@ -1,6 +1,8 @@
 package com.kona.ktca.infrastructure.repository
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus
+import com.kona.common.infrastructure.util.LIMIT_ONE
+import com.kona.common.infrastructure.util.OFFSET_ZERO
 import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
@@ -29,22 +31,23 @@ class TrafficZoneRepositoryImpl(
         trafficZoneJpaRepository.findByIdAndStatusNot(zoneId, status)?.toDomain()
     }
 
-    override suspend fun findAllByPredicate(dto: TrafficZoneDTO): List<TrafficZone> {
+    override suspend fun findByPredicate(dto: TrafficZoneDTO): TrafficZone? = withContext(Dispatchers.IO) {
         val query = TrafficZoneEntity.jpqlQuery(dto.toPredicatable())
-        return trafficZoneJpaRepository.findAll { query() }.mapNotNull { it?.toDomain() }
+        trafficZoneJpaRepository.findAll(OFFSET_ZERO, LIMIT_ONE) { query() }.firstOrNull()?.toDomain()
     }
 
-    override suspend fun findPage(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> {
-        return trafficZoneJpaRepository.findPage(pageable.toPageRequest()) {
-            select(entity(TrafficZoneEntity::class))
-                .from(entity(TrafficZoneEntity::class))
-                .whereAnd(*dto.toPredicatable())
-            }
-            .map { it?.toDomain() }
+    override suspend fun findAllByPredicate(dto: TrafficZoneDTO): List<TrafficZone> = withContext(Dispatchers.IO) {
+        val query = TrafficZoneEntity.jpqlQuery(dto.toPredicatable())
+        trafficZoneJpaRepository.findAll { query() }.mapNotNull { it?.toDomain() }
     }
 
-    override suspend fun deleteByZoneId(zoneId: String) {
-        return trafficZoneJpaRepository.deleteById(zoneId)
+    override suspend fun findPage(dto: TrafficZoneDTO, pageable: PageableDTO): Page<TrafficZone> = withContext(Dispatchers.IO) {
+        val query = TrafficZoneEntity.jpqlQuery(dto.toPredicatable())
+        trafficZoneJpaRepository.findPage(pageable.toPageRequest()) { query() }.map { it?.toDomain() }
+    }
+
+    override suspend fun deleteByZoneId(zoneId: String) = withContext(Dispatchers.IO) {
+        trafficZoneJpaRepository.deleteById(zoneId)
     }
 
 }

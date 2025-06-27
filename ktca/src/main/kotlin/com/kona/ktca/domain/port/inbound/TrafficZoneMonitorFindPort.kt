@@ -4,6 +4,6 @@ import com.kona.ktca.domain.model.TrafficZoneMonitor
 
 interface TrafficZoneMonitorFindPort {
 
-    suspend fun findLatestMonitoring(zoneId: String?): List<TrafficZoneMonitor>
+    suspend fun findLatestMonitoring(zoneId: String?, groupId: String?): List<TrafficZoneMonitor>
 
 }

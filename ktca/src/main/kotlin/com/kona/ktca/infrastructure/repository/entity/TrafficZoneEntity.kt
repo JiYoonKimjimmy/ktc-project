@@ -25,7 +25,7 @@ class TrafficZoneEntity(
     @Column(nullable = false)
     val activationTime: LocalDateTime,
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "group_id", nullable = false)
     val group: TrafficZoneGroupEntity
 
@@ -50,7 +50,10 @@ class TrafficZoneEntity(
         fun jpqlQuery(where: Array<Predicatable?>): Jpql.() -> JpqlQueryable<SelectQuery<TrafficZoneEntity>> {
             val query: Jpql.() -> JpqlQueryable<SelectQuery<TrafficZoneEntity>> = {
                 select(entity(TrafficZoneEntity::class))
-                    .from(entity(TrafficZoneEntity::class))
+                    .from(
+                        entity(TrafficZoneEntity::class),
+                        fetchJoin(TrafficZoneEntity::group)
+                    )
                     .whereAnd(*where)
             }
             return query
