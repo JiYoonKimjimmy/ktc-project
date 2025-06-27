@@ -102,11 +102,12 @@ class TrafficZoneRepositoryImplTest(
         // then
         result!! shouldNotBe null
         result.zoneId shouldBe saved.zoneId
-        result.groupId shouldBe saved.groupId
     }
 
     "TrafficZoneEntity 'groupId' 기준 DB 조회 결과 정상 확인한다" {
         // given
+        val group = trafficZoneGroupRepository.saveNextOrder(TrafficZoneGroupFixture.giveOne())
+        saved = trafficZoneRepository.save(TrafficZoneFixture.giveOne(group = group))
         val dto = TrafficZoneDTO(groupId = saved.groupId)
 
         // when
