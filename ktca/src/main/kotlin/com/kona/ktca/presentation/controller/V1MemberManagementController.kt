@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.math.log
 
 @RestController
 class V1MemberManagementController(
@@ -110,10 +111,12 @@ class V1MemberManagementController(
         startDate: String?,
         endDate: String?,
         memberId: Long?,
+        loginId: String?,
         type: String?,
     ): ResponseEntity<V1FindMemberLogListResponse> = runBlocking {
         val dto = MemberLogDTO(
             memberId = memberId,
+            loginId = loginId,
             type = type?.let { MemberLogType.valueOf(it) },
             fromDate = startDate?.convertPatternOf() ?: LocalDate.now().minusDays(7).atStartOfDay(),
             toDate = endDate?.convertPatternOf() ?: LocalDate.now().atTime(LocalTime.MAX)

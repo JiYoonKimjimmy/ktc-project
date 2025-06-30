@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 
 data class MemberLogDTO(
     val memberId: Long? = null,
+    val loginId: String? = null,
     val type: MemberLogType? = null,
     val fromDate: LocalDateTime,
     val toDate: LocalDateTime
@@ -19,6 +20,7 @@ data class MemberLogDTO(
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
             whereEqualTo(column = path(path(MemberZoneLogEntity::member), MemberEntity::id), value = memberId),
+            whereEqualTo(column = path(path(MemberZoneLogEntity::member), MemberEntity::loginId), value = loginId),
             whereEqualTo(column = MemberZoneLogEntity::type, value = type),
             greaterThanOrEqualTo(property = MemberZoneLogEntity::created, value = fromDate),
             lessThanOrEqualTo(property = MemberZoneLogEntity::created, value = toDate),

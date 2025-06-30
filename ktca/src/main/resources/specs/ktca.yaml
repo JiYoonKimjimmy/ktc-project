@@ -595,6 +595,7 @@ paths:
         - $ref: '#/components/parameters/query-startDate'
         - $ref: '#/components/parameters/query-endDate'
         - $ref: '#/components/parameters/query-memberId'
+        - $ref: '#/components/parameters/query-loginId'
         - $ref: '#/components/parameters/query-memberLogType'
       responses:
         '200':
@@ -731,8 +732,8 @@ components:
       schema:
         type: integer
         format: int64
-        example: 12345
-        description: 관리자 ID
+      example: 12345
+      description: 관리자 ID
 
     query-loginId:
       in: query
@@ -740,8 +741,8 @@ components:
       required: false
       schema:
         type: string
-        example: "admin"
-        description: 로그인 ID
+      example: "admin"
+      description: 로그인 ID
 
     query-memberName:
       in: query
@@ -749,8 +750,8 @@ components:
       required: false
       schema:
         type: string
-        example: "관리자명"
-        description: 이름
+      example: "관리자명"
+      description: 이름
 
     query-email:
       in: query
@@ -758,8 +759,8 @@ components:
       required: false
       schema:
         type: string
-        example: "hello@example.com"
-        description: 이메일 정보
+      example: "hello@example.com"
+      description: 이메일 정보
 
     query-team:
       in: query
@@ -767,8 +768,8 @@ components:
       required: false
       schema:
         type: string
-        example: "소속 팀 명"
-        description: 소속 팀
+      example: "소속 팀 명"
+      description: 소속 팀
 
     query-memberRole:
       in: query
@@ -776,8 +777,8 @@ components:
       required: false
       schema:
         type: string
-        example: "VIEWER"
-        description: 역할
+      example: "VIEWER"
+      description: 역할
 
     query-memberStatus:
       in: query
@@ -785,8 +786,8 @@ components:
       required: false
       schema:
         type: string
-        example: "ACTIVE"
-        description: 상태
+      example: "ACTIVE"
+      description: 상태
 
     query-memberLogType:
       in: query

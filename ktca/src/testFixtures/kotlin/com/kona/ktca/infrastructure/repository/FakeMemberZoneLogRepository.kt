@@ -43,8 +43,10 @@ class FakeMemberZoneLogRepository : MemberZoneLogRepository {
 
     private fun checkPredicate(dto: MemberLogDTO, entity: MemberZoneLogEntity): Boolean {
         return (dto.memberId?.let { it == entity.member.id } ?: true)
+                && (dto.loginId?.let { it == entity.member.loginId } ?: true)
                 && (dto.type?.let { it == entity.type } ?: true)
                 && (dto.fromDate.let { entity.created?.isBefore(it) } ?: true)
                 && (dto.toDate.let { entity.created?.isAfter(it) } ?: true)
     }
+
 }

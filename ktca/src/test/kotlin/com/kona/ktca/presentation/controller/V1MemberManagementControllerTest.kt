@@ -386,6 +386,22 @@ class V1MemberManagementControllerTest(
                 }
             }
         }
+
+        val loginId = log.member.loginId
+
+        `when`("요청 'loginId' 기준 일치한 정보 있는 경우") {
+            val result = mockMvc
+                .get("$url?loginId=$loginId")
+                .andDo { print() }
+
+            then("'200 Ok' 응답 결과 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.pageable.totalElements", equalTo(1)) }
+                    content { jsonPath("$.content", hasSize<V1MemberZoneLogData>(1))}
+                }
+            }
+        }
     }
 
 })
