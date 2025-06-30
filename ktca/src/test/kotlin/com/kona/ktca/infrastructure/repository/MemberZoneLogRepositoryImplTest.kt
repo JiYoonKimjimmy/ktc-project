@@ -4,6 +4,7 @@ import com.kona.common.infrastructure.enumerate.MemberLogType
 import com.kona.ktca.domain.dto.MemberLogDTO
 import com.kona.ktca.domain.dto.PageableDTO
 import com.kona.ktca.domain.model.*
+import com.kona.ktca.domain.port.outbound.MemberRepository
 import com.kona.ktca.domain.port.outbound.MemberZoneLogRepository
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -17,6 +18,7 @@ import java.time.LocalTime
 @SpringBootTest
 class MemberZoneLogRepositoryImplTest(
     private val memberZoneLogRepository: MemberZoneLogRepository,
+    private val memberRepository: MemberRepository
 ) : StringSpec({
 
     lateinit var saved: MemberLog
@@ -24,11 +26,11 @@ class MemberZoneLogRepositoryImplTest(
     lateinit var savedGroup: TrafficZoneGroup
 
     beforeSpec {
-        val memberId = 1L
+        val member = memberRepository.save(MemberFixture.giveOne())
         val type = MemberLogType.TRAFFIC_ZONE_CREATED
         val group = TrafficZoneGroupFixture.giveOne()
         val zone = TrafficZoneFixture.giveOne(group = group)
-        val log = MemberLogFixture.giveOne(memberId, type, zone)
+        val log = MemberLogFixture.giveOne(member, type, zone)
         saved = memberZoneLogRepository.save(log)
         savedZone = zone
         savedGroup = group
@@ -36,17 +38,17 @@ class MemberZoneLogRepositoryImplTest(
 
     "관리자 Member log 저장 처리 결과 정상 확인한다" {
         // given
-        val memberId = 1L
+        val member = memberRepository.save(MemberFixture.giveOne())
         val type = MemberLogType.TRAFFIC_ZONE_UPDATED
         val zone = TrafficZoneFixture.giveOne(zoneId = savedZone.zoneId, group = savedGroup)
-        val log = MemberLogFixture.giveOne(memberId, type, zone)
+        val log = MemberLogFixture.giveOne(member, type, zone)
 
         // when
         val result = memberZoneLogRepository.save(log)
 
         // then
         result.logId shouldNotBe null
-        result.memberId shouldBe 1L
+        result.member.memberId shouldBe member.memberId
         result.type shouldBe MemberLogType.TRAFFIC_ZONE_UPDATED
         result.zoneLog.zoneId shouldBe log.zoneLog.zoneId
         result.zoneLog.zoneAlias shouldBe log.zoneLog.zoneAlias
@@ -56,7 +58,7 @@ class MemberZoneLogRepositoryImplTest(
 
     "관리자 Member log 'memberId' 기준 Page 조회 결과 정상 확인한다" {
         // given
-        val memberId = saved.memberId
+        val memberId = saved.member.memberId
         val fromDate = LocalDate.now().minusDays(7).atStartOfDay()
         val toDate = LocalDate.now().atTime(LocalTime.MAX)
 

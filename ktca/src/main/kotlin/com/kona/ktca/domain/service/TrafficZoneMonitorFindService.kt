@@ -1,8 +1,6 @@
 package com.kona.ktca.domain.service
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
-import com.kona.common.infrastructure.error.ErrorCode
-import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.model.TrafficZoneMonitor

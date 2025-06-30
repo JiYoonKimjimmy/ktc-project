@@ -9,7 +9,6 @@ import com.kona.ktca.infrastructure.repository.jpa.MemberZoneLogJpaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -26,8 +25,7 @@ class MemberZoneLogRepositoryImpl(
         pageable: PageableDTO,
     ): Page<MemberLog> = withContext(Dispatchers.IO) {
         val query = MemberZoneLogEntity.jpqlQuery(dto.toPredicatable())
-        val result = memberZoneLogJpaRepository.findPage(pageable.toPageRequest(), query)
-        PageImpl(result.content.mapNotNull { it?.toDomain() }, result.pageable, result.totalElements)
+        memberZoneLogJpaRepository.findPage(pageable.toPageRequest()) { query() }.map { it?.toDomain() }
     }
 
 }

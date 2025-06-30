@@ -5,7 +5,7 @@ import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.infrastructure.jdsl.JpqlPredicateGenerator.whereEqualTo
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneEntity
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneGroupEntity
-import com.linecorp.kotlinjdsl.querymodel.jpql.path.Paths
+import com.linecorp.kotlinjdsl.querymodel.jpql.path.Paths.path
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import java.time.LocalDateTime
 
@@ -29,7 +29,7 @@ data class TrafficZoneDTO(
     fun toPredicatable(): Array<Predicatable?> {
         return arrayOf(
             zoneId?.let { whereEqualTo(TrafficZoneEntity::id, it) },
-            groupId?.let { whereEqualTo(Paths.path(Paths.path(TrafficZoneEntity::group), TrafficZoneGroupEntity::id), it) },
+            groupId?.let { whereEqualTo(path(path(TrafficZoneEntity::group), TrafficZoneGroupEntity::id), it) },
             status?.let { whereEqualTo(TrafficZoneEntity::status, it) }
         )
     }

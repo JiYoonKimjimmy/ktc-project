@@ -105,15 +105,15 @@ class V1MemberManagementController(
     }
 
     override fun findMemberLogList(
-        xKTCMemberId: Long?,
         page: Int?,
         size: Int?,
         startDate: String?,
         endDate: String?,
+        memberId: Long?,
         type: String?,
     ): ResponseEntity<V1FindMemberLogListResponse> = runBlocking {
         val dto = MemberLogDTO(
-            memberId = xKTCMemberId!!,
+            memberId = memberId,
             type = type?.let { MemberLogType.valueOf(it) },
             fromDate = startDate?.convertPatternOf() ?: LocalDate.now().minusDays(7).atStartOfDay(),
             toDate = endDate?.convertPatternOf() ?: LocalDate.now().atTime(LocalTime.MAX)

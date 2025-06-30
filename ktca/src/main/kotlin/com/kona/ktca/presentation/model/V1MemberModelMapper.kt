@@ -33,7 +33,7 @@ class V1MemberModelMapper {
 
     fun domainToModel(log: MemberLog): V1MemberLogData {
         return V1MemberLogData(
-            memberId = log.memberId,
+            memberId = log.member.memberId,
             loginId = log.member.loginId,
             name = log.member.name,
             zoneLog = V1MemberZoneLogData(

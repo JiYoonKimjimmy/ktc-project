@@ -18,8 +18,6 @@ class MemberZoneLogEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
-    @Column(nullable = false)
-    val memberId: Long,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: MemberLogType,
@@ -39,14 +37,17 @@ class MemberZoneLogEntity(
     @Column(nullable = false)
     val zoneCreated: LocalDateTime,
     @Column(nullable = false)
-    val zoneUpdated: LocalDateTime
+    val zoneUpdated: LocalDateTime,
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    val member: MemberEntity
 
 ) : BaseEntity() {
 
     companion object {
         fun of(domain: MemberLog): MemberZoneLogEntity {
             return MemberZoneLogEntity(
-                memberId = domain.memberId,
                 type = domain.type,
                 zoneId = domain.zoneLog.zoneId,
                 zoneAlias = domain.zoneLog.zoneAlias,
@@ -55,14 +56,18 @@ class MemberZoneLogEntity(
                 status = domain.zoneLog.status,
                 activationTime = domain.zoneLog.activationTime,
                 zoneCreated = domain.zoneLog.created ?: domain.zoneLog.updated ?: LocalDateTime.now(),
-                zoneUpdated = domain.zoneLog.updated ?: LocalDateTime.now()
+                zoneUpdated = domain.zoneLog.updated ?: LocalDateTime.now(),
+                member = MemberEntity.of(domain.member)
             )
         }
 
         fun jpqlQuery(where: Array<Predicatable?>): Jpql.() -> JpqlQueryable<SelectQuery<MemberZoneLogEntity>> {
             val query: Jpql.() -> JpqlQueryable<SelectQuery<MemberZoneLogEntity>> = {
                 select(entity(MemberZoneLogEntity::class))
-                    .from(entity(MemberZoneLogEntity::class))
+                    .from(
+                        entity(MemberZoneLogEntity::class),
+                        fetchJoin(MemberZoneLogEntity::member)
+                    )
                     .whereAnd(*where)
             }
             return query
@@ -70,18 +75,17 @@ class MemberZoneLogEntity(
     }
 
     override fun toDomain(): MemberLog {
-        val log = MemberLog(
+        return MemberLog(
             logId = id,
-            memberId = memberId,
+            member = member.toDomain(),
             type = type,
+            zoneLog = generateZoneLog(),
             created = created,
             updated = updated,
         )
-        val zone = this.generateZone()
-        return log.applyZoneLog(zone)
     }
 
-    private fun generateZone(): TrafficZone {
+    private fun generateZoneLog(): TrafficZone {
         return TrafficZone(
             zoneId = zoneId,
             zoneAlias = zoneAlias,

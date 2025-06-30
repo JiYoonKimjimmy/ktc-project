@@ -1,6 +1,7 @@
 package com.kona.ktca.domain.port.inbound
 
 import com.kona.common.infrastructure.enumerate.MemberLogType
+import com.kona.ktca.domain.model.Member
 import com.kona.ktca.domain.model.MemberLog
 import com.kona.ktca.domain.model.TrafficZone
 

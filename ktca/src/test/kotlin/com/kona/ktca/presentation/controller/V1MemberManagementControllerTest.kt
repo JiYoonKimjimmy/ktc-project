@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.domain.model.Member
 import com.kona.ktca.domain.model.MemberFixture
+import com.kona.ktca.domain.model.MemberLogFixture
 import com.kona.ktca.domain.port.outbound.MemberRepository
-import com.kona.ktca.dto.MemberRole
-import com.kona.ktca.dto.V1CreateMemberRequest
-import com.kona.ktca.dto.V1MemberData
-import com.kona.ktca.dto.V1UpdateMemberRequest
+import com.kona.ktca.domain.port.outbound.MemberZoneLogRepository
+import com.kona.ktca.dto.*
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -27,7 +26,8 @@ import java.time.LocalDateTime
 class V1MemberManagementControllerTest(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val memberZoneLogRepository: MemberZoneLogRepository
 ) : BehaviorSpec({
 
     lateinit var saved: Member
@@ -348,6 +348,42 @@ class V1MemberManagementControllerTest(
                 val member = memberRepository.findByMemberId(memberId!!)
                 member!! shouldNotBe null
                 member.lastLoginAt.convertPatternOf() shouldBe updateLastLoginAt
+            }
+        }
+    }
+
+    given("관리자 로그 목록 조회 API 요청하여") {
+        val url = "/api/v1/member/log/list"
+        val notExistsMemberId = 999L
+
+        `when`("요청 'memberId' 기준 일치한 정보 없는 경우") {
+            val result = mockMvc
+                .get("$url?memberId=$notExistsMemberId")
+                .andDo { print() }
+
+            then("'200 Ok' 응답 결과 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.pageable.totalElements", equalTo(0)) }
+                    content { jsonPath("$.content", hasSize<V1MemberZoneLogData>(0))}
+                }
+            }
+        }
+
+        val log = memberZoneLogRepository.save(MemberLogFixture.giveOne(member = saved))
+        val memberId = log.member.memberId
+
+        `when`("요청 'memberId' 기준 일치한 정보 있는 경우") {
+            val result = mockMvc
+                .get("$url?memberId=$memberId")
+                .andDo { print() }
+
+            then("'200 Ok' 응답 결과 정상 확인한다") {
+                result.andExpect {
+                    status { isOk() }
+                    content { jsonPath("$.pageable.totalElements", equalTo(1)) }
+                    content { jsonPath("$.content", hasSize<V1MemberZoneLogData>(1))}
+                }
             }
         }
     }

@@ -5,21 +5,21 @@ import java.time.LocalDateTime
 
 data class MemberLog(
     val logId: Long? = null,
-    val memberId: Long,
+    val member: Member,
     val type: MemberLogType,
+    val zoneLog: TrafficZone,
     val created: LocalDateTime? = null,
     val updated: LocalDateTime? = null,
 ) {
-    lateinit var zoneLog: TrafficZone
-    lateinit var member: Member
 
-    fun applyZoneLog(zone: TrafficZone): MemberLog {
-        this.zoneLog = zone
-        return this
+    companion object {
+        fun create(member: Member, type: MemberLogType, zoneLog: TrafficZone): MemberLog {
+            return MemberLog(
+                member = member,
+                type = type,
+                zoneLog = zoneLog
+            )
+        }
     }
 
-    fun applyMember(member: Member): MemberLog {
-        this.member = member
-        return this
-    }
 }
