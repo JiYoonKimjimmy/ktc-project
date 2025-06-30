@@ -184,6 +184,7 @@ paths:
         - $ref: '#/components/parameters/query-page'
         - $ref: '#/components/parameters/query-size'
         - $ref: '#/components/parameters/query-zoneId'
+        - $ref: '#/components/parameters/query-groupId'
         - $ref: '#/components/parameters/query-zoneStatus'
       responses:
         '200':

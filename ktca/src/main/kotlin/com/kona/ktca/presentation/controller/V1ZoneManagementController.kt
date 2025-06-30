@@ -42,8 +42,12 @@ class V1ZoneManagementController(
         ResponseEntity(V1FindZoneResponse(data = v1ZoneModelMapper.domainToModel(zone =result)), HttpStatus.OK)
     }
 
-    override fun findZoneList(page: Int?, size: Int?, zoneId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> = runBlocking {
-        val trafficZone = TrafficZoneDTO(zoneId = zoneId, status = status?.let(TrafficZoneStatus::valueOf))
+    override fun findZoneList(page: Int?, size: Int?, zoneId: String?, groupId: String?, status: String?): ResponseEntity<V1FindAllZoneResponse> = runBlocking {
+        val trafficZone = TrafficZoneDTO(
+            zoneId = zoneId,
+            groupId = groupId,
+            status = status?.let(TrafficZoneStatus::valueOf)
+        )
         val pageable = PageableDTO(number = page ?: 0, size = size ?: 20)
         val result = trafficZoneManagementUseCase.findPageTrafficZone(trafficZone, pageable)
         val response = V1FindAllZoneResponse(

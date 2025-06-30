@@ -18,11 +18,7 @@ class TrafficZoneMonitorFindService(
 ) : TrafficZoneMonitorFindPort {
 
     override suspend fun findLatestMonitoring(zoneId: String?, groupId: String?): List<TrafficZoneMonitor> {
-        val zones = if (zoneId != null) {
-            listOf(findTrafficZone(zoneId))
-        } else {
-            findAllTrafficZone(groupId)
-        }
+        val zones = findAllTrafficZone(zoneId, groupId)
         val zonesMap = zones.associateBy { it.zoneId }
         val monitorsMap = findLatestTrafficZoneMonitoring().associateBy { it.zoneId }
         return zones.mapNotNull {
@@ -30,13 +26,8 @@ class TrafficZoneMonitorFindService(
         }
     }
 
-    private suspend fun findTrafficZone(zoneId: String?): TrafficZone {
-        return trafficZoneRepository.findByPredicate(TrafficZoneDTO(zoneId = zoneId))
-            ?: throw ResourceNotFoundException(ErrorCode.TRAFFIC_ZONE_NOT_FOUND)
-    }
-
-    private suspend fun findAllTrafficZone(groupId: String?): List<TrafficZone> {
-        return trafficZoneRepository.findAllByPredicate(dto = TrafficZoneDTO(groupId = groupId, status = ACTIVE))
+    private suspend fun findAllTrafficZone(zoneId: String?, groupId: String?): List<TrafficZone> {
+        return trafficZoneRepository.findAllByPredicate(dto = TrafficZoneDTO(zoneId = zoneId, groupId = groupId, status = ACTIVE))
     }
 
     private suspend fun findLatestTrafficZoneMonitoring(): List<TrafficZoneMonitor> {
