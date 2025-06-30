@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.math.log
 
 @RestController
 class V1MemberManagementController(
