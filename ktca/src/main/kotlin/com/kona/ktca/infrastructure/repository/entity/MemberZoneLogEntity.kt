@@ -69,6 +69,7 @@ class MemberZoneLogEntity(
                         fetchJoin(MemberZoneLogEntity::member)
                     )
                     .whereAnd(*where)
+                    .orderBy(path(MemberZoneLogEntity::id).desc())
             }
             return query
         }
