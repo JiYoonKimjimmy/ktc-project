@@ -1,5 +1,7 @@
 package com.kona.ktca.infrastructure.config
 
+import com.kona.common.infrastructure.enumerate.MemberRole
+import com.kona.common.infrastructure.error.exception.ResourceNotFoundException
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.application.usecase.MemberManagementUseCase
 import com.kona.ktca.application.usecase.TrafficZoneManagementUseCase
@@ -7,34 +9,39 @@ import com.kona.ktca.domain.dto.MemberDTO
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
 
 @Component
 class KtcaDatabaseInitializer(
     private val memberManagementUseCase: MemberManagementUseCase,
-    private val trafficZoneManagementUseCase: TrafficZoneManagementUseCase
+    private val trafficZoneManagementUseCase: TrafficZoneManagementUseCase,
+    @Value("\${ktca.initialize.default-traffic-zone}")
+    private val initializeDefaultTrafficZone: Boolean
 ) : CommandLineRunner {
     // logger
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun run(vararg args: String?) = runBlocking {
-        logger.info("===== START Initialize default traffic zone =====")
         initDefaultTrafficZone()
-        logger.info("====== END Initialize default traffic zone ======")
     }
 
     private suspend fun initDefaultTrafficZone() {
-        saveTrafficZone(generateZone(zoneId = "KZ0000000000000000000", zoneAlias = "WARM_UP ZONE"))
-        saveTrafficZone(generateZone(zoneId = "000140000000000:APP_MAIN", zoneAlias = "경기 ASP 메인 화면"))
-        saveTrafficZone(generateZone(zoneId = "000140000000000:APP_RECHARGE", zoneAlias = "경기 ASP 충전 화면"))
+        if (initializeDefaultTrafficZone) {
+            logger.info("===== START Initialize default traffic zone =====")
+            saveTrafficZone(generateZone(zoneId = "KZ0000000000000000000", zoneAlias = "WARM_UP ZONE"))
+            saveTrafficZone(generateZone(zoneId = "000140000000000:APP_MAIN", zoneAlias = "경기 ASP 메인 화면"))
+            saveTrafficZone(generateZone(zoneId = "000140000000000:APP_RECHARGE", zoneAlias = "경기 ASP 충전 화면"))
+            logger.info("====== END Initialize default traffic zone ======")
+        }
     }
 
     private suspend fun generateZone(zoneId: String, zoneAlias: String): TrafficZoneDTO {
         val defaultThreshold = 1000L
         val defaultGroupId = "KG0000000000000000000"
         val activationTime = "20250601000000".convertPatternOf()
-        val memberId = memberManagementUseCase.findMember(dto = MemberDTO(loginId = "admin")).memberId
+        val memberId = defaultMember()
 
         return TrafficZoneDTO(
             zoneId = zoneId,
@@ -44,6 +51,22 @@ class KtcaDatabaseInitializer(
             activationTime = activationTime,
             requesterId = memberId
         )
+    }
+
+    private suspend fun defaultMember(): Long {
+        return try {
+            memberManagementUseCase.findMember(MemberDTO(loginId = "admin")).memberId!!
+        } catch (_: ResourceNotFoundException) {
+            val dto = MemberDTO(
+                loginId = "admin",
+                password = "admin",
+                name = "임시 관리자",
+                email = "admin",
+                team = "관리자",
+                role = MemberRole.ADMINISTRATOR
+            )
+            memberManagementUseCase.createMember(dto)
+        }
     }
 
     private suspend fun saveTrafficZone(dto: TrafficZoneDTO) {

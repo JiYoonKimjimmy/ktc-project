@@ -1,0 +1,3 @@
+ktca:
+  initialize:
+    default-traffic-zone: false

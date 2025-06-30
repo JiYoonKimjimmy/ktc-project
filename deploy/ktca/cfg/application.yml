@@ -2,7 +2,7 @@ spring:
   application:
     name: ktca
   profiles:
-    include: prod, base, datasource
+    include: prod, base, datasource, ktca
 
 server:
   port: 21002
