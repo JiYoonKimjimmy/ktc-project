@@ -22,7 +22,7 @@ class TrafficControlExecuteAdapter(
 ) : TrafficControlPort {
 
     private suspend fun logging(msg: String? = null) {
-        val isLogging = false
+        val isLogging = true
         if (isLogging) {
             msg?.let { print(it) } ?: println()
         }
@@ -95,16 +95,13 @@ class TrafficControlExecuteAdapter(
         if (score == null) {
             reactiveStringRedisTemplate.addZSet(queueKey, token, nowMilli)
         }
-        val entryMilli = score ?: nowMilli
 
         // 5. 진입 허용 조건 확인
         val rank = reactiveStringRedisTemplate.rankZSet(queueKey, token)
-        val waitSlot = rank / allowedPer6Sec
-        val entryAvailableTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
         val canEnter = if (windowEntryCount < threshold && queueSize == 0L) {
             true
-        } else if (slotEntryCount < allowedPer6Sec && (rank < allowedPer6Sec || entryAvailableTime <= nowMilli)) {
+        } else if (slotEntryCount < allowedPer6Sec && rank < allowedPer6Sec) {
             true
         } else {
             false
@@ -129,35 +126,12 @@ class TrafficControlExecuteAdapter(
             // token request time & count 업데이트
             // 대기 예상 시간 계산
             logging(", rank: $rank")
-            logging(", waitSlot: $waitSlot")
-
-            val tokenLastPollingTime = reactiveStringRedisTemplate.scoreZSet(tokenLastPollingTimeKey, token)?.toLong() ?: nowMilli
-            logging(", tokenLastPollingTime: $tokenLastPollingTime")
-            logging(", entryMilli: $entryMilli")
-
-            val estimatedTime = max(calculateTokenWaitingTime(waitSlot, tokenLastPollingTime, entryMilli, nowMilli), 3 * ONE_SECONDS_MILLIS)
+            val estimatedTime = max(((rank + 1) / (threshold.toDouble() / ONE_MINUTE_MILLIS)).toLong(), 3 * ONE_SECONDS_MILLIS)
             logging(", estimatedTime: ${estimatedTime}ms (${printETA(estimatedTime)})")
             logging()
             val totalCount = reactiveStringRedisTemplate.sizeZSet(queueKey)
             reactiveStringRedisTemplate.addZSet(tokenLastPollingTimeKey, token, nowMilli)
             TrafficWaiting(0, rank + 1, estimatedTime, totalCount)
-        }
-    }
-
-    private suspend fun calculateTokenWaitingTime(waitSlot: Long, tokenLastPollingTime: Long, entryMilli: Long, nowMilli: Long): Long {
-        val estimatedTime = (waitSlot + 1) * SIX_SECONDS_MILLIS
-        val totalWaitingTime =  if (tokenLastPollingTime == entryMilli) {
-            nowMilli - entryMilli
-        } else {
-            tokenLastPollingTime - entryMilli
-        }
-        val result = estimatedTime - totalWaitingTime
-        return if (result <= 0) {
-            3 * ONE_SECONDS_MILLIS
-        } else if (estimatedTime < totalWaitingTime) {
-            estimatedTime
-        } else {
-            result
         }
     }
 

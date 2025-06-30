@@ -59,17 +59,14 @@ if not score then
 else
     score = tonumber(score)
 end
-local entryMilli = score
 
 -- 5. 진입 허용 조건 확인: readyTime = token 진입 시점 + (slot * 6초) + 6초
 local rank = tonumber(redis.call('ZRANK', queueKey, token))
-local waitSlot = math.floor(rank / allowedPer6Sec)
-local entryAvailableTime = entryMilli + (waitSlot * SIX_SECONDS_MILLIS) + SIX_SECONDS_MILLIS
 
 local canEnter = false
 if windowEntryCount < threshold and queueSize == 0 then
     canEnter = true
-elseif slotEntryCount < allowedPer6Sec and (rank < allowedPer6Sec or entryAvailableTime <= nowMilli) then
+elseif slotEntryCount < allowedPer6Sec and rank < allowedPer6Sec then
     canEnter = true
 end
 
@@ -86,28 +83,7 @@ if canEnter then
     return { 1, 0, 0, totalCount }
 else
     -- token 진입 대기
-    local function calculateTokenWaitingTime()
-        local tokenLastPollingTime = tonumber(redis.call('ZSCORE', tokenLastPollingTimeKey, token)) or nowMilli
-        local estimatedTime = (waitSlot + 1) * SIX_SECONDS_MILLIS
-        local totalWaitingTime
-
-        if tokenLastPollingTime == entryMilli then
-            totalWaitingTime = nowMilli - entryMilli
-        else
-            totalWaitingTime = tokenLastPollingTime - entryMilli
-        end
-
-        local result = estimatedTime - totalWaitingTime
-        if result <= 0 then
-            return 3 * ONE_SECONDS_MILLIS
-        elseif estimatedTime < totalWaitingTime then
-            return estimatedTime
-        else
-            return result
-        end
-    end
-
-    local estimatedTime = math.max(calculateTokenWaitingTime(), 3 * ONE_SECONDS_MILLIS)
+    local estimatedTime = math.max((rank + 1) / (threshold / ONE_MINUTE_MILLIS) , 3 * ONE_SECONDS_MILLIS)
     local totalCount = tonumber(redis.call('ZCARD', queueKey))
     redis.call('ZADD', tokenLastPollingTimeKey, nowMilli, token)
     return { 0, rank + 1, estimatedTime, totalCount }

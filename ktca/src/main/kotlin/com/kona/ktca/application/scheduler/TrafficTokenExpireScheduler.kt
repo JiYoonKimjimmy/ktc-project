@@ -1,9 +1,8 @@
 package com.kona.ktca.application.scheduler
 
-import com.kona.common.infrastructure.scheduler.AbstractApplicationScheduler
 import com.kona.common.infrastructure.lock.DistributedLockManager
+import com.kona.common.infrastructure.scheduler.AbstractApplicationScheduler
 import com.kona.ktca.domain.port.inbound.TrafficTokenExpirePort
-import com.kona.ktca.domain.port.outbound.TrafficTokenExpireExecutePort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -24,10 +23,10 @@ class TrafficTokenExpireScheduler(
 
     /**
      * [트래픽 대기 Token 만료 처리]
-     * - 매 0초마다 스케쥴링 실행
+     * - 매 30초마다 스케쥴링 실행
      */
     @Async("trafficTokenExpireSchedulerTaskExecutor")
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "*/30 * * * * *")
     fun handleTrafficTokenExpireScheduler() {
         defaultCoroutineScope.launch {
             try {

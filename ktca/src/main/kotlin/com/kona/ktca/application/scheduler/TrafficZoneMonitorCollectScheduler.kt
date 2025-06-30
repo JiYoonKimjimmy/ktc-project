@@ -26,7 +26,7 @@ class TrafficZoneMonitorCollectScheduler(
      * - 매 5초마다 스케쥴링 실행
      */
     @Async("trafficZoneMonitorCollectSchedulerTaskExecutor")
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(cron = "*/5 * * * * *")
     fun handleTrafficZoneMonitorCollectScheduler() {
         defaultCoroutineScope.launch {
             try {

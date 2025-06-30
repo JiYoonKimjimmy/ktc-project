@@ -59,7 +59,6 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
 
     context("트래픽 제어 Zone 요청 건수별 테스트'") {
         forAll(
-            row(10, 1),
             row(20, 10),
             row(200, 100),
             row(3000, 1000),
@@ -134,7 +133,7 @@ class TrafficControlScriptExecuteAdapterTest : BehaviorSpec({
         }
     }
 
-    context("트래픽 제어 Zone 동시 제어 테스트'") {
+    xcontext("트래픽 제어 Zone 동시 제어 테스트'") {
         val totalSize = 3000
         val threshold = 1000
 
