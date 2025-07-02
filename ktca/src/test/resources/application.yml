@@ -2,7 +2,7 @@ spring:
   application:
     name: ktca
   profiles:
-    include: base, datasource
+    include: base, datasource, ktca
     active: test
 
 server:

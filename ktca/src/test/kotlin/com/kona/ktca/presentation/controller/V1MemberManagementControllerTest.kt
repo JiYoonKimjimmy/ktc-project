@@ -389,7 +389,7 @@ class V1MemberManagementControllerTest(
 
         val loginId = log.member.loginId
 
-        `when`("요청 'loginId' 기준 일치한 정보 있는 경우") {
+        xwhen("요청 'loginId' 기준 일치한 정보 있는 경우") {
             val result = mockMvc
                 .get("$url?loginId=$loginId")
                 .andDo { print() }

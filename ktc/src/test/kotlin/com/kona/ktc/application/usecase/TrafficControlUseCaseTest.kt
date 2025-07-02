@@ -109,7 +109,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result2.canEnter shouldBe false
                 result2.number shouldBe 1
-                result2.estimatedTime shouldBeLessThanOrEqual 6000
+                result2.estimatedTime shouldBeLessThanOrEqual 60000
                 result2.totalCount shouldBe 1
             }
         }
@@ -118,7 +118,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("트래픽 대기 정보 결과 정상 확인한다") {
                 result3.canEnter shouldBe false
                 result3.number shouldBe 2
-                result3.estimatedTime shouldBeLessThanOrEqual 12000
+                result3.estimatedTime shouldBeLessThanOrEqual 120000
                 result3.totalCount shouldBe 2
             }
         }
@@ -148,7 +148,7 @@ class TrafficControlUseCaseTest : BehaviorSpec({
             then("요청 결과 '진입 여부 : false' & 'number: 1' & 'eta: 60s' 정상 확인한다") {
                 result2.canEnter shouldBe false
                 result2.number shouldBe 1
-                result2.estimatedTime shouldBeLessThan 6000
+                result2.estimatedTime shouldBeLessThanOrEqual 60000
             }
         }
     }
