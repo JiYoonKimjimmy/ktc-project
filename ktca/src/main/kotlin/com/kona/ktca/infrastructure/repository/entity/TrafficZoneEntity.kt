@@ -26,8 +26,8 @@ class TrafficZoneEntity(
     val activationTime: LocalDateTime,
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
-    val group: TrafficZoneGroupEntity
+    @JoinColumn(name = "group_id")
+    val group: TrafficZoneGroupEntity?
 
 ) : BaseEntity() {
 
@@ -40,7 +40,7 @@ class TrafficZoneEntity(
                 threshold = domain.threshold,
                 status = domain.status,
                 activationTime = domain.activationTime,
-                group = TrafficZoneGroupEntity.of(domain.group!!),
+                group = domain.group?.let { TrafficZoneGroupEntity.of(it) },
             ).apply {
                 this.created = domain.created
                 this.updated = domain.updated
@@ -69,7 +69,7 @@ class TrafficZoneEntity(
             activationTime = activationTime,
             created = created,
             updated = updated,
-            group = group.toDomain(),
+            group = group?.toDomain(),
         )
     }
 

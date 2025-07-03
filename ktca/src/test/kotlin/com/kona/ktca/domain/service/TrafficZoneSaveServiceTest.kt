@@ -269,6 +269,7 @@ class TrafficZoneSaveServiceTest : BehaviorSpec({
                 val entity = trafficZoneRepository.findByZoneId(saved.zoneId)
                 entity!! shouldNotBe null
                 entity.status shouldBe DELETED
+                entity.group shouldBe null
             }
 
             then("'ACTIVATION_ZONES' Cache 목록 제거 결과 정상 확인한다") {

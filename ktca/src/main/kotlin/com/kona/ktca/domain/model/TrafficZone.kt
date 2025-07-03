@@ -55,7 +55,10 @@ data class TrafficZone(
     }
 
     fun delete(): TrafficZone {
-        return this.copy(status = DELETED)
+        return this.copy(
+            group = null,
+            status = DELETED
+        )
     }
 
 }
