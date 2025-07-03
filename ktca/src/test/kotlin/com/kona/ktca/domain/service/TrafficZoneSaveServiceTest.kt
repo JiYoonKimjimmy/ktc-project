@@ -13,7 +13,6 @@ import com.kona.common.infrastructure.util.convertUTCEpochTime
 import com.kona.common.testsupport.redis.EmbeddedRedis
 import com.kona.ktca.domain.dto.TrafficZoneDTO
 import com.kona.ktca.domain.dto.TrafficZoneDTOFixture
-import com.kona.ktca.domain.model.TrafficZoneFixture
 import com.kona.ktca.domain.model.TrafficZoneGroup
 import com.kona.ktca.domain.model.TrafficZoneGroupFixture
 import com.kona.ktca.infrastructure.adapter.TrafficZoneCachingAdapter
