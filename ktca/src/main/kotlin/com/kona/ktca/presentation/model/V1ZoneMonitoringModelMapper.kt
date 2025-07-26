@@ -3,14 +3,8 @@ package com.kona.ktca.presentation.model
 import com.kona.common.infrastructure.util.convertPatternOf
 import com.kona.ktca.domain.model.TrafficZoneMonitor
 import com.kona.ktca.domain.model.TrafficZoneStatsMonitor
-import com.kona.ktca.dto.StatsType
-import com.kona.ktca.dto.V1ZoneMonitoringData
-import com.kona.ktca.dto.V1ZoneMonitoringDataWaiting
-import com.kona.ktca.dto.V1ZoneStatsMonitoringData
-import com.kona.ktca.dto.V1ZoneStatsMonitoringResponse
-import com.kona.ktca.dto.ZoneStatus
+import com.kona.ktca.dto.*
 import org.springframework.stereotype.Component
-import java.time.format.DateTimeFormatter
 
 @Component
 class V1ZoneMonitoringModelMapper {

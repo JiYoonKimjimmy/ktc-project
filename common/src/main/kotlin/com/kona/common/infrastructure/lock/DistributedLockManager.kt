@@ -1,7 +1,6 @@
 package com.kona.common.infrastructure.lock
 
 import com.kona.common.infrastructure.util.DATE_TIME_BASIC_PATTERN
-import com.kona.common.infrastructure.util.DATE_TIME_PATTERN_yyyyMMddHHmm
 import com.kona.common.infrastructure.util.convertPatternOf
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit

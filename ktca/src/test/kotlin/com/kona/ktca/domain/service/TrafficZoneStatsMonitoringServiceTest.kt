@@ -10,7 +10,6 @@ import com.kona.ktca.infrastructure.repository.FakeTrafficZoneStatsMonitorReposi
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 class TrafficZoneStatsMonitoringServiceTest : BehaviorSpec({

@@ -5,11 +5,9 @@ import com.kona.common.infrastructure.util.convertPatternAndAddUnitOf
 import com.kona.ktca.domain.dto.TrafficZoneStatsMonitorDTO
 import com.kona.ktca.domain.model.BASIC_TEST_ZONE_ALIAS
 import com.kona.ktca.domain.model.BASIC_TEST_ZONE_ID
-import com.kona.ktca.domain.model.TrafficZoneStatsMonitor
 import com.kona.ktca.domain.model.TrafficZoneStatsMonitorFixture
 import com.kona.ktca.dto.StatsType
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneStatsMonitorEntity
-import com.kona.ktca.infrastructure.repository.entity.TrafficZoneStatsMonitorId
 import com.kona.ktca.infrastructure.repository.jpa.TrafficZoneStatsMonitorJpaRepository
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.StringSpec

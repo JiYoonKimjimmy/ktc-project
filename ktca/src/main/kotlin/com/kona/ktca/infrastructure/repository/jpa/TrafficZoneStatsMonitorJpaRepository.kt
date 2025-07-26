@@ -1,6 +1,5 @@
 package com.kona.ktca.infrastructure.repository.jpa
 
-import com.kona.ktca.infrastructure.repository.entity.TrafficZoneMonitorEntity
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneStatsMonitorEntity
 import com.kona.ktca.infrastructure.repository.entity.TrafficZoneStatsMonitorId
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
