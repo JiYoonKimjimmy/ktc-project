@@ -1,8 +1,11 @@
 package com.kona.ktca.application.usecase
 
 import com.kona.ktca.domain.model.TrafficZoneMonitor
+import com.kona.ktca.domain.model.TrafficZoneStatsMonitor
 import com.kona.ktca.domain.port.inbound.TrafficZoneMonitorCollectPort
 import com.kona.ktca.domain.port.inbound.TrafficZoneMonitorFindPort
+import com.kona.ktca.domain.port.inbound.TrafficZoneStatsMonitorPort
+import com.kona.ktca.dto.StatsType
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -11,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 class TrafficZoneMonitoringUseCase(
     private val trafficZoneMonitorFindPort: TrafficZoneMonitorFindPort,
     private val trafficZoneMonitorCollectPort: TrafficZoneMonitorCollectPort,
+    private val trafficZoneStatsMonitorPort: TrafficZoneStatsMonitorPort
 ) {
 
     /**
@@ -26,6 +30,11 @@ class TrafficZoneMonitoringUseCase(
     @Transactional
     suspend fun collectTrafficZoneMonitoring(zoneId: String?): List<TrafficZoneMonitor> {
         return trafficZoneMonitorCollectPort.collect(zoneId)
+    }
+
+    @Transactional
+    suspend fun trafficZoneStatsMonitoring(statsType: StatsType, zoneId: String, startDate: String, endDate: String): List<TrafficZoneStatsMonitor> {
+        return trafficZoneStatsMonitorPort.statsMonitor(statsType, zoneId, startDate, endDate)
     }
 
 }

@@ -3,6 +3,8 @@ package com.kona.ktca.presentation.controller
 import com.kona.ktca.api.V1ZoneMonitoringApiDelegate
 import com.kona.ktca.dto.V1ZoneMonitoringResponse
 import com.kona.ktca.application.usecase.TrafficZoneMonitoringUseCase
+import com.kona.ktca.dto.StatsType
+import com.kona.ktca.dto.V1ZoneStatsMonitoringResponse
 import com.kona.ktca.presentation.model.V1ZoneMonitoringModelMapper
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.ResponseEntity
@@ -26,4 +28,14 @@ class V1ZoneMonitoringController(
             .let { ResponseEntity.ok(V1ZoneMonitoringResponse(it)) }
     }
 
+    override fun zoneStatsMonitoring(
+        statsType: StatsType,
+        zoneId: String,
+        startDate: String?,
+        endDate: String?
+    ): ResponseEntity<V1ZoneStatsMonitoringResponse> = runBlocking {
+        val statsMonitors = trafficZoneMonitoringUseCase.trafficZoneStatsMonitoring(statsType, zoneId, startDate!!, endDate!!)
+        val response = v1ZoneMonitoringModelMapper.domainsToModel(statsMonitors, statsType, zoneId)
+        ResponseEntity.ok(response)
+    }
 }

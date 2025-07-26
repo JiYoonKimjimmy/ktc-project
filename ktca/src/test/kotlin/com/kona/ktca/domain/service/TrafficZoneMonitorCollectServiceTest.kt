@@ -47,6 +47,7 @@ class TrafficZoneMonitorCollectServiceTest : BehaviorSpec({
     }
 
     given("전체 트래픽 제어 Zone 모니터링 수집 요청되어") {
+        // TODO ("FIXME - publishTrafficZoneMonitorSavedEvent test 추가")
 
         `when`("현재 트래픽 제어 활성화된 Zone 없는 경우") {
             val result = trafficZoneMonitorCollectService.collect()

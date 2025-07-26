@@ -1,5 +1,6 @@
 package com.kona.common.infrastructure.lock
 
+import com.kona.common.infrastructure.util.DATE_TIME_BASIC_PATTERN
 import com.kona.common.infrastructure.util.DATE_TIME_PATTERN_yyyyMMddHHmm
 import com.kona.common.infrastructure.util.convertPatternOf
 import java.time.LocalDateTime
@@ -16,12 +17,12 @@ interface DistributedLockManager {
     ): R?
 
     suspend fun <R> expireTrafficTokenSchedulerLock(
-        now: String = LocalDateTime.now().convertPatternOf(DATE_TIME_PATTERN_yyyyMMddHHmm),
+        now: String = LocalDateTime.now().convertPatternOf(DATE_TIME_BASIC_PATTERN),
         block: suspend () -> R
     ): R
 
     suspend fun <R> collectTrafficZoneMonitoringSchedulerLock(
-        now: String = LocalDateTime.now().convertPatternOf(),
+        now: String = LocalDateTime.now().convertPatternOf(DATE_TIME_BASIC_PATTERN),
         block: suspend () -> R
     ): R
 

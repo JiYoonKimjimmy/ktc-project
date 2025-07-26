@@ -2,9 +2,11 @@ package com.kona.ktca.domain.service
 
 import com.kona.common.infrastructure.enumerate.TrafficZoneStatus.ACTIVE
 import com.kona.ktca.domain.dto.TrafficZoneDTO
+import com.kona.ktca.domain.event.TrafficZoneMonitorSavedEvent
 import com.kona.ktca.domain.event.TrafficZoneMonitoringStoppedEvent
 import com.kona.ktca.domain.model.TrafficZone
 import com.kona.ktca.domain.model.TrafficZoneMonitor
+import com.kona.ktca.domain.model.TrafficZoneStatsMonitor
 import com.kona.ktca.domain.port.inbound.TrafficZoneMonitorCollectPort
 import com.kona.ktca.domain.port.outbound.TrafficZoneCachingPort
 import com.kona.ktca.domain.port.outbound.TrafficZoneMonitorCachingPort
@@ -42,6 +44,11 @@ class TrafficZoneMonitorCollectService(
 
         // Zone 모니터링 결과 DB 저장
         val saved = saveDBAndCache.saveEntities()
+
+        /**
+         * * [Zone, 시간(1분, 1시간, 1일, 1달) 별 데이터 저장]
+         */
+        (saved + saveOnlyCache).publishTrafficZoneMonitorSavedEvent()
 
         // Zone 모니터링 결과 Cache 저장
         val cached = (saved + saveOnlyCache).saveCaches()
@@ -86,6 +93,16 @@ class TrafficZoneMonitorCollectService(
         val zoneIds = map { it.zoneId }.distinct()
         if (zoneIds.isNotEmpty()) {
             eventPublisher.publishEvent(TrafficZoneMonitoringStoppedEvent(zoneIds))
+        }
+    }
+
+    private fun List<TrafficZoneMonitor>.publishTrafficZoneMonitorSavedEvent() {
+        if (this.isNotEmpty()) {
+            eventPublisher.publishEvent(
+                TrafficZoneMonitorSavedEvent(this.map {
+                    TrafficZoneStatsMonitor.of(it)
+                })
+            )
         }
     }
 

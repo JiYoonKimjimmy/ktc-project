@@ -448,6 +448,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/zone/stats/{statsType}/{zoneId}:
+    get:
+      summary: 트래픽 제어 Zone 통계 목록 조회
+      tags:
+        - V1.Zone Monitoring
+      operationId: zoneStatsMonitoring
+      description: |
+        트래픽 제어 Zone 통계 목록 조회
+      parameters:
+        - $ref: "#/components/parameters/path-statsType"
+        - $ref: "#/components/parameters/path-zoneId"
+        - $ref: "#/components/parameters/query-startDate"
+        - $ref: "#/components/parameters/query-endDate"
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ZoneStatsMonitoringResponse'
+
+        '400':
+          description: |
+            Failed
+
+            | 코드 | 의미 |
+            |:---:|---|
+            | - | - |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/member:
     post:
       summary: 관리자 정보 단일 등록
@@ -659,6 +692,13 @@ components:
         type: string
         example: "KG202504111730001234"
         description: "Zone 그룹 ID"
+
+    path-statsType:
+      in: path
+      name: statsType
+      required: true
+      schema:
+        $ref: '#/components/schemas/statsType'
 
     ##### query
     query-page:
@@ -970,6 +1010,20 @@ components:
       type: integer
       description: Zone 진입자 수
       example: 1000
+      
+    totalEntryCount:
+      type: integer
+      description: 총 Zone 진입자 수
+      example: 10000
+
+    statsDate:
+      type: string
+      description: |
+        Statistics 시간(yyyyMMddHH)
+        `statsType == MINUTE` 인 경우, yyyyMMddHHmm
+        `statsType == HOUR` 인 경우, yyyyMMddHH
+        `statsType == DAY` 인 경우, yyyyMMdd
+      example: 2025061112
 
     estimatedClearTime:
       type: integer
@@ -1076,6 +1130,19 @@ components:
       description: 그룹 상태
       example: "ACTIVE"
 
+    statsType:
+      type: string
+      enum: [ MINUTE, HOUR, DAY, MONTH ]
+      example: "MINUTE"
+      description: |
+        Statistics 타입
+        | 구분 | 내용 |
+        |:----:|----|
+        | MINUTE  | 분별    |
+        | HOUR    | 시간별   |
+        | DAY     | 일별    |
+        | MONTH   | 월별    |
+
     ##### api dto start
     ResultResponse:
       type: object
@@ -1154,6 +1221,20 @@ components:
               $ref: '#/components/schemas/waitingCount'
             estimatedClearTime:
               $ref: '#/components/schemas/estimatedClearTime'
+
+    V1ZoneStatsMonitoringData:
+      type: object
+      properties:
+        statsDate:
+          $ref: '#/components/schemas/statsDate'
+        maxThreshold:
+          $ref: '#/components/schemas/threshold'
+        totalEntryCount:
+          $ref: '#/components/schemas/totalEntryCount'
+        maxWaitingCount:
+          $ref: '#/components/schemas/waitingCount'
+        maxEstimatedClearTime:
+          $ref: '#/components/schemas/estimatedClearTime'
 
     ##### request/response schema start
     V1CreateZoneRequest:
@@ -1272,6 +1353,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/V1ZoneMonitoringData'
+        result:
+          $ref: '#/components/schemas/ResultResponse'
+
+    V1ZoneStatsMonitoringResponse:
+      type: object
+      required:
+        - zoneId
+        - zoneAlias
+        - statsType
+        - content
+        - result
+      properties:
+        zoneId:
+          $ref: '#/components/schemas/zoneId'
+        zoneAlias:
+          $ref: '#/components/schemas/zoneAlias'
+        statsType:
+          $ref: '#/components/schemas/statsType'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1ZoneStatsMonitoringData'
         result:
           $ref: '#/components/schemas/ResultResponse'
 
